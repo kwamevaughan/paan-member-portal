@@ -156,7 +156,7 @@ const RegisterForm = () => {
           <input
             id="registerEmail"
             name="email"
-            placeholder="john@paan.africa"
+            placeholder="johndoe@paan.africa"
             type="email"
             value={registerData.email}
             onChange={handleRegisterChange}

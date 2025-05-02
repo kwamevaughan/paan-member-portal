@@ -3,14 +3,14 @@ import Image from "next/image";
 
 const slides = [
   {
-    title: "Business Development",
-    description:
-      "Unlock new growth through co-bidding opportunities, a client referral system, and collaborative access to multinational campaigns.",
-  },
-  {
     title: "Knowledge Hub",
     description:
       "Access a centralized platform for sharing insights, best practices, and resources to drive innovation and growth.",
+  },
+  {
+    title: "Business Development",
+    description:
+      "Unlock new growth through co-bidding opportunities, a client referral system, and collaborative access to multinational campaigns.",
   },
   {
     title: "Capacity Building",
@@ -227,7 +227,7 @@ const CustomSlider = () => {
 
   return (
     <div
-      className="w-full relative overflow-hidden flex  h-screen cursor-grab active:cursor-grabbing"
+      className="w-full relative overflow-hidden flex  h-screen active:cursor-grabbing"
       ref={containerRef}
       tabIndex={0} // Make focusable for keyboard navigation
       role="region"
@@ -238,17 +238,17 @@ const CustomSlider = () => {
       onMouseDown={handleStart}
       onMouseMove={handleMove}
       onMouseUp={handleEnd}
-      onMouseEnter={() => setIsHovering(true)}
+      onMouseEnter={() => setIsHovering(false)}
       onMouseLeave={(e) => {
         setIsHovering(false);
         if (dragging) handleEnd(e);
       }}
     >
       {/* Background */}
-      <div class="absolute inset-0 bg-black/30 z-10"></div>
+      <div class="absolute inset-0 bg-black/10 z-10"></div>
 
-      {/* Centered Content Container */}
-      <div className="relative z-10 flex flex-col items-center justify-end mb-20 w-full ">
+      {/* Content Container */}
+      <div className="relative z-10 flex flex-col items-start justify-end px-10 w-3/4">
         <div className="relative w-2/3 overflow-hidden ">
           <div
             className="flex relative"
@@ -258,14 +258,14 @@ const CustomSlider = () => {
             {extendedSlides.map((slide, index) => (
               <div
                 key={index}
-                className="absolute top-0 left-0 w-full flex justify-center items-center"
+                className="absolute top-0 left-0 flex justify-center items-center"
                 style={getSlideStyle(index)}
               >
-                <div className="text-center p-8 rounded-lg bg-white/90 ">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                <div className="p-8 rounded-lg bg-paan-blue ">
+                  <h2 className="text-2xl font-bold text-paan-orange">
                     {slide.title}
                   </h2>
-                  <p className="text-gray-600 mb-4">{slide.description}</p>
+                  <p className="text-gray-300">{slide.description}</p>
                 </div>
               </div>
             ))}
@@ -273,7 +273,7 @@ const CustomSlider = () => {
         </div>
 
         {/* Pagination Bullets */}
-        <div className="mt-4 z-20">
+        {/* <div className="mt-4 z-20">
           <div className="flex justify-center gap-2">
             {slides.map((_, idx) => (
               <button
@@ -287,7 +287,7 @@ const CustomSlider = () => {
               />
             ))}
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

@@ -10,6 +10,9 @@ export default {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        "paan-blue": "#172840",
+        "paan-orange": "#F2B706",
+        "paan-red": "#F25849",
       },
     },
   },

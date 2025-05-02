@@ -6,58 +6,35 @@ import Select from "react-select";
 const customStyles = {
   control: (provided) => ({
     ...provided,
-    backgroundColor: "#374151", // Matches bg-gray-700
-    borderColor: "#4B5563", // Matches border-gray-600
-    color: "white",
-    minHeight: "38px", // Matches input height (py-1.5 + borders)
-    height: "38px", // Fixed height for consistency
-    padding: "0 8px", // Matches px-4 (16px total)
+    backgroundColor: "",
+    border: "none", // Remove full border
+    borderBottom: "2px solid #4B5563", // Apply only bottom border
+    padding: "0 8px",
     "&:hover": {
-      borderColor: "#3B82F6", // Matches focus:border-blue-500
+      borderColor: "#172840", // Optional, add hover effect for the bottom border
     },
     boxShadow: "none",
-    borderRadius: "0.5rem", // Matches rounded-lg
+    borderRadius: "0",
   }),
   singleValue: (provided) => ({
     ...provided,
-    color: "white", // Selected value text color
-    margin: 0, // Remove default margin
-    lineHeight: 1.2, // Tighten line height
-    top: "50%", // Center vertically
-    transform: "translateY(-50%)", // Center vertically
+    color: "#172840",
   }),
   menu: (provided) => ({
     ...provided,
-    backgroundColor: "#374151", // Matches bg-gray-700
-  }),
-  option: (provided, state) => ({
-    ...provided,
-    backgroundColor: state.isFocused ? "#4B5563" : "#374151", // Matches hover:bg-gray-600
-    color: "white", // Dropdown option text
-    "&:active": {
-      backgroundColor: "#4B5563", // Consistent background on click
-    },
+    backgroundColor: "#ddd",
   }),
   placeholder: (provided) => ({
     ...provided,
-    color: "#9CA3AF", // Matches text-gray-400
-    margin: 0, // Remove default margin
-    lineHeight: 1.2, // Tighten line height
+    color: "#172840",
   }),
   input: (provided) => ({
     ...provided,
-    color: "white", // Input text
-    margin: 0, // Remove default margin
-    padding: 0, // Remove default padding
-    height: "100%", // Ensure input doesn't add extra height
-    lineHeight: 1.2, // Tighten line height
+    color: "#172840",
   }),
   valueContainer: (provided) => ({
     ...provided,
-    padding: "0", // Remove all padding to minimize space
-    height: "100%", // Match control height
-    display: "flex", // Ensure proper alignment
-    alignItems: "center", // Center content vertically
+    display: "flex",
   }),
 };
 
@@ -67,7 +44,8 @@ const RegisterForm = () => {
     email: "",
     phone: "",
     country: "KE",
-    registrationCode: "",
+    agencyName: "",
+    memberCode: "",
   });
   const [countries, setCountries] = useState([]);
 
@@ -108,7 +86,10 @@ const RegisterForm = () => {
 
   // Custom Option component to display flag and country name
   const CustomOption = ({ innerProps, label, data }) => (
-    <div {...innerProps} className="flex items-center p-2 cursor-pointer hover:bg-gray-600 text-white">
+    <div
+      {...innerProps}
+      className="flex items-center p-2 cursor-pointer hover:bg-white/50 text-paan-blue"
+    >
       <span className="mr-2">{data.emoji}</span>
       <span>{label}</span>
     </div>
@@ -116,7 +97,7 @@ const RegisterForm = () => {
 
   // Custom SingleValue component to display flag and country name
   const CustomSingleValue = ({ data }) => (
-    <div className="flex items-center text-white m-0 leading-tight">
+    <div className="flex items-center text-paan-blue m-0 leading-tight">
       <span className="mr-2">{data.emoji}</span>
       <span>{data.label}</span>
     </div>
@@ -125,11 +106,8 @@ const RegisterForm = () => {
   return (
     <form onSubmit={handleRegister}>
       {/* Name Field */}
-      <div className="mb-4">
-        <label
-          className="block text-gray-300 text-sm md:text-base mb-2"
-          htmlFor="name"
-        >
+      <div className="mb-6">
+        <label className="hidden" htmlFor="name">
           Full Name
         </label>
         <input
@@ -139,17 +117,14 @@ const RegisterForm = () => {
           placeholder="John Doe"
           value={registerData.name}
           onChange={handleRegisterChange}
-          className="w-full bg-gray-700 text-white border border-gray-600 rounded-lg py-1.5 md:py-2 px-4 focus:outline-none focus:border-blue-500"
+          className="w-full bg-transparent text-paan-blue font-light border-b-2 border-gray-700 rounded-none py-2.5 md:py-3 px-2 focus:outline-none focus:border-blue-500 placeholder-paan-blue"
           required
         />
       </div>
 
       {/* Email Field */}
-      <div className="mb-4">
-        <label
-          className="block text-gray-300 text-sm md:text-base mb-2"
-          htmlFor="registerEmail"
-        >
+      <div className="mb-6">
+        <label className="hidden" htmlFor="registerEmail">
           Email
         </label>
         <div className="relative">
@@ -160,21 +135,15 @@ const RegisterForm = () => {
             type="email"
             value={registerData.email}
             onChange={handleRegisterChange}
-            className="w-full bg-gray-700 text-white border border-gray-600 rounded-lg py-1.5 md:py-2 px-4 focus:outline-none focus:border-blue-500"
+            className="w-full bg-transparent text-paan-blue font-light border-b-2 border-gray-700 rounded-none py-2.5 md:py-3 px-2 focus:outline-none focus:border-blue-500 placeholder-paan-blue"
             required
           />
-          <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-            <Icon icon="heroicons:envelope" className="w-5 h-5" />
-          </span>
         </div>
       </div>
 
       {/* Phone Field */}
-      <div className="mb-4">
-        <label
-          className="block text-gray-300 text-sm md:text-base mb-2"
-          htmlFor="phone"
-        >
+      <div className="mb-6">
+        <label className="hidden" htmlFor="phone">
           Phone Number
         </label>
         <input
@@ -184,24 +153,23 @@ const RegisterForm = () => {
           type="tel"
           value={registerData.phone}
           onChange={handleRegisterChange}
-          className="w-full bg-gray-700 text-white border border-gray-600 rounded-lg py-1.5 md:py-2 px-4 focus:outline-none focus:border-blue-500"
+          className="w-full bg-transparent text-paan-blue font-light border-b-2 border-gray-700 rounded-none py-2.5 md:py-3 px-2 focus:outline-none focus:border-blue-500 placeholder-paan-blue"
           required
         />
       </div>
 
       {/* Country Field */}
-      <div className="mb-4">
-        <label
-          className="block text-gray-300 text-sm md:text-base mb-2"
-          htmlFor="country"
-        >
+      <div className="mb-6">
+        <label className="hidden" htmlFor="country">
           Country
         </label>
         <Select
           id="country"
           name="country"
           options={countries}
-          value={countries.find((option) => option.value === registerData.country)}
+          value={countries.find(
+            (option) => option.value === registerData.country
+          )}
           onChange={handleCountryChange}
           components={{ Option: CustomOption, SingleValue: CustomSingleValue }}
           placeholder="Select a country"
@@ -212,21 +180,36 @@ const RegisterForm = () => {
         />
       </div>
 
-      {/* Registration Code Field */}
-      <div className="mb-4">
-        <label
-          className="block text-gray-300 text-sm md:text-base mb-2"
-          htmlFor="registrationCode"
-        >
-          Registration Code
+      {/* Unique Member Code Field */}
+      <div className="mb-6">
+        <label className="hidden" htmlFor="memberCode">
+          Unique Member Code
         </label>
         <input
-          id="registrationCode"
-          name="registrationCode"
+          id="memberCode"
+          name="memberCode"
           type="text"
-          value={registerData.registrationCode}
+          placeholder="Enter your unique member code"
+          value={registerData.memberCode}
           onChange={handleRegisterChange}
-          className="w-full bg-gray-700 text-white border border-gray-600 rounded-lg py-1.5 md:py-2 px-4 focus:outline-none focus:border-blue-500"
+          className="w-full bg-transparent text-paan-blue font-light border-b-2 border-gray-700 rounded-none py-2.5 md:py-3 px-2 focus:outline-none focus:border-blue-500 placeholder-paan-blue"
+          required
+        />
+      </div>
+
+      {/* Agency Name Field */}
+      <div className="mb-6">
+        <label className="hidden" htmlFor="agencyName">
+          Agency Name
+        </label>
+        <input
+          id="agencyName"
+          name="agencyName"
+          type="text"
+          placeholder="Enter your agency name"
+          value={registerData.agencyName}
+          onChange={handleRegisterChange}
+          className="w-full bg-transparent text-paan-blue font-light border-b-2 border-gray-700 rounded-none py-2.5 md:py-3 px-2 focus:outline-none focus:border-blue-500 placeholder-paan-blue"
           required
         />
       </div>
@@ -234,7 +217,7 @@ const RegisterForm = () => {
       {/* Register Button */}
       <button
         type="submit"
-        className="w-full bg-sky-500 text-white font-bold py-3 rounded-lg transform transition-transform duration-700 ease-in-out hover:scale-105"
+        className="w-full bg-paan-red text-white font-bold py-3 mt-6 rounded-full transform transition-transform duration-700 ease-in-out hover:scale-105"
       >
         Create Account
       </button>

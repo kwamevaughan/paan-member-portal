@@ -2,15 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-    transition: background-color 0.3s ease, color 0.3s ease;
-    font-family: 'Questrial', sans-serif;
-    background-color: #fafafa;
-    font-size: 15px;
+:root {
+  --font-figtree: "Figtree", sans-serif;
 }
 
-html {
-    font-family: 'Questrial', sans-serif;
+body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+    background-color: #fafafa;
+    font-size: 15px;
 }
 
 .font-orange{
@@ -29,9 +28,6 @@ html {
     opacity: 1;
 }
 
-.css-13cymwt-control{
-    background-color: transparent !important;
-}
 /* Custom Scrollbar Styles */
 
 /* For both vertical and horizontal scrollbars */
@@ -71,7 +67,7 @@ html {
 }
 
 .bg-login{
-    background-image: url("/assets/images/paan-woman-3.jpg");
+    background-image: url("/assets/images/login-bg.png");
     background-repeat: no-repeat;
     background-position: center;
     background-size: cover;

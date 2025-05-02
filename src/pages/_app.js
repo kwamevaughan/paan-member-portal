@@ -5,6 +5,7 @@ import toast, { Toaster } from "react-hot-toast";
 import "../styles/globals.css";
 import { sidebarNav } from "@/data/nav";
 import { Figtree } from "next/font/google";
+import { UserProvider } from "@/context/UserContext";
 
 // Initialize Figtree font with subsets
 const figtree = Figtree({
@@ -98,6 +99,7 @@ function MyApp({ Component, pageProps }) {
   }, [router]);
 
   return (
+        <UserProvider>
     <div className={`${mode === "dark" ? "dark" : ""} ${figtree.className}`}>
       <Toaster
         position="top-center"
@@ -126,7 +128,8 @@ function MyApp({ Component, pageProps }) {
         reverseOrder={false}
       />
       <Component {...pageProps} mode={mode} toggleMode={toggleMode} />
-    </div>
+      </div>
+      </UserProvider>
   );
 }
 

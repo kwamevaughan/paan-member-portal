@@ -245,7 +245,7 @@ const CustomSlider = () => {
       }}
     >
       {/* Background */}
-      <div class="absolute inset-0 bg-black/10 z-10"></div>
+      <div className="absolute inset-0 bg-black/10 z-10"></div>
 
       {/* Content Container */}
       <div className="relative z-10 flex flex-col items-start justify-end px-10 w-3/4">

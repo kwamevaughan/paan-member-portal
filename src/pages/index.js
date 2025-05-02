@@ -1,27 +1,130 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
 import Image from "next/image";
 import CustomSlider from "@/components/CustomSlider";
 import RegisterForm from "@/components/RegisterForm";
+import { useRouter } from "next/router";
+import { toast } from "react-toastify";
+import Cookies from "js-cookie";
 
 const LoginPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [loginData, setLoginData] = useState({
     email: "john@paan.africa",
-    password: "testpassword",
+    password: "Test1234",
     rememberMe: false,
   });
   const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    console.log("Logging in with:", loginData.email, loginData.password);
+    console.log("Login payload:", loginData);
+    toast.info("Please wait...", { autoClose: false, toastId: "loginToast" });
+
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: loginData.email,
+          password: loginData.password,
+        }),
+      });
+
+      const data = await response.json();
+      console.log("Login response:", data);
+
+      if (!response.ok) {
+        toast.dismiss("loginToast");
+        toast.error(data.error || "Login failed");
+        return;
+      }
+
+      // Store token in cookie for middleware
+      const maxAge = loginData.rememberMe ? 7 * 24 * 60 * 60 : 60 * 60; // 7 days or 1 hour
+      Cookies.set("token", data.token, {
+        expires: maxAge / (24 * 60 * 60), // Convert seconds to days
+        path: "/",
+        sameSite: "Strict",
+        secure: process.env.NODE_ENV === "production", // Secure in production
+      });
+      console.log("Cookie set:", Cookies.get("token"));
+
+      // Store token in localStorage or sessionStorage for client-side
+      if (loginData.rememberMe) {
+        localStorage.setItem("token", data.token);
+        console.log("localStorage set:", localStorage.getItem("token"));
+      } else {
+        sessionStorage.setItem("token", data.token);
+        console.log("sessionStorage set:", sessionStorage.getItem("token"));
+      }
+
+      // Store user data
+      const userData = {
+        id: data.user.id,
+        email: data.user.email,
+        full_name: data.user.full_name,
+        role: data.user.role,
+        agency_id: data.user.agency_id,
+      };
+
+      sessionStorage.setItem("user", JSON.stringify(userData));
+
+      toast.dismiss("loginToast");
+      toast.success("Login successful! Redirecting...");
+
+      // Redirect based on role with timeout to ensure state is updated
+      const redirectTo = data.user.role === "admin" ? "/admin" : "/dashboard";
+      console.log("Redirecting to:", redirectTo);
+
+      // Use window.location for a hard redirect instead of Next.js router
+      setTimeout(() => {
+        window.location.href = redirectTo;
+      }, 500);
+    } catch (error) {
+      console.error("Login error:", error);
+      toast.dismiss("loginToast");
+      toast.error("An error occurred. Please try again.");
+    }
   };
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const token =
+      Cookies.get("token") ||
+      sessionStorage.getItem("token") ||
+      localStorage.getItem("token");
+
+    if (token) {
+      try {
+        // Attempt to parse token to check if it's a valid JWT
+        const tokenParts = token.split(".");
+        if (tokenParts.length === 3) {
+          const payload = JSON.parse(atob(tokenParts[1]));
+
+          // Check if token is expired
+          if (payload.exp && payload.exp * 1000 > Date.now()) {
+            // Token exists and is not expired
+            const redirectTo =
+              payload.role === "admin" ? "/admin" : "/dashboard";
+            router.push(redirectTo);
+          }
+        }
+      } catch (error) {
+        console.error("Error checking token:", error);
+        // Clear invalid tokens
+        Cookies.remove("token");
+        sessionStorage.removeItem("token");
+        localStorage.removeItem("token");
+      }
+    }
+  }, [router]);
 
   const toggleForm = () => {
     setIsLogin(!isLogin);
@@ -41,14 +144,9 @@ const LoginPage = () => {
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-[#D1D3D4]">
-      {/* Left Section - Content Container */}
       <div className="w-full md:w-2/5 flex flex-col justify-between md:p-6 overflow-y-auto">
-        {/* Logo */}
-
-        <div className="flex flex-col items-center  ">
-          {" "}
+        <div className="flex flex-col items-center">
           <div className="w-full max-w-md">
-            {" "}
             <Link
               href="https://paan.africa"
               target="_blank"
@@ -67,8 +165,7 @@ const LoginPage = () => {
           </div>
         </div>
 
-        <div className="flex-grow flex flex-col justify-center items-center  ">
-          {" "}
+        <div className="flex-grow flex flex-col justify-center items-center">
           <div className="w-full max-w-md py-4">
             <div className="pb-6 space-y-2">
               {isLogin ? (
@@ -96,10 +193,8 @@ const LoginPage = () => {
               )}
             </div>
 
-            {/* Form or RegisterForm */}
             {isLogin ? (
               <form onSubmit={handleLogin}>
-                {/* Email Field */}
                 <div className="">
                   <label className="hidden" htmlFor="email">
                     Email
@@ -119,7 +214,6 @@ const LoginPage = () => {
                   </div>
                 </div>
 
-                {/* Password Field */}
                 <div className="mb-8">
                   <label
                     className="block text-gray-300 text-sm md:text-base mb-2"
@@ -149,7 +243,6 @@ const LoginPage = () => {
                   </div>
                 </div>
 
-                {/* Remember Me & Forgot Password */}
                 <div className="flex flex-col md:flex-row items-center justify-between mb-8 space-y-2 md:space-y-0">
                   <div className="flex items-center">
                     <div
@@ -168,7 +261,7 @@ const LoginPage = () => {
                       {loginData.rememberMe && (
                         <Icon
                           icon="ic:baseline-check"
-                          className="w-4 h-4 text-paan-blue" // Blue checkmark
+                          className="w-4 h-4 text-paan-blue"
                         />
                       )}
                     </div>
@@ -195,7 +288,6 @@ const LoginPage = () => {
                   </span>
                 </div>
 
-                {/* Login Button */}
                 <button
                   type="submit"
                   className="w-full bg-paan-red text-white font-bold py-3 rounded-full transform transition-transform duration-700 ease-in-out hover:scale-105"
@@ -207,7 +299,6 @@ const LoginPage = () => {
               <RegisterForm />
             )}
 
-            {/* Social Login Buttons */}
             <div className="flex flex-col justify-center items-center gap-4 md:flex-row md:gap-6 mt-6">
               <button
                 onClick={() => handleSocialLogin("Google")}
@@ -226,7 +317,6 @@ const LoginPage = () => {
               </button>
             </div>
 
-            {/* Toggle Form Link */}
             <div className="mt-6 flex justify-center items-center w-full space-x-2">
               <span className="text-gray-600 text-sm md:text-base">
                 {isLogin
@@ -244,7 +334,6 @@ const LoginPage = () => {
         </div>
       </div>
 
-      {/* Right Section - Hidden on mobile */}
       <div className="hidden md:block w-full md:w-3/5 bg-login">
         <CustomSlider />
       </div>

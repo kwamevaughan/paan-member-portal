@@ -1,12 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
 import Image from "next/image";
 import CustomSlider from "@/components/CustomSlider";
 import RegisterForm from "@/components/RegisterForm";
-import { useRouter } from "next/router";
-import { toast } from "react-toastify";
-import Cookies from "js-cookie";
+import { useAuth } from "@/hooks/useAuth";
 
 const LoginPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -16,7 +14,7 @@ const LoginPage = () => {
     rememberMe: false,
   });
   const [showPassword, setShowPassword] = useState(false);
-  const router = useRouter();
+  const { login } = useAuth();
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -25,106 +23,8 @@ const LoginPage = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     console.log("Login payload:", loginData);
-    toast.info("Please wait...", { autoClose: false, toastId: "loginToast" });
-
-    try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: loginData.email,
-          password: loginData.password,
-        }),
-      });
-
-      const data = await response.json();
-      console.log("Login response:", data);
-
-      if (!response.ok) {
-        toast.dismiss("loginToast");
-        toast.error(data.error || "Login failed");
-        return;
-      }
-
-      // Store token in cookie for middleware
-      const maxAge = loginData.rememberMe ? 7 * 24 * 60 * 60 : 60 * 60; // 7 days or 1 hour
-      Cookies.set("token", data.token, {
-        expires: maxAge / (24 * 60 * 60), // Convert seconds to days
-        path: "/",
-        sameSite: "Strict",
-        secure: process.env.NODE_ENV === "production", // Secure in production
-      });
-      console.log("Cookie set:", Cookies.get("token"));
-
-      // Store token in localStorage or sessionStorage for client-side
-      if (loginData.rememberMe) {
-        localStorage.setItem("token", data.token);
-        console.log("localStorage set:", localStorage.getItem("token"));
-      } else {
-        sessionStorage.setItem("token", data.token);
-        console.log("sessionStorage set:", sessionStorage.getItem("token"));
-      }
-
-      // Store user data
-      const userData = {
-        id: data.user.id,
-        email: data.user.email,
-        full_name: data.user.full_name,
-        role: data.user.role,
-        agency_id: data.user.agency_id,
-      };
-
-      sessionStorage.setItem("user", JSON.stringify(userData));
-
-      toast.dismiss("loginToast");
-      toast.success("Login successful! Redirecting...");
-
-      // Redirect based on role with timeout to ensure state is updated
-      const redirectTo = data.user.role === "admin" ? "/admin" : "/dashboard";
-      console.log("Redirecting to:", redirectTo);
-
-      // Use window.location for a hard redirect instead of Next.js router
-      setTimeout(() => {
-        window.location.href = redirectTo;
-      }, 500);
-    } catch (error) {
-      console.error("Login error:", error);
-      toast.dismiss("loginToast");
-      toast.error("An error occurred. Please try again.");
-    }
+    await login(loginData.email, loginData.password, loginData.rememberMe);
   };
-
-  // Check if user is already logged in
-  useEffect(() => {
-    const token =
-      Cookies.get("token") ||
-      sessionStorage.getItem("token") ||
-      localStorage.getItem("token");
-
-    if (token) {
-      try {
-        // Attempt to parse token to check if it's a valid JWT
-        const tokenParts = token.split(".");
-        if (tokenParts.length === 3) {
-          const payload = JSON.parse(atob(tokenParts[1]));
-
-          // Check if token is expired
-          if (payload.exp && payload.exp * 1000 > Date.now()) {
-            // Token exists and is not expired
-            const redirectTo =
-              payload.role === "admin" ? "/admin" : "/dashboard";
-            router.push(redirectTo);
-          }
-        }
-      } catch (error) {
-        console.error("Error checking token:", error);
-        // Clear invalid tokens
-        Cookies.remove("token");
-        sessionStorage.removeItem("token");
-        localStorage.removeItem("token");
-      }
-    }
-  }, [router]);
 
   const toggleForm = () => {
     setIsLogin(!isLogin);
@@ -248,7 +148,7 @@ const LoginPage = () => {
                     <div
                       onClick={() =>
                         setLoginData({
-                          ...loginData,
+                          ...prev,
                           rememberMe: !loginData.rememberMe,
                         })
                       }
@@ -270,7 +170,7 @@ const LoginPage = () => {
                       className="ml-2 text-paan-blue font-light text-sm md:text-base cursor-pointer"
                       onClick={() =>
                         setLoginData({
-                          ...loginData,
+                          ...prev,
                           rememberMe: !loginData.rememberMe,
                         })
                       }
@@ -313,7 +213,7 @@ const LoginPage = () => {
                 className="flex items-center hover:underline text-gray-600 font-normal py-2 rounded-lg transform transition-transform duration-300 ease-in-out hover:translate-y-[-5px]"
               >
                 <Icon icon="logos:facebook" className="w-5 h-5 mr-2" />
-                {isLogin ? "Continue with Facebook" : "Sign Up with Facebook"}
+                {isLogin ? "Question with Facebook" : "Sign Up with Facebook"}
               </button>
             </div>
 

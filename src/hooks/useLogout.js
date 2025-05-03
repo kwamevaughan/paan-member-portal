@@ -1,16 +1,8 @@
-import { useRouter } from "next/router";
-import Cookies from "js-cookie";
+import { useContext } from "react";
+import { AuthContext } from "@/context/authContext";
 
 const useLogout = () => {
-  const router = useRouter();
-
-  const logout = () => {
-    localStorage.removeItem("token");
-    sessionStorage.removeItem("token");
-    Cookies.remove("token", { path: "/" });
-    router.push("/");
-  };
-
+  const { logout } = useContext(AuthContext);
   return logout;
 };
 

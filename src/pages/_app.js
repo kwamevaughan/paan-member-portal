@@ -5,6 +5,8 @@ import toast, { Toaster } from "react-hot-toast";
 import "../styles/globals.css";
 import { sidebarNav } from "@/data/nav";
 import { Figtree } from "next/font/google";
+import { AuthProvider } from "@/context/authContext";
+
 
 // Initialize Figtree font with subsets
 const figtree = Figtree({
@@ -125,7 +127,9 @@ function MyApp({ Component, pageProps }) {
         }}
         reverseOrder={false}
       />
-      <Component {...pageProps} mode={mode} toggleMode={toggleMode} />
+          <AuthProvider>
+        <Component {...pageProps} mode={mode} toggleMode={toggleMode} />
+        </AuthProvider>
       </div>
   );
 }

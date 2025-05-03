@@ -1,5 +1,5 @@
 const bcrypt = require("bcrypt");
-import supabase from "../../../lib/supabase";
+import supabaseAdmin from "lib/supabaseAdmin";
 
 const handler = async (req, res) => {
   if (req.method !== "POST") {
@@ -22,7 +22,7 @@ const handler = async (req, res) => {
 
   try {
     // Check if email already exists
-    const { data: existingUser } = await supabase
+    const { data: existingUser } = await supabaseAdmin
       .from("users")
       .select("id")
       .eq("email", email)
@@ -37,7 +37,7 @@ const handler = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     // Insert new user
-    const { data: user, error } = await supabase
+    const { data: user, error } = await supabaseAdmin
       .from("users")
       .insert([
         {

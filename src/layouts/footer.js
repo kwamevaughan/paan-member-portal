@@ -1,80 +1,73 @@
+// src/layouts/simpleFooter.js
 import Image from "next/image";
-import Link from "next/link";
+import useSidebar from "@/hooks/useSidebar"; // Import useSidebar
 
-const Footer = ({ mode }) => {
-    const currentYear = new Date().getFullYear();
+const SimpleFooter = ({ mode, isSidebarOpen }) => {
+  // Add isSidebarOpen as prop
+  const currentYear = new Date().getFullYear();
 
-    return (
-        <>
-            <div className="bg-[#1a1c23] px-6 sm:px-10 md:px-20 pt-8 pb-12">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 pt-10 gap-2">
-                    <div className="flex flex-col justify-center pb-8 md:pb-0">
-                        <Link href="/">
-                            <Image
-                                src="/assets/images/logo.svg"
-                                alt="Logo"
-                                width={300}
-                                height={50}
-                                className="pb-4"
-                            />
-                        </Link>
-                        <div className="flex flex-col gap-2 text-white">
-                            <span>
-                                Credit Bank PLC, <br />
-                                Head Office, One Africa Place Building, <br />
-                                14th Floor, Westlands, <br />
-                                Waiyaki Way, Nairobi
-                            </span>
-                        </div>
-                    </div>
-                    <div className="flex flex-col justify-center gap-6 pb-8 md:pb-0">
-                        <div className="flex flex-col gap-2 text-white">
-                            <Link href="tel:+254709072000" className="text-lg sm:text-xl md:text-2xl font-bold">
-                                +254 70 907 2000
-                            </Link>
-                            <span className="text-gray-400">Contact Us</span>
-                        </div>
-                        <div className="flex flex-col gap-2 text-white">
-                            <Link href="mailto:customerservice@creditbank.co.ke" className="text-lg sm:text-xl md:text-2xl font-bold">
-                                customerservice@creditbank.co.ke
-                            </Link>
-                            <span className="text-gray-400">Customer service Email</span>
-                        </div>
-                    </div>
-                    <div className="flex flex-col justify-center gap-6">
-                        <div className="flex flex-col gap-2 text-white">
-                            <Link href="https://apps.apple.com/us/app/credit-bank-cb-konnect/id1469515952">
-                                <Image
-                                    src="/assets/images/App-Store.png"
-                                    width={200}
-                                    height={50}
-                                    alt="App store image"
-                                    className="cursor-pointer transition-transform duration-300 hover:-translate-y-1"
-                                />
-                            </Link>
-                        </div>
-                        <div className="flex flex-col gap-2 text-white">
-                            <Link href="https://play.google.com/store/apps/details?id=co.ke.ekenya.creditbank">
-                                <Image
-                                    src="/assets/images/Google-Play.png"
-                                    width={200}
-                                    height={50}
-                                    alt="Google Play image"
-                                    className="cursor-pointer transition-transform duration-300 hover:-translate-y-1"
-                                />
-                            </Link>
-                        </div>
-                        <span className="text-gray-400">Download the Credit Bank App</span>
-                    </div>
-                </div>
-            </div>
-            <div className="bg-[#121419] py-4 text-center text-white">
-                <p className="text-small">
-                    Copyright © {currentYear} Credit Bank PLC. ISO 9001:2015 Certified. Regulated and licensed by the Central Bank of Kenya.
-                </p>
-            </div>
-        </>
-    );
+  return (
+    <footer
+      className={`${
+        mode === "dark"
+          ? "bg-gray-800 border-gray-700"
+          : "bg-[#231812] border-[#231812] px-8"
+      } mt-10 border-b shadow-lg py-4 md:py-6 flex flex-col items-center sticky top-0 z-10 transition-all duration-300 ${
+        isSidebarOpen ? "md:ml-[300px]" : "md:ml-[80px]"
+      }`}
+    >
+      <div className="flex w-full justify-between items-center mt-4 text-white">
+        <div className="flex flex-col">
+          <span className="text-base">
+            © {currentYear} Growthpad Consulting Group. Made with ♡ in
+            <span className="relative group">
+              <span className="cursor-default"> Nairobi</span>
+              <div className="absolute top-[-110%] left-0 w-full h-full bg-transparent opacity-0 transition-all duration-500 ease-in-out group-hover:top-[-150%] group-hover:opacity-100">
+                <Image
+                  src="/assets/images/kenya.gif"
+                  alt="Nairobi Flag"
+                  width={30}
+                  height={30}
+                  className="absolute top-0 left-0"
+                />
+              </div>
+            </span>{" "}
+            x{" "}
+            <span className="relative group">
+              <span className="cursor-default">Accra</span>
+              <div className="absolute top-[-110%] left-0 w-full h-full bg-transparent opacity-0 transition-all duration-500 ease-in-out group-hover:top-[-150%] group-hover:opacity-100">
+                <Image
+                  src="/assets/images/ghana.gif"
+                  alt="Accra Flag"
+                  width={30}
+                  height={30}
+                  className="absolute top-0 left-0"
+                />
+              </div>
+            </span>
+          </span>
+        </div>
+        <div className="hidden md:flex flex-col items-end">
+          <a
+            href="https://growthpad.co.ke"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Image
+              src={
+                mode === "dark"
+                  ? "/assets/images/logo-tagline-white.svg"
+                  : "/assets/images/logo-tagline-white-orange.svg"
+              }
+              alt="Growthpad Logo"
+              width={300}
+              height={40}
+            />
+          </a>
+        </div>
+      </div>
+    </footer>
+  );
 };
 
-export default Footer;
+export default SimpleFooter;

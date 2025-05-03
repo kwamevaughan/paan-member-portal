@@ -1,213 +1,200 @@
-import { useEffect, useState } from "react";
-import { supabase } from '/lib/supabase';
+import { useEffect, useState, useRef } from "react";
+import { ArrowRightStartOnRectangleIcon } from "@heroicons/react/24/outline";
+import Image from "next/image";
+import { useRouter } from "next/router";
+import { Icon } from "@iconify/react";
+import { sidebarNav } from "@/data/nav";
 
-import {
-    ChevronLeftIcon,
-    ChevronRightIcon,
-    ArrowRightOnRectangleIcon,
-    ArrowRightStartOnRectangleIcon,
-    HomeIcon,
-    MagnifyingGlassIcon,
-    ChartBarIcon,
-    ArrowUpOnSquareIcon,
-    CogIcon,
-    Cog6ToothIcon,
-    DocumentTextIcon,
-    BellIcon,
-    CheckBadgeIcon,
-    PresentationChartLineIcon,
-    StarIcon,
-    Bars3Icon,
-    Bars3BottomLeftIcon,
-    TrophyIcon,
-    ArrowTrendingUpIcon, ArrowDownTrayIcon, QuestionMarkCircleIcon, BanknotesIcon, UserPlusIcon,
-    ArrowsPointingInIcon as FullScreenIcon, MoonIcon, SunIcon
-} from '@heroicons/react/24/outline';
-import { GroupShare } from "@/components/icons/GroupShare";
-import { Activity } from "@/components/icons/Activity";
-import { Quiz } from "@/components/icons/Quiz05";
-import Image from 'next/image';
-import Link from "next/link";
-import { useRouter } from 'next/router';
+const HRSidebar = ({
+  isOpen,
+  mode,
+  onLogout,
+  toggleSidebar,
+  fullName = "GCG BD Team", // Default value
+}) => {
+  const [windowWidth, setWindowWidth] = useState(null);
+  const router = useRouter();
+  const sidebarRef = useRef(null);
 
-const Sidebar = ({ token, isOpen, mode, onLogout }) => {
-    const [windowWidth, setWindowWidth] = useState(null);
-    const [user, setUser] = useState(null);
-    const [profileImage, setProfileImage] = useState(null);
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
-    const router = useRouter();
-
-    // Window Resize Listener for Client Side
-    useEffect(() => {
-        const handleResize = () => {
-            setWindowWidth(window.innerWidth);
-        };
-
-        if (typeof window !== "undefined") {
-            // Initialize windowWidth on the client side after the first render
-            handleResize();
-            window.addEventListener("resize", handleResize);
-        }
-
-        return () => {
-            if (typeof window !== "undefined") {
-                window.removeEventListener("resize", handleResize);
-            }
-        };
-    }, []);
-
-    // Fetch user data from Supabase
-    const fetchUserData = async () => {
-        if (!token) {
-            console.error('Token is missing');
-            return;
-        }
-
-        const { data, error } = await supabase
-            .from('users')
-            .select('profile_image, name') // Fetching the name as well
-            .eq('id', token)
-            .single();
-
-        if (error) {
-            console.error('Error fetching user data:', error);
-            return;
-        }
-
-        setUser(data);
-        setProfileImage(data.profile_image);
+  // Handle outside click/tap to close sidebar on mobile
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (
+        isOpen &&
+        windowWidth < 640 &&
+        sidebarRef.current &&
+        !sidebarRef.current.contains(e.target)
+      ) {
+        toggleSidebar();
+      }
     };
 
-    useEffect(() => {
-        if (token) {
-            fetchUserData();
-        }
-    }, [token]);
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("touchstart", handleOutsideClick);
 
-    const isActive = (pathname) => {
-        const isActiveLink = router.pathname === pathname;
-        return isActiveLink
-            ? mode === 'dark'
-                ? 'bg-[#2a3a48] text-white text-center py-2 px-0'
-                : 'bg-[#f7f1eb] text-black text-center py-2 px-0'
-            : '';
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("touchstart", handleOutsideClick);
     };
+  }, [isOpen, windowWidth, toggleSidebar]);
 
-    // Early return if windowWidth is not available yet
-    if (windowWidth === null) {
-        return null; // Or some fallback content
-    }
+  if (windowWidth === null) return null;
 
-    return (
-        <div
-            className={`fixed left-0 top-0 z-50 bg-opacity-95 h-full transition-all duration-300 ${mode === 'dark' ? 'bg-[#0a0c1d] text-white' : 'bg-white text-black'} sm:w-[50px]`}
-            style={{
-                width: isOpen ? '256px' : (windowWidth < 640 ? '50px' : '80px'),
-            }}
-        >
-            <div className="flex flex-col h-full">
-                <div className={`flex flex-col items-center justify-between ${isOpen ? 'px-4' : 'px-2'} py-10`}>
-                    {isOpen ? (
-                        <Link href="/">
-                            <Image
-                                src="/assets/images/logo.svg"
-                                alt="Logo"
-                                width={300}
-                                height={75}
-                            />
-                        </Link>
-                    ) : (
-                        <Link href="/">
-                            <Image
-                                src="/favicon.png"
-                                alt="Logo"
-                                width={300}
-                                height={100}
-                            />
-                        </Link>
-                    )}
+  const isActive = (pathname) =>
+    router.pathname === pathname
+      ? mode === "dark"
+        ? "bg-[#f05d23] text-white shadow-md"
+        : "bg-[#f05d23] text-white shadow-md"
+      : mode === "dark"
+      ? "text-gray-200 hover:bg-gray-700 hover:text-white"
+      : "text-[#231812] hover:bg-gray-200 hover:text-[#f05d23]";
 
-                </div>
-
-                <ul className="flex-grow">
-                    {[
-                        {href: '/dashboard', icon: HomeIcon, label: 'Dashboard'},
-                        {href: '/open-account', icon: Activity, label: 'Open an Account'},
-                        {href: '/send-remittances', icon: StarIcon, label: 'Send Remittances'},
-                        {href: '/referrals', icon: GroupShare, label: 'Referrals'},
-                        {href: '/download-app', icon: Quiz, label: 'Download App'},
-                        {href: '/quiz', icon: Quiz, label: 'Quiz'},
-                        {href: '/leaderboard', icon: TrophyIcon, label: 'Leaderboard'},
-                        {href: '/profile', icon: Cog6ToothIcon, label: 'Settings'},
-                    ].map(({href, icon: Icon, label}) => (
-                        <li key={href} className="py-2">
-                            <Link
-                                href={href}
-                                className={`flex items-center ${isOpen ? 'justify-start px-8' : 'justify-center px-0'} py-2 transition-all duration-500 ease-out transform hover:-translate-y-[10px] hover:shadow-lg hover:py-3 group relative ${isActive(href)}`}
-                            >
-                                <Icon
-                                    className={`h-8 w-8 ${isOpen ? 'mr-2' : ''} p-1 rounded-full ${mode === 'dark' ? 'text-gray-200' : 'text-gray-500'} transition`}/>
-                                {isOpen && <span>{label}</span>}
-                                {!isOpen && (
-                                    <span
-                                        className="absolute left-full ml-2 text-xs text-white bg-gray-700 rounded py-1 px-2 opacity-0 group-hover:opacity-75 transition-opacity whitespace-nowrap">
-                                        {label}
-                                    </span>
-                                )}
-                            </Link>
-                        </li>
-                    ))}
-                </ul>
-
-                <div
-                    className={`flex items-center justify-between px-4 py-4 mt-auto rounded-2xl ${mode === 'dark' ? 'bg-gray-800' : 'bg-[#e7f8f7]'}`}
-                >
-                    {/* User Info and Sign out button */}
-                    {isOpen ? (
-                        <div className="flex items-center justify-between w-full">
-                            {/* User Info */}
-                            <div className="flex items-center space-x-4">
-                                <div className="w-10 h-10 rounded-full overflow-hidden">
-                                    <Image
-                                        src={profileImage || '/assets/images/placeholder.png'}
-                                        alt="Profile"
-                                        width={40}
-                                        height={40}
-                                        className="object-cover"
-                                    />
-                                </div>
-                                <span className={`text-md ${mode === 'dark' ? 'text-white' : 'text-black'}`}>
-                                    {user?.name}
-                                </span>
-                            </div>
-
-                            {/* Sign out button */}
-                            <button
-                                onClick={onLogout}
-                                className="flex items-center justify-center text-red-500 hover:text-red-600"
-                            >
-                                <ArrowRightStartOnRectangleIcon className="h-6 w-6"/>
-                            </button>
-                        </div>
-                    ) : (
-                        <div className="flex items-center justify-center w-full relative group cursor-pointer">
-                            <Link
-                                href="#"
-                                onClick={onLogout} // Trigger onLogout when the container is clicked
-                                className="px-8 flex items-center justify-center text-red-500 hover:text-red-600"
-                            >
-                                <ArrowRightStartOnRectangleIcon className="h-6 w-6"/>
-                            </Link>
-                            <span
-                                className="absolute left-full ml-2 text-xs text-white bg-gray-700 rounded py-1 px-2 opacity-0 group-hover:opacity-75 transition-opacity whitespace-nowrap">
-                                Sign Out
-                            </span>
-                        </div>
-                    )}
-                </div>
-            </div>
+  return (
+    <div
+      ref={sidebarRef}
+      className={`fixed left-0 top-0 z-50 h-full transition-all duration-300 ${
+        mode === "dark" ? "bg-gray-900" : "bg-gray-50"
+      }`}
+      style={{
+        width: isOpen ? "300px" : windowWidth < 640 ? "0" : "80px",
+      }}
+    >
+      <div className="flex flex-col h-full">
+        {/* Logo */}
+        <div className={`flex justify-left py-8 ${isOpen ? "px-6" : "px-0"}`}>
+          {isOpen ? (
+            <Image
+              src={
+                mode === "dark"
+                  ? "/assets/images/logo-white.svg"
+                  : "/assets/images/logo.svg"
+              }
+              alt="Growthpad Logo"
+              width={180}
+              height={75}
+              className="object-contain"
+            />
+          ) : (
+            <Image
+              src={mode === "dark" ? "/favicon-white.png" : "/favicon.png"}
+              alt="Growthpad Logo"
+              width={48}
+              height={48}
+              className="object-contain"
+            />
+          )}
         </div>
-    );
+
+        {/* Navigation */}
+        <ul className="flex-grow px-2">
+          {sidebarNav.map(({ href, icon, label }) => (
+            <li key={href} className="py-2">
+              <button
+                onClick={() => {
+                  router.push(href);
+                  if (windowWidth < 640) toggleSidebar();
+                }}
+                className={`flex items-center font-semibold text-sm w-full ${
+                  isOpen ? "justify-start px-6" : "justify-center px-0"
+                } py-3 rounded-lg hover:shadow-md transition-all duration-200 group relative ${isActive(
+                  href
+                )}`}
+              >
+                <Icon
+                  icon={icon}
+                  className={`${
+                    isOpen ? "h-7 w-7 mr-3" : "h-6 w-6"
+                  } group-hover:scale-110 transition-transform`}
+                />
+                {isOpen && <span className="text-base">{label}</span>}
+                {!isOpen && (
+                  <span
+                    className={`absolute left-full ml-2 text-xs ${
+                      mode === "dark"
+                        ? "bg-gray-800 text-gray-200"
+                        : "bg-gray-700 text-white"
+                    } rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50`}
+                  >
+                    {label}
+                  </span>
+                )}
+              </button>
+            </li>
+          ))}
+        </ul>
+
+        {/* Profile/Logout */}
+        {!isOpen && windowWidth < 640 ? null : (
+          <div
+            className={`flex items-center justify-between px-4 py-3 mt-auto ${
+              mode === "dark"
+                ? "bg-gradient-to-r from-gray-800 to-gray-700"
+                : "bg-gradient-to-r from-gray-200 to-gray-100"
+            } shadow-inner`}
+          >
+            {isOpen ? (
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 overflow-hidden">
+                    <Image
+                      src={
+                        mode === "dark" ? "/favicon-white.png" : "/favicon.png"
+                      }
+                      alt="Profile"
+                      width={48}
+                      height={48}
+                      className="object-cover"
+                    />
+                  </div>
+                  <span
+                    className={`text-base font-medium ${
+                      mode === "dark" ? "text-gray-200" : "text-[#231812]"
+                    }`}
+                  >
+                    {fullName}
+                  </span>
+                </div>
+                <button
+                  onClick={onLogout}
+                  className="flex items-center justify-center text-red-500 hover:text-red-600 transition-colors"
+                  aria-label="Logout"
+                >
+                  <ArrowRightStartOnRectangleIcon className="h-7 w-7" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center w-full relative group">
+                <button
+                  onClick={onLogout}
+                  className="flex items-center justify-center text-red-500 hover:text-red-600 transition-colors"
+                  aria-label="Logout"
+                >
+                  <ArrowRightStartOnRectangleIcon className="h-6 w-6 group-hover:scale-110 transition-transform" />
+                </button>
+                <span
+                  className={`absolute left-full ml-2 text-xs ${
+                    mode === "dark"
+                      ? "bg-gray-800 text-gray-200"
+                      : "bg-gray-700 text-white"
+                  } rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50`}
+                >
+                  Sign Out
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
-export default Sidebar;
+export default HRSidebar;

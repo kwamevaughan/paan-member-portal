@@ -26,6 +26,11 @@ export default async function handler(req, res) {
     res.status(200).json({ user });
   } catch (err) {
     console.error("Token verification error:", err);
+
+    if (err.name === "TokenExpiredError") {
+      return res.status(401).json({ error: "Token expired" });
+    }
+
     res.status(401).json({ error: "Invalid token" });
   }
 }

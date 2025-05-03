@@ -2,8 +2,6 @@ import React, { createContext, useState, useEffect } from "react";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 import { useRouter } from "next/router";
-import jwt from "jsonwebtoken";
-import supabase from "lib/supabaseClient";
 
 export const AuthContext = createContext();
 
@@ -12,10 +10,9 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // Initialize auth state on mount
   useEffect(() => {
     const initializeAuth = async () => {
-      const token =
+      let token =
         Cookies.get("token") ||
         sessionStorage.getItem("token") ||
         localStorage.getItem("token");
@@ -26,22 +23,66 @@ export const AuthProvider = ({ children }) => {
       }
 
       try {
-        const res = await fetch("/api/verify-token", {
+        let res = await fetch("/api/verify-token", {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
-        const data = await res.json();
+        let data = await res.json();
 
-        if (!res.ok) throw new Error(data.error || "Token verification failed");
+        // If token expired, try to refresh
+        if (!res.ok && data.error === "Invalid token") {
+          const refreshRes = await fetch("/api/auth/refresh-token", {
+            method: "GET",
+            credentials: "include", // needed for httpOnly cookie
+          });
 
-        setUser(data.user); // this is your decoded token payload
+          const refreshData = await refreshRes.json();
+
+          if (refreshRes.ok && refreshData.token) {
+            // Save refreshed token
+            Cookies.set("token", refreshData.token, {
+              expires: 1 / 24, // 1 hour
+              path: "/",
+              sameSite: "Strict",
+              secure: process.env.NODE_ENV === "production",
+            });
+
+            sessionStorage.setItem("token", refreshData.token);
+            localStorage.setItem("token", refreshData.token);
+
+            // Retry verify-token
+            res = await fetch("/api/verify-token", {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${refreshData.token}`,
+              },
+            });
+
+            data = await res.json();
+
+            if (!res.ok) {
+              throw new Error(data.error);
+            }
+          } else {
+            toast.info("Session expired. Please log in again.");
+            clearTokens();
+            router.push("/");
+            return;
+          }
+        }
+
+        if (!res.ok) {
+          throw new Error(data.error || "Authentication failed");
+        }
+
+        setUser(data.user);
       } catch (err) {
         console.error("Token verification failed:", err);
         clearTokens();
-        setUser(null);
+        router.push("/");
       } finally {
         setLoading(false);
       }
@@ -49,7 +90,6 @@ export const AuthProvider = ({ children }) => {
 
     initializeAuth();
   }, []);
-
 
   const login = async (email, password, rememberMe) => {
     try {
@@ -60,11 +100,8 @@ export const AuthProvider = ({ children }) => {
       });
 
       const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Login failed");
-      }
+      if (!response.ok) throw new Error(data.error || "Login failed");
 
-      // Store token
       const maxAge = rememberMe ? 7 * 24 * 60 * 60 : 60 * 60;
       Cookies.set("token", data.token, {
         expires: maxAge / (24 * 60 * 60),
@@ -72,26 +109,24 @@ export const AuthProvider = ({ children }) => {
         sameSite: "Strict",
         secure: process.env.NODE_ENV === "production",
       });
+
       if (rememberMe) {
         localStorage.setItem("token", data.token);
       } else {
         sessionStorage.setItem("token", data.token);
       }
 
-      // Set user
       setUser({
         id: data.user.id,
         email: data.user.email,
         full_name: data.user.full_name,
         role: data.user.role,
         agency_id: data.user.agency_id,
-        agency: null, // Will be fetched on dashboard
+        agency: null,
       });
 
-      // Redirect
       const redirectTo = data.user.role === "admin" ? "/admin" : "/dashboard";
-      console.log("AuthContext: Redirecting to:", redirectTo);
-      window.location.href = redirectTo; // Hard redirect
+      window.location.href = redirectTo;
     } catch (error) {
       console.error("AuthContext: Login error:", error);
       throw error;
@@ -101,6 +136,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     clearTokens();
     setUser(null);
+    fetch("/api/auth/logout", { method: "POST" }); // optional: to clear refresh cookie server-side
     router.push("/");
   };
 

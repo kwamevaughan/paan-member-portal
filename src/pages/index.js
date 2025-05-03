@@ -5,6 +5,7 @@ import Image from "next/image";
 import CustomSlider from "@/components/CustomSlider";
 import RegisterForm from "@/components/RegisterForm";
 import { useAuth } from "@/hooks/useAuth";
+import toast from "react-hot-toast";
 
 const LoginPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -22,9 +23,19 @@ const LoginPage = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    console.log("Login payload:", loginData);
-    await login(loginData.email, loginData.password, loginData.rememberMe);
+
+    // Show loading toast
+    const toastId = toast.loading("Logging in...");
+
+    try {
+      await login(loginData.email, loginData.password, loginData.rememberMe);
+      toast.success("Login successful", { id: toastId });
+    } catch (error) {
+      console.error("Login error:", error);
+      toast.error("Login failed", { id: toastId });
+    }
   };
+
 
   const toggleForm = () => {
     setIsLogin(!isLogin);

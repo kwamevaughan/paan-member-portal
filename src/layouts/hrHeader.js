@@ -3,7 +3,7 @@ import { MoonIcon, SunIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import { Icon } from "@iconify/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/16/solid";
-import Notifications from "@/components/Notifications";
+// import Notifications from "@/components/Notifications";
 
 const HRHeader = ({
   mode,
@@ -19,6 +19,7 @@ const HRHeader = ({
   isLoading = false, // New prop for loading state
   onMarkAsRead = () => {}, // Function to mark notifications as read
   onClearAll, // Function to clear all notifications
+  user,
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -144,13 +145,13 @@ const HRHeader = ({
                 }`}
                 onClick={(e) => e.stopPropagation()}
               >
-                <Notifications
+                {/* <Notifications
                   notifications={notifications}
                   mode={mode}
                   isLoading={isLoading}
                   onMarkAsRead={onMarkAsRead}
                   onClearAll={onClearAll}
-                />
+                /> */}
               </div>
             )}
           </div>
@@ -185,14 +186,18 @@ const HRHeader = ({
 
           {/* User Dropdown */}
           <div
-            className="flex items-center gap-2 relative group cursor-default"
+            className="flex items-center gap-2 relative group cursor-pointer"
             ref={dropdownRef}
             onClick={() => setDropdownOpen(!dropdownOpen)}
           >
             <div className="flex items-center gap-2 cursor-pointer">
               <div className="w-10 h-10 overflow-hidden">
                 <Image
-                  src={mode === "dark" ? "/favicon-white.png" : "/favicon.png"}
+                  src={
+                    mode === "dark"
+                      ? "/assets/images/paan-logo-icon-white.svg"
+                      : "/assets/images/paan-logo-icon.svg"
+                  }
                   alt="User Profile"
                   width={40}
                   height={40}
@@ -208,11 +213,11 @@ const HRHeader = ({
                   {loading ? "Loading..." : fullName}
                 </span>
                 <span
-                  className={`block text-sm font-normal ${
+                  className={`block text-sm font-normal capitalize ${
                     mode === "dark" ? "text-[#f05d23]" : "text-[#f05d23]"
                   }`}
                 >
-                  Business Department
+                  {user.role.replace("_", " ")}
                 </span>
               </div>
               <Icon
@@ -242,8 +247,8 @@ const HRHeader = ({
                       <Image
                         src={
                           mode === "dark"
-                            ? "/favicon-white.png"
-                            : "/favicon.png"
+                            ? "/assets/images/paan-logo-icon-white.svg"
+                            : "/assets/images/paan-logo-icon.svg"
                         }
                         alt="User Profile"
                         width={40}
@@ -255,7 +260,9 @@ const HRHeader = ({
                       <span className="text-md font-bold">
                         {loading ? "Loading..." : fullName}
                       </span>
-                      <span className="text-sm">Business Department</span>
+                      <span className="text-sm capitalize">
+                        {user.role.replace("_", " ")}
+                      </span>
                     </div>
                   </div>
                   <button onClick={onLogout}>Logout</button>

@@ -72,3 +72,19 @@ body {
     background-position: center;
     background-size: cover;
 }
+
+
+.sidebar-open .content-container {
+  margin-left: 300px;
+}
+.sidebar-closed .content-container {
+  margin-left: 80px;
+}
+
+@media (max-width: 768px) {
+  .sidebar-open .content-container,
+  .sidebar-closed .content-container {
+    margin: 0;
+  }
+}
+

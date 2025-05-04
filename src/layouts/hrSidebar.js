@@ -10,7 +10,7 @@ const HRSidebar = ({
   mode,
   onLogout,
   toggleSidebar,
-  fullName = "GCG BD Team", // Default value
+  fullName = "PAAN Member", // Default value
 }) => {
   const [windowWidth, setWindowWidth] = useState(null);
   const router = useRouter();
@@ -69,23 +69,31 @@ const HRSidebar = ({
     >
       <div className="flex flex-col h-full">
         {/* Logo */}
-        <div className={`flex justify-left py-8 ${isOpen ? "px-6" : "px-0"}`}>
+        <div
+          className={`flex py-8 ${
+            isOpen ? "justify-start px-6" : "justify-center px-0"
+          }`}
+        >
           {isOpen ? (
             <Image
               src={
                 mode === "dark"
-                  ? "/assets/images/logo-white.svg"
+                  ? "/assets/images/paan-logo-white.svg"
                   : "/assets/images/logo.svg"
               }
-              alt="Growthpad Logo"
+              alt="PAAN Logo"
               width={180}
               height={75}
               className="object-contain"
             />
           ) : (
             <Image
-              src={mode === "dark" ? "/favicon-white.png" : "/favicon.png"}
-              alt="Growthpad Logo"
+              src={
+                mode === "dark"
+                  ? "/assets/images/paan-logo-icon-white.svg"
+                  : "/assets/images/paan-logo-icon.svg"
+              }
+              alt="PAAN Logo"
               width={48}
               height={48}
               className="object-contain"
@@ -146,7 +154,9 @@ const HRSidebar = ({
                   <div className="w-12 h-12 overflow-hidden">
                     <Image
                       src={
-                        mode === "dark" ? "/favicon-white.png" : "/favicon.png"
+                        mode === "dark"
+                          ? "/assets/images/paan-logo-icon-white.svg"
+                          : "/assets/images/paan-logo-icon.svg"
                       }
                       alt="Profile"
                       width={48}

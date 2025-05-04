@@ -1,49 +1,63 @@
+import React, { useState } from "react";
+import { useRouter } from "next/router";
 import { useUser } from "@/hooks/useUser";
 import useLogout from "@/hooks/useLogout";
 import Link from "next/link";
 import Image from "next/image";
 import { Icon } from "@iconify/react";
+import HRHeader from "@/layouts/hrHeader";
+import HRSidebar from "@/layouts/hrSidebar";
+import useSidebar from "@/hooks/useSidebar";
 
-const Dashboard = () => {
-  const { user, loading } = useUser();
+export default function Dashboard({ mode = "light", toggleMode }) {
+    const { isSidebarOpen, toggleSidebar } = useSidebar();
+    const router = useRouter(); 
+
+  const { user, loading, LoadingComponent } = useUser();
   const logout = useLogout();
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-[#D1D3D4]">
-        <p className="text-paan-blue text-xl">Loading...</p>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null; // Redirect handled by useUser
-  }
+  if (loading && LoadingComponent) return LoadingComponent;
+  if (!user) return null; // Redirect handled by useUser
 
   return (
-    <div className="min-h-screen bg-[#D1D3D4] flex flex-col">
+    <div
+      className={`min-h-screen flex flex-col ${
+        mode === "dark"
+          ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700"
+          : "bg-gradient-to-br from-gray-100 via-gray-50 to-white"
+      }`}
+    >
+      {" "}
       {/* Header */}
-      <header className="bg-white shadow-md p-4 flex justify-between items-center">
-        <Link href="/dashboard">
-          <Image
-            src="/assets/images/logo.svg"
-            alt="Pan-African Agency Network Logo"
-            width={150}
-            height={40}
-            className="hover:scale-105 transition-transform duration-300"
-            priority
-          />
-        </Link>
-        <button
-          onClick={logout}
-          className="bg-paan-red text-white font-bold py-2 px-4 rounded-full hover:scale-105 transition-transform duration-300"
-        >
-          Logout
-        </button>
-      </header>
+      <HRHeader
+        toggleSidebar={toggleSidebar}
+        isSidebarOpen={isSidebarOpen}
+        mode={mode}
+        toggleMode={toggleMode}
+        onClick={logout}
+        pageName="Tender Overview"
+        pageDescription="Monitor and manage your tender scraping tasks."
+        fullName={user.full_name}
+        loading={loading}
+        user={user}
+        // notifications={notifications}
+        // isLoading={notificationsLoading}
+        // onMarkAsRead={markNotificationAsRead}
+        // onClearAll={clearAllNotifications}
+      />
 
+            <div className="flex flex-1">
+
+      <HRSidebar
+        isOpen={isSidebarOpen}
+        mode={mode}
+        onLogout={logout}
+        toggleSidebar={toggleSidebar}
+        fullName={user.full_name}
+      />
       {/* Main Content */}
-      <main className="flex-grow container mx-auto p-6">
+        <div className="content-container flex-1 p-6 md:p-8 transition-all duration-300 overflow-hidden md:ml-[80px] sidebar-open:md:ml-[300px] sidebar-closed:md:ml-[80px]">
+          <div className="max-w-7xl mx-auto space-y-8">
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <h1 className="text-3xl text-paan-blue font-bold mb-2">
             Welcome, {user.full_name}!
@@ -161,8 +175,7 @@ const Dashboard = () => {
             </div>
           </div>
         )}
-      </main>
-
+      </div>
       {/* Footer */}
       <footer className="bg-white p-4 text-center text-paan-blue">
         <p>
@@ -170,8 +183,9 @@ const Dashboard = () => {
           reserved.
         </p>
       </footer>
-    </div>
+      </div>
+      </div>
+      </div>
   );
 };
 
-export default Dashboard;

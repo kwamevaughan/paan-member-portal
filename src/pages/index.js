@@ -224,7 +224,7 @@ const LoginPage = () => {
                 className="flex items-center hover:underline text-gray-600 font-normal py-2 rounded-lg transform transition-transform duration-300 ease-in-out hover:translate-y-[-5px]"
               >
                 <Icon icon="logos:facebook" className="w-5 h-5 mr-2" />
-                {isLogin ? "Continue with Facebook" : "Sign Up with Facebook"}
+                {isLogin ? "Continue with Facebook " : "Sign Up with Facebook"}
               </button>
             </div>
 

@@ -2,6 +2,8 @@ import React, { createContext, useState, useEffect } from "react";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 import { useRouter } from "next/router";
+import SessionExpiredModal from "@/components/modals/SessionExpiredModal";
+import LoginErrorModal from "@/components/modals/LoginErrorModal";
 
 export const AuthContext = createContext();
 
@@ -9,6 +11,8 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const [showExpiredModal, setShowExpiredModal] = useState(false);
+  const [showLoginError, setShowLoginError] = useState(false);
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -67,15 +71,14 @@ export const AuthProvider = ({ children }) => {
               throw new Error(data.error);
             }
           } else {
-            toast.info("Session expired. Please log in again.");
-            clearTokens();
-            router.push("/");
+            setShowExpiredModal(true);
             return;
           }
         }
 
         if (!res.ok) {
-          throw new Error(data.error || "Authentication failed");
+          setShowExpiredModal(true);
+          return;
         }
 
         setUser(data.user);
@@ -100,7 +103,13 @@ export const AuthProvider = ({ children }) => {
       });
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Login failed");
+      if (!response.ok) {
+        if (data.error === "Invalid credentials") {
+          setShowLoginError(true);
+          return;
+        }
+        throw new Error(data.error || "Login failed");
+      }
 
       const maxAge = rememberMe ? 7 * 24 * 60 * 60 : 60 * 60;
       Cookies.set("token", data.token, {
@@ -149,6 +158,18 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider value={{ user, loading, login, logout }}>
       {children}
+      <SessionExpiredModal
+        isOpen={showExpiredModal}
+        onClose={() => {
+          setShowExpiredModal(false);
+          clearTokens();
+          router.push("/");
+        }}
+      />
+      <LoginErrorModal
+        isOpen={showLoginError}
+        onClose={() => setShowLoginError(false)}
+      />
     </AuthContext.Provider>
   );
 };

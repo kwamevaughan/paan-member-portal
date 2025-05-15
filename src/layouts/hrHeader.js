@@ -103,21 +103,26 @@ const HRHeader = ({
         {/* Right Section: Dark Mode, User, and Notifications */}
         <div className="flex items-center space-x-2 md:space-x-6">
           {/* Dark Mode Toggle (Mobile) */}
-          <button
-            onClick={toggleMode}
-            className="p-2 focus:outline-none md:hidden"
-            aria-label="Toggle dark mode"
-          >
-            {mode === "dark" ? (
-              <SunIcon className="h-6 w-6" />
-            ) : (
-              <MoonIcon className="h-6 w-6" />
-            )}
-          </button>
+          <div className="relative group">
+            <button
+              onClick={toggleMode}
+              className="p-2 focus:outline-none md:hidden"
+              aria-label="Toggle dark mode"
+            >
+              {mode === "dark" ? (
+                <SunIcon className="h-6 w-6" />
+              ) : (
+                <MoonIcon className="h-6 w-6" />
+              )}
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 mt-2 w-max bg-gray-800 text-white text-xs py-1 px-2 rounded-md hidden group-hover:block">
+                Toggle dark mode
+              </div>
+            </button>
+          </div>
 
           {/* Notifications Icon */}
           <div
-            className="relative cursor-pointer"
+            className="relative cursor-pointer group"
             ref={notificationsRef}
             onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
           >
@@ -135,6 +140,9 @@ const HRHeader = ({
                   {unreadCount}
                 </span>
               )}
+            </div>
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 mt-2 w-max bg-gray-800 text-white text-xs py-1 px-2 rounded-md hidden group-hover:block">
+              Notifications
             </div>
             {isNotificationsOpen && (
               <div
@@ -156,33 +164,72 @@ const HRHeader = ({
             )}
           </div>
 
-          <label className="hidden md:inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={mode === "dark"}
-              onChange={toggleMode}
-              className="hidden"
-            />
-            <div
-              className={`relative w-14 h-8 rounded-full border-2 flex items-center ${
-                mode === "dark"
-                  ? "border-blue-600 bg-blue-600"
-                  : "border-gray-300 bg-gray-300"
-              } transition`}
-            >
+          {/* Dark Mode Toggle (Desktop) */}
+          <div className="relative group">
+            <label className="hidden md:inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={mode === "dark"}
+                onChange={toggleMode}
+                className="hidden"
+              />
               <div
-                className={`absolute w-6 h-6 rounded-full bg-white flex items-center justify-center transition-transform ${
-                  mode === "dark" ? "translate-x-6" : ""
-                }`}
+                className={`relative w-14 h-8 rounded-full border-2 flex items-center ${
+                  mode === "dark"
+                    ? "border-blue-600 bg-blue-600"
+                    : "border-gray-300 bg-gray-300"
+                } transition`}
               >
-                {mode === "dark" ? (
-                  <Icon icon="bi:moon" className="h-4 w-4 text-gray-700" />
-                ) : (
-                  <Icon icon="bi:sun" className="h-4 w-4 text-yellow-500" />
-                )}
+                <div
+                  className={`absolute w-6 h-6 rounded-full bg-white flex items-center justify-center transition-transform ${
+                    mode === "dark" ? "translate-x-6" : ""
+                  }`}
+                >
+                  {mode === "dark" ? (
+                    <Icon icon="bi:moon" className="h-4 w-4 text-gray-700" />
+                  ) : (
+                    <Icon icon="bi:sun" className="h-4 w-4 text-yellow-500" />
+                  )}
+                </div>
               </div>
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 mt-2 w-max bg-gray-800 text-white text-xs py-1 px-2 rounded-md hidden group-hover:block">
+                Toggle dark mode
+              </div>
+            </label>
+          </div>
+
+          {/* Language Icon */}
+          <div className="relative group">
+            <button
+              className={`p-4 rounded-full ${
+                mode === "dark" ? "hover:bg-gray-700" : "hover:bg-sky-50"
+              }`}
+            >
+              <Icon icon="flag:us-1x1" className="h-5 w-5 rounded-lg" />
+            </button>
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 mt-2 w-max bg-gray-800 text-white text-xs py-1 px-2 rounded-md hidden group-hover:block">
+              Change Language
             </div>
-          </label>
+          </div>
+
+          {/* Notifications Bell Icon */}
+          <div className="relative group">
+            <button
+              className={`p-2 rounded-full ${
+                mode === "dark" ? "hover:bg-gray-700" : "hover:bg-sky-50"
+              }`}
+            >
+              <Icon
+                icon="mdi-light:bell"
+                width={30}
+                height={30}
+                className="animate-swing-infinite"
+              />
+            </button>
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 mt-2 w-max bg-gray-800 text-white text-xs py-1 px-2 rounded-md hidden group-hover:block">
+              View Notifications
+            </div>
+          </div>
 
           {/* User Dropdown */}
           <div

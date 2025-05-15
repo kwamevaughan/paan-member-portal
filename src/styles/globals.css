@@ -2,89 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --font-figtree: "Figtree", sans-serif;
+@keyframes shake {
+  0% { transform: translate(0); }
+  25% { transform: translate(-5px, 0); }
+  50% { transform: translate(5px, 0); }
+  75% { transform: translate(-5px, 0); }
+  100% { transform: translate(0); }
 }
 
-body {
-    transition: background-color 0.3s ease, color 0.3s ease;
-    background-color: #fafafa;
-    font-size: 15px;
+.animate-shake {
+  animation: shake 0.5s;
 }
-
-.font-orange{
-    color: #FF930A;
-}
-
-.font-teal{
-    color: #0cb4ab;
-}
-
-.observe {
-    opacity: 0.2;
-    transition: opacity 0.9s ease-in-out;
-}
-.opacity-100 {
-    opacity: 1;
-}
-
-/* Custom Scrollbar Styles */
-
-/* For both vertical and horizontal scrollbars */
-::-webkit-scrollbar {
-    width: 8px; /* Vertical scrollbar width */
-    height: 8px; /* Horizontal scrollbar height */
-    background-color: #f1f1f1; /* Background color of the scrollbar */
-}
-
-/* Horizontal scrollbar - target it to make it thinner */
-::-webkit-scrollbar-horizontal {
-    height: 6px; /* Thinner horizontal scrollbar */
-}
-
-/* Vertical scrollbar thumb */
-::-webkit-scrollbar-thumb {
-    background-color: #888; /* Color of the scrollbar thumb */
-    border-radius: 10px; /* Rounded corners of scrollbar thumb */
-}
-
-/* On hover, darken the scrollbar thumb */
-::-webkit-scrollbar-thumb:hover {
-    background-color: #555; /* Color of scrollbar thumb on hover */
-}
-
-/* Firefox custom scrollbar */
-.scrollbar-thin {
-    scrollbar-width: thin; /* Thin scrollbar */
-    scrollbar-color: #888 #f1f1f1; /* Thumb and track colors */
-}
-
-.bg-overlay{
-    background-image: url("/assets/images/bg-overlay.png");
-    background-repeat: no-repeat;
-    background-position: top-center;
-    background-size: cover;
-}
-
-.bg-login{
-    background-image: url("/assets/images/login-bg.png");
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: cover;
-}
-
-
-.sidebar-open .content-container {
-  margin-left: 300px;
-}
-.sidebar-closed .content-container {
-  margin-left: 80px;
-}
-
-@media (max-width: 768px) {
-  .sidebar-open .content-container,
-  .sidebar-closed .content-container {
-    margin: 0;
-  }
-}
-

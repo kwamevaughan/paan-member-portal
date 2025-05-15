@@ -49,7 +49,7 @@ const SimpleFooter = ({ mode, isSidebarOpen }) => {
         </div>
         <div className="hidden md:flex flex-col items-end">
           <a
-            href="https://growthpad.co.ke"
+            href="https://paan.africa"
             target="_blank"
             rel="noopener noreferrer"
           >

@@ -11,8 +11,8 @@ import "react-toastify/dist/ReactToastify.css";
 const LoginPage = () => {
   const router = useRouter();
   const [loginData, setLoginData] = useState({
-    email: "emmanuel.eshun@growthpad.net",
-    password: "Furaha5375",
+    email: "",
+    password: "",
     rememberMe: false,
   });
   const [showPassword, setShowPassword] = useState(false);

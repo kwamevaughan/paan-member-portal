@@ -4,31 +4,34 @@ import { useRef } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import "../styles/globals.css";
 import { sidebarNav } from "@/data/nav";
-import { Figtree } from "next/font/google";
+import { Questrial } from "next/font/google";
 import { AuthProvider } from "@/context/authContext";
 
 
-// Initialize Figtree font with subsets
-const figtree = Figtree({
-  display: "swap", // Prevent CLS by using font-display: swap
-  subsets: ["latin"], // Specify the "latin" subset
+const questrial = Questrial({
+  weight: "400",
+  subsets: ["latin"],
 });
 
 function MyApp({ Component, pageProps }) {
   const [mode, setMode] = useState("light");
   const router = useRouter();
-  const pageNameRef = useRef("Page"); // Default
 
   // Toggle dark mode and persist in localStorage
   const toggleMode = () => {
     const newMode = mode === "light" ? "dark" : "light";
     setMode(newMode);
-    localStorage.setItem("mode", newMode);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("mode", newMode);
+    }
   };
 
   useEffect(() => {
+    // Only run client-side
+    if (typeof window === "undefined") return;
+
     // Load saved mode or system preference on mount
-    const savedMode = localStorage.getItem("mode");
+    const savedMode = window.localStorage.getItem("mode");
     if (savedMode) {
       setMode(savedMode);
     } else {
@@ -37,14 +40,14 @@ function MyApp({ Component, pageProps }) {
         ? "dark"
         : "light";
       setMode(systemMode);
-      localStorage.setItem("mode", systemMode);
+      window.localStorage.setItem("mode", systemMode);
     }
 
     // Listen for system theme changes
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const handleChange = (e) => {
       const systemMode = e.matches ? "dark" : "light";
-      if (!localStorage.getItem("mode")) {
+      if (!window.localStorage.getItem("mode")) {
         setMode(systemMode);
       }
     };
@@ -57,35 +60,25 @@ function MyApp({ Component, pageProps }) {
   useEffect(() => {
     const routeChangeStart = (url) => {
       const pageSlug = url.split("/").pop() || "overview";
-      const page = sidebarNav.find(
+      // Flatten sidebarNav to access items
+      const navItems = sidebarNav.flatMap((category) => category.items);
+      const page = navItems.find(
         (item) => item.href === url || item.href.endsWith(`/${pageSlug}`)
       );
       const pageName = page
         ? page.label
         : pageSlug.charAt(0).toUpperCase() + pageSlug.slice(1);
-
-      pageNameRef.current = pageName; // Save for later
       toast.loading(`Fetching ${pageName}...`, {
         id: "route-loading",
-        duration: Infinity,
       });
     };
 
-    const routeChangeComplete = (url) => {
-      setTimeout(() => {
-        toast.dismiss("route-loading");
-        toast.success(`${pageNameRef.current} loaded`, {
-          id: "route-success",
-          duration: 2000,
-        });
-      }, 500);
+    const routeChangeComplete = () => {
+      toast.dismiss("route-loading");
     };
 
-    const routeChangeError = (err, url) => {
-      toast.error("Failed to load page", {
-        id: "route-loading",
-        duration: 3000,
-      });
+    const routeChangeError = () => {
+      toast.error("Failed to load page", { id: "route-loading" });
     };
 
     router.events.on("routeChangeStart", routeChangeStart);
@@ -99,38 +92,41 @@ function MyApp({ Component, pageProps }) {
     };
   }, [router]);
 
+  // Compute breadcrumbs
+  const breadcrumbs = (() => {
+    const path = router.asPath.split("?")[0]; // Remove query params
+    const segments = path.split("/").filter((s) => s); // Split and remove empty
+    const crumbs = [{ href: "/", label: "Home" }]; // Start with Home
+
+    let currentPath = "";
+    const navItems = sidebarNav.flatMap((category) => category.items);
+
+    segments.forEach((segment, index) => {
+      currentPath += `/${segment}`;
+      const navItem = navItems.find(
+        (item) => item.href === currentPath || item.href.endsWith(`/${segment}`)
+      );
+      const label = navItem
+        ? navItem.label
+        : segment.charAt(0).toUpperCase() + segment.slice(1);
+      crumbs.push({ href: currentPath, label });
+    });
+
+    return crumbs;
+  })();
+
   return (
-    <div className={`${mode === "dark" ? "dark" : ""} ${figtree.className}`}>
-      <Toaster
-        position="top-center"
-        toastOptions={{
-          success: {
-            style: {
-              background: "#4ade80",
-              color: "#fff",
-            },
-            iconTheme: {
-              primary: "#fff",
-              secondary: "#4ade80",
-            },
-          },
-          error: {
-            style: {
-              background: "#f87171",
-              color: "#fff",
-            },
-            iconTheme: {
-              primary: "#fff",
-              secondary: "#f87171",
-            },
-          },
-        }}
-        reverseOrder={false}
-      />
-          <AuthProvider>
-        <Component {...pageProps} mode={mode} toggleMode={toggleMode} />
+    <div className={`${mode === "dark" ? "dark" : ""} ${questrial.className}`}>
+      <Toaster position="top-center" reverseOrder={false} />
+      <AuthProvider>
+      <Component
+        {...pageProps}
+        mode={mode}
+        toggleMode={toggleMode}
+        breadcrumbs={breadcrumbs}
+        />
         </AuthProvider>
-      </div>
+    </div>
   );
 }
 

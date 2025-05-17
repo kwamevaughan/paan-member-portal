@@ -1,48 +1,28 @@
 import { useState, useEffect, useRef } from "react";
-import { MoonIcon, SunIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import { Icon } from "@iconify/react";
-import { Bars3Icon, XMarkIcon } from "@heroicons/react/16/solid";
-// import Notifications from "@/components/Notifications";
+import Search from "@/components/Search";
+import FullscreenToggle from "@/components/FullscreenToggle";
+import TooltipIconButton from "@/components/TooltipIconButton";
+import LanguageSwitch from "@/components/LanguageSwitch";
 
-const HRHeader = ({
+const HrHeader = ({
   mode,
-  toggleSidebar,
   toggleMode,
   isSidebarOpen,
   onLogout,
-  pageName = "Dashboard",
-  pageDescription = "",
-  fullName = "GCG BD Team", // Default value
-  loading = false, // Default value
-  notifications = [], // New prop for notifications
-  isLoading = false, // New prop for loading state
-  onMarkAsRead = () => {}, // Function to mark notifications as read
-  onClearAll, // Function to clear all notifications
-  user,
+  sidebarState,
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const dropdownRef = useRef(null);
-  const notificationsRef = useRef(null);
   const headerRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // Close user dropdown when clicking outside
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setDropdownOpen(false);
       }
-
-      // Close notifications dropdown when clicking outside
-      if (
-        notificationsRef.current &&
-        !notificationsRef.current.contains(event.target)
-      ) {
-        setIsNotificationsOpen(false);
-      }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
@@ -54,268 +34,150 @@ const HRHeader = ({
     }
   }, []);
 
-  // Count unread notifications
-  const unreadCount = notifications.filter((notif) => !notif.read).length;
+  const fullName = "PAAN HR Team";
 
   return (
     <header
       ref={headerRef}
-      className={`fixed top-0 left-0 right-0 z-50 mb-6 content-container transition-all duration-300 shadow-sm ${
-        mode === "dark"
-          ? "border-[#f05d23] bg-[#101827] text-white bg-opacity-100"
-          : "border-gray-300 bg-[#ececec] text-black bg-opacity-50"
-      } ${isSidebarOpen ? "md:ml-[300px]" : "md:ml-[80px]"} backdrop-blur-md`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        mode === "dark" ? "bg-[#101827]" : "bg-transparent"
+      }`}
     >
-      <div className="flex items-center justify-between p-0 md:p-4">
-        {/* Left Section: Sidebar Toggle, Page Info */}
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={toggleSidebar}
-            className="p-2 focus:outline-none"
-            aria-label="Toggle sidebar"
-          >
-            {isSidebarOpen ? (
-              <XMarkIcon className="h-6 w-6" />
-            ) : (
-              <Bars3Icon className="h-6 w-6" />
-            )}
-          </button>
-          <div className="flex flex-col">
-            <h1
-              className={`text-2xl font-bold flex items-center gap-2 ${
-                mode === "dark" ? "text-white" : "text-[#231812]"
-              }`}
-            >
-              {pageName}
-            </h1>
-            {pageDescription && (
-              <p
-                className={`text-base truncate max-w-[200px] md:max-w-[500px] ${
-                  mode === "dark" ? "text-gray-400" : "text-gray-600"
-                }`}
-              >
-                {pageDescription}
-              </p>
-            )}
+      <div
+        className={`
+          p-2 m-4 transition-all duration-300 bg-transparent
+          ${
+            sidebarState.hidden
+              ? "md:ml-0"
+              : isSidebarOpen
+              ? "md:ml-[250px]"
+              : "md:ml-[84px]"
+          }
+          sm:ml-0
+          ${
+            mode === "dark"
+              ? "bg-[#101827]/50 text-white"
+              : "bg-white/50 text-black"
+          }
+          backdrop-blur-md shadow-lg rounded-2xl
+        `}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center w-full">
+            <div className="flex-grow">
+              <Search mode={mode} />
+            </div>
           </div>
-        </div>
 
-        {/* Right Section: Dark Mode, User, and Notifications */}
-        <div className="flex items-center space-x-2 md:space-x-6">
-          {/* Dark Mode Toggle (Mobile) */}
-          <div className="relative group">
-            <button
+          <div className="flex justify-end items-center w-full gap-2 ">
+            {/* Dark Mode Toggle */}
+            <TooltipIconButton
+              label={
+                mode === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"
+              }
               onClick={toggleMode}
-              className="p-2 focus:outline-none md:hidden"
-              aria-label="Toggle dark mode"
+              mode={mode}
+              className="bg-white/50"
             >
-              {mode === "dark" ? (
-                <SunIcon className="h-6 w-6" />
-              ) : (
-                <MoonIcon className="h-6 w-6" />
-              )}
-              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 mt-2 w-max bg-gray-800 text-white text-xs py-1 px-2 rounded-md hidden group-hover:block">
-                Toggle dark mode
-              </div>
-            </button>
-          </div>
-
-          {/* Notifications Icon */}
-          <div
-            className="relative cursor-pointer group"
-            ref={notificationsRef}
-            onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-          >
-            <div className="p-2 focus:outline-none cursor-pointer relative">
               <Icon
-                icon="mdi:bell-outline"
-                width={24}
-                height={24}
-                className={`text-[#f05d23] ${
-                  unreadCount > 0 ? "animate-pulse" : ""
-                }`}
+                icon={mode === "dark" ? "bi:moon" : "bi:sun"}
+                className="h-5 w-5"
               />
-              {unreadCount > 0 && (
-                <span className="absolute top-0 right-0 bg-red-600 text-white rounded-full text-xs px-2 py-1">
-                  {unreadCount}
-                </span>
-              )}
-            </div>
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 mt-2 w-max bg-gray-800 text-white text-xs py-1 px-2 rounded-md hidden group-hover:block">
-              Notifications
-            </div>
-            {isNotificationsOpen && (
-              <div
-                className={`absolute top-12 right-0 w-96 rounded-2xl shadow-lg z-10 ${
-                  mode === "dark"
-                    ? "bg-gray-800 text-white"
-                    : "bg-white text-[#231812]"
-                }`}
-                onClick={(e) => e.stopPropagation()}
-              >
-                {/* <Notifications
-                  notifications={notifications}
-                  mode={mode}
-                  isLoading={isLoading}
-                  onMarkAsRead={onMarkAsRead}
-                  onClearAll={onClearAll}
-                /> */}
-              </div>
-            )}
-          </div>
+            </TooltipIconButton>
 
-          {/* Dark Mode Toggle (Desktop) */}
-          <div className="relative group">
-            <label className="hidden md:inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={mode === "dark"}
-                onChange={toggleMode}
-                className="hidden"
-              />
-              <div
-                className={`relative w-14 h-8 rounded-full border-2 flex items-center ${
-                  mode === "dark"
-                    ? "border-blue-600 bg-blue-600"
-                    : "border-gray-300 bg-gray-300"
-                } transition`}
-              >
-                <div
-                  className={`absolute w-6 h-6 rounded-full bg-white flex items-center justify-center transition-transform ${
-                    mode === "dark" ? "translate-x-6" : ""
-                  }`}
-                >
-                  {mode === "dark" ? (
-                    <Icon icon="bi:moon" className="h-4 w-4 text-gray-700" />
-                  ) : (
-                    <Icon icon="bi:sun" className="h-4 w-4 text-yellow-500" />
-                  )}
-                </div>
-              </div>
-              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 mt-2 w-max bg-gray-800 text-white text-xs py-1 px-2 rounded-md hidden group-hover:block">
-                Toggle dark mode
-              </div>
-            </label>
-          </div>
+            {/* Fullscreen Toggle */}
+            <FullscreenToggle mode={mode} />
 
-          {/* Language Icon */}
-          <div className="relative group">
-            <button
-              className={`p-4 rounded-full ${
-                mode === "dark" ? "hover:bg-gray-700" : "hover:bg-sky-50"
-              }`}
-            >
-              <Icon icon="flag:us-1x1" className="h-5 w-5 rounded-lg" />
-            </button>
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 mt-2 w-max bg-gray-800 text-white text-xs py-1 px-2 rounded-md hidden group-hover:block">
-              Change Language
-            </div>
-          </div>
+            {/* Language Switch */}
+            <LanguageSwitch mode={mode} />
 
-          {/* Notifications Bell Icon */}
-          <div className="relative group">
-            <button
-              className={`p-2 rounded-full ${
-                mode === "dark" ? "hover:bg-gray-700" : "hover:bg-sky-50"
-              }`}
+            {/* Notifications */}
+            <TooltipIconButton
+              label="View Notifications"
+              mode={mode}
+              className=" bg-white/50"
             >
               <Icon
                 icon="mdi-light:bell"
-                width={30}
-                height={30}
+                width={26}
+                height={26}
                 className="animate-swing-infinite"
               />
-            </button>
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 mt-2 w-max bg-gray-800 text-white text-xs py-1 px-2 rounded-md hidden group-hover:block">
-              View Notifications
-            </div>
-          </div>
+            </TooltipIconButton>
 
-          {/* User Dropdown */}
-          <div
-            className="flex items-center gap-2 relative group cursor-pointer"
-            ref={dropdownRef}
-            onClick={() => setDropdownOpen(!dropdownOpen)}
-          >
-            <div className="flex items-center gap-2 cursor-pointer">
-              <div className="w-10 h-10 overflow-hidden">
-                <Image
-                  src={
-                    mode === "dark"
-                      ? "/assets/images/paan-logo-icon-white.svg"
-                      : "/assets/images/paan-logo-icon.svg"
-                  }
-                  alt="User Profile"
-                  width={40}
-                  height={40}
-                  className="object-cover"
-                />
-              </div>
-              <div className="hidden md:block">
-                <span
-                  className={`font-bold ${
-                    mode === "dark" ? "text-white" : "text-[#231812]"
-                  }`}
-                >
-                  {loading ? "Loading..." : fullName}
-                </span>
-                <span
-                  className={`block text-sm font-normal capitalize ${
-                    mode === "dark" ? "text-[#f05d23]" : "text-[#f05d23]"
-                  }`}
-                >
-                  {user.role.replace("_", " ")}
-                </span>
-              </div>
-              <Icon
-                icon={
-                  dropdownOpen
-                    ? "mingcute:arrow-up-fill"
-                    : "mingcute:arrow-down-fill"
-                }
-                className={`h-5 w-5 font-bold transform transition-transform duration-300 ${
-                  mode === "dark" ? "text-white" : "text-[#231812]"
-                }`}
-              />
-            </div>
-
-            {dropdownOpen && (
-              <div
-                className={`absolute top-full mt-2 right-0 w-80 rounded-2xl shadow-lg z-10 ${
-                  mode === "dark"
-                    ? "bg-gray-800 text-white"
-                    : "bg-white text-[#231812]"
-                }`}
-              >
-                <div className="p-8">
-                  <p className="text-lg mb-6">User Profile</p>
-                  <div className="flex items-center gap-2 border-b pb-6 w-full">
-                    <div className="overflow-hidden flex-shrink-0">
-                      <Image
-                        src={
-                          mode === "dark"
-                            ? "/assets/images/paan-logo-icon-white.svg"
-                            : "/assets/images/paan-logo-icon.svg"
-                        }
-                        alt="User Profile"
-                        width={40}
-                        height={40}
-                        className="object-cover"
-                      />
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-md font-bold">
-                        {loading ? "Loading..." : fullName}
-                      </span>
-                      <span className="text-sm capitalize">
-                        {user.role.replace("_", " ")}
-                      </span>
-                    </div>
-                  </div>
-                  <button onClick={onLogout}>Logout</button>
+            {/* User Dropdown */}
+            <div
+              className="flex items-center gap-2 pl-4 relative group cursor-default"
+              ref={dropdownRef}
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+            >
+              <div className="flex items-center gap-2 cursor-pointer">
+                <div className="hidden md:block">
+                  <span
+                    className={`font-bold text-xs ${
+                      mode === "dark" ? "text-white" : "text-[#231812]"
+                    }`}
+                  >
+                    {fullName}
+                  </span>
+                  <span className="block text-sm font-normal text-right text-[#f05d23]">
+                    Admin
+                  </span>
+                </div>
+                <div className="w-10 h-10 overflow-hidden">
+                  <Image
+                    src={
+                      mode === "dark"
+                        ? "/assets/images/paan-logo-icon-white.svg"
+                        : "/assets/images/paan-logo-icon.svg"
+                    }
+                    alt="User Profile"
+                    width={40}
+                    height={40}
+                    className="object-cover"
+                  />
                 </div>
               </div>
-            )}
+
+              {dropdownOpen && (
+                <div
+                  className={`absolute top-full mt-2 right-0 w-80 rounded-2xl shadow-lg z-10 ${
+                    mode === "dark"
+                      ? "bg-gray-800 text-white"
+                      : "bg-white text-[#231812]"
+                  }`}
+                >
+                  <div className="p-8">
+                    <p className="text-lg mb-6">User Profile</p>
+                    <div className="flex items-center gap-2 border-b pb-6 w-full">
+                      <div className="overflow-hidden flex-shrink-0">
+                        <Image
+                          src={
+                            mode === "dark"
+                              ? "/assets/images/paan-logo-icon-white.svg"
+                              : "/assets/images/paan-logo-icon.svg"
+                          }
+                          alt="User Profile"
+                          width={40}
+                          height={40}
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-md font-bold">{fullName}</span>
+                        <span className="text-sm">Business Department</span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={onLogout}
+                      className="block w-full text-center text-white px-4 py-2 bg-[#f05d23] rounded-full hover:bg-[#d94f1e] transition duration-200 mt-4"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -323,4 +185,4 @@ const HRHeader = ({
   );
 };
 
-export default HRHeader;
+export default HrHeader;

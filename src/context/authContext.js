@@ -1,7 +1,8 @@
 import React, { createContext, useState, useEffect } from "react";
-import Cookies from "js-cookie";
-import { toast } from "react-toastify";
 import { useRouter } from "next/router";
+import { toast } from "react-toastify";
+import { supabase } from "@/lib/supabase";
+import bcrypt from "bcryptjs";
 import SessionExpiredModal from "@/components/modals/SessionExpiredModal";
 import LoginErrorModal from "@/components/modals/LoginErrorModal";
 
@@ -16,79 +17,37 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const initializeAuth = async () => {
-      let token =
-        Cookies.get("token") ||
-        sessionStorage.getItem("token") ||
-        localStorage.getItem("token");
+      const session = localStorage.getItem("paan_member_session");
+      const email = localStorage.getItem("user_email");
 
-      if (!token) {
-        setLoading(false);
-        return;
-      }
+      if (session === "authenticated" && email) {
+        try {
+          const { data, error } = await supabase
+            .from("candidates")
+            .select("primaryContactEmail, primaryContactName")
+            .eq("primaryContactEmail", email)
+            .single();
 
-      try {
-        let res = await fetch("/api/verify-token", {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        let data = await res.json();
-
-        // If token expired, try to refresh
-        if (!res.ok && data.error === "Invalid token") {
-          const refreshRes = await fetch("/api/auth/refresh-token", {
-            method: "GET",
-            credentials: "include", // needed for httpOnly cookie
-          });
-
-          const refreshData = await refreshRes.json();
-
-          if (refreshRes.ok && refreshData.token) {
-            // Save refreshed token
-            Cookies.set("token", refreshData.token, {
-              expires: 1 / 24, // 1 hour
-              path: "/",
-              sameSite: "Strict",
-              secure: process.env.NODE_ENV === "production",
+          if (data && !error) {
+            setUser({
+              email: data.primaryContactEmail,
+              primaryContactName: data.primaryContactName,
+              role: "agency_member",
             });
-
-            sessionStorage.setItem("token", refreshData.token);
-            localStorage.setItem("token", refreshData.token);
-
-            // Retry verify-token
-            res = await fetch("/api/verify-token", {
-              method: "GET",
-              headers: {
-                Authorization: `Bearer ${refreshData.token}`,
-              },
-            });
-
-            data = await res.json();
-
-            if (!res.ok) {
-              throw new Error(data.error);
-            }
           } else {
+            console.error("AuthContext: Session invalid:", error);
+            localStorage.removeItem("paan_member_session");
+            localStorage.removeItem("user_email");
             setShowExpiredModal(true);
-            return;
           }
-        }
-
-        if (!res.ok) {
+        } catch (err) {
+          console.error("AuthContext: Initialization error:", err);
+          localStorage.removeItem("paan_member_session");
+          localStorage.removeItem("user_email");
           setShowExpiredModal(true);
-          return;
         }
-
-        setUser(data.user);
-      } catch (err) {
-        console.error("Token verification failed:", err);
-        clearTokens();
-        router.push("/");
-      } finally {
-        setLoading(false);
       }
+      setLoading(false);
     };
 
     initializeAuth();
@@ -96,63 +55,66 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password, rememberMe) => {
     try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+      const { data: userData, error } = await supabase
+        .from("candidates")
+        .select("primaryContactEmail, primaryContactName, candidate_password")
+        .eq("primaryContactEmail", email)
+        .single();
 
-      const data = await response.json();
-      if (!response.ok) {
-        if (data.error === "Invalid credentials") {
-          setShowLoginError(true);
-          return;
-        }
-        throw new Error(data.error || "Login failed");
+      if (error || !userData) {
+        console.error("AuthContext: Login error:", error);
+        setShowLoginError(true);
+        throw new Error("Invalid email or password");
       }
 
-      const maxAge = rememberMe ? 7 * 24 * 60 * 60 : 60 * 60;
-      Cookies.set("token", data.token, {
-        expires: maxAge / (24 * 60 * 60),
-        path: "/",
-        sameSite: "Strict",
-        secure: process.env.NODE_ENV === "production",
-      });
+      const passwordMatch = await bcrypt.compare(
+        password,
+        userData.candidate_password
+      );
+
+      if (!passwordMatch) {
+        console.error("AuthContext: Password mismatch");
+        setShowLoginError(true);
+        throw new Error("Invalid email or password");
+      }
+
+      localStorage.setItem("hr_session", "authenticated");
+      localStorage.setItem("user_email", userData.primaryContactEmail);
 
       if (rememberMe) {
-        localStorage.setItem("token", data.token);
+        localStorage.setItem("paan_remembered_email", email);
+        localStorage.setItem(
+          "paan_session_expiry",
+          Date.now() + 30 * 24 * 60 * 60 * 1000
+        );
       } else {
-        sessionStorage.setItem("token", data.token);
+        localStorage.removeItem("paan_remembered_email");
+        localStorage.removeItem("paan_session_expiry");
       }
 
-      setUser({
-        id: data.user.id,
-        email: data.user.email,
-        full_name: data.user.full_name,
-        role: data.user.role,
-        agency_id: data.user.agency_id,
-        agency: null,
-      });
+      const user = {
+        email: userData.primaryContactEmail,
+        primaryContactName: userData.primaryContactName,
+        role: "agency_member",
+      };
 
-      const redirectTo = data.user.role === "admin" ? "/admin" : "/dashboard";
-      window.location.href = redirectTo;
+      setUser(user);
+      console.log("AuthContext: User authenticated:", user);
+      router.push("/dashboard");
     } catch (error) {
       console.error("AuthContext: Login error:", error);
       throw error;
     }
   };
 
-  const logout = () => {
-    clearTokens();
+  const logout = async () => {
+    console.log("AuthContext: Logging out...");
     setUser(null);
-    fetch("/api/auth/logout", { method: "POST" }); // optional: to clear refresh cookie server-side
+    localStorage.removeItem("paan_member_session");
+    localStorage.removeItem("user_email");
+    localStorage.removeItem("paan_remembered_email");
+    localStorage.removeItem("paan_session_expiry");
     router.push("/");
-  };
-
-  const clearTokens = () => {
-    Cookies.remove("token", { path: "/" });
-    localStorage.removeItem("token");
-    sessionStorage.removeItem("token");
   };
 
   return (
@@ -162,7 +124,8 @@ export const AuthProvider = ({ children }) => {
         isOpen={showExpiredModal}
         onClose={() => {
           setShowExpiredModal(false);
-          clearTokens();
+          localStorage.removeItem("paan_member_session");
+          localStorage.removeItem("user_email");
           router.push("/");
         }}
       />

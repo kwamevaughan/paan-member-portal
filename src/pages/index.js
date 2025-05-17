@@ -1,15 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
 import Image from "next/image";
 import CustomSlider from "@/components/CustomSlider";
 import { useAuth } from "@/hooks/useAuth";
-import toast from "react-hot-toast";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const LoginPage = () => {
+  const router = useRouter();
   const [loginData, setLoginData] = useState({
-    email: "john@paan.africa",
-    password: "Test1234",
+    email: "emmanuel.eshun@growthpad.net",
+    password: "Furaha5375",
     rememberMe: false,
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -21,18 +24,22 @@ const LoginPage = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
-    // Show loading toast
-    const toastId = toast.loading("Logging in...");
+    const { email, password, rememberMe } = loginData;
 
     try {
-      await login(loginData.email, loginData.password, loginData.rememberMe);
-      toast.success("Login successful", { id: toastId });
+      await login(email, password, rememberMe);
+      console.log("index.js: Login successful");
+      // Redirect handled by authContext
     } catch (error) {
-      console.error("Login error:", error);
-      toast.error("Login failed", { id: toastId });
+      console.error("index.js: Login error:", error);
     }
   };
+
+  useEffect(() => {
+    if (router.isReady) {
+      console.log("index.js: Current route:", router.pathname);
+    }
+  }, [router.isReady, router.pathname]);
 
   const handleLoginChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -48,6 +55,7 @@ const LoginPage = () => {
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-[#D1D3D4]">
+      <ToastContainer />
       <div className="w-full md:w-2/5 flex flex-col justify-between md:p-6 overflow-y-auto">
         <div className="flex flex-col items-center">
           <div className="w-full max-w-md">
@@ -132,10 +140,10 @@ const LoginPage = () => {
                 <div className="flex items-center">
                   <div
                     onClick={() =>
-                      setLoginData({
-                        ...loginData,
-                        rememberMe: !loginData.rememberMe,
-                      })
+                      setLoginData((prev) => ({
+                        ...prev,
+                        rememberMe: !prev.rememberMe,
+                      }))
                     }
                     className={`w-5 h-5 flex items-center justify-center border-2 border-paan-blue rounded-full cursor-pointer transition-all duration-200 ease-in-out ${
                       loginData.rememberMe ? "bg-transparent" : "bg-transparent"
@@ -152,10 +160,10 @@ const LoginPage = () => {
                   <label
                     className="ml-2 text-paan-blue font-light text-sm md:text-base cursor-pointer"
                     onClick={() =>
-                      setLoginData({
-                        ...loginData,
-                        rememberMe: !loginData.rememberMe,
-                      })
+                      setLoginData((prev) => ({
+                        ...prev,
+                        rememberMe: !prev.rememberMe,
+                      }))
                     }
                   >
                     Remember me on this device

@@ -1,40 +1,84 @@
-import { useContext } from "react";
-import { AuthContext } from "@/context/authContext";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { toast } from "react-toastify";
-import { Icon } from "@iconify/react";
+import { supabase } from "@/lib/supabase";
 
 export const useUser = () => {
-  const { user, loading } = useContext(AuthContext);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  if (loading) {
-    return {
-      user: null,
-      loading: true,
-      LoadingComponent: (
-        <div className="fixed inset-0 flex justify-center items-center bg-white/80 backdrop-blur-sm z-50">
-          <div className="flex flex-col items-center">
-            <Icon
-              icon="mdi:loading"
-              width={40}
-              height={40}
-              className="animate-spin text-[#f05d23]"
-            />
-            <p className="mt-2 text-2xl font-medium animate-pulse text-[#231812]">
-              Loading, please wait...
-            </p>
-          </div>
-        </div>
-      ),
+  useEffect(() => {
+    const checkSession = async () => {
+      console.log("useUser: Checking session, current route:", router.pathname);
+      const session = localStorage.getItem("hr_session");
+      const email = localStorage.getItem("user_email");
+
+      if (session === "authenticated" && email) {
+        console.log("useUser: Session found, fetching user data for:", email);
+        try {
+          const { data, error } = await supabase
+            .from("candidates")
+            .select("primaryContactEmail, primaryContactName")
+            .eq("primaryContactEmail", email)
+            .single();
+
+          console.log("useUser: Query response:", { data, error });
+
+          if (data && !error) {
+            console.log("useUser: User data fetched:", data);
+            setUser({
+              email: data.primaryContactEmail,
+              primaryContactName: data.primaryContactName,
+              role: "agency_member",
+            });
+          } else {
+            console.error(
+              "useUser: Error fetching user:",
+              error?.message,
+              "data:",
+              data
+            );
+            localStorage.removeItem("hr_session");
+            localStorage.removeItem("user_email");
+            if (router.pathname !== "/") {
+              console.log("useUser: Invalid session, redirecting to /");
+              router.replace("/");
+            }
+          }
+        } catch (err) {
+          console.error("useUser: Unexpected error:", err);
+          localStorage.removeItem("hr_session");
+          localStorage.removeItem("user_email");
+          if (router.pathname !== "/") {
+            console.log("useUser: Unexpected error, redirecting to /");
+            router.replace("/");
+          }
+        }
+      } else {
+        console.log(
+          "useUser: No session or email, session:",
+          session,
+          "email:",
+          email
+        );
+        if (router.pathname !== "/") {
+          console.log("useUser: Redirecting to /");
+          router.replace("/");
+        }
+      }
+      setLoading(false);
     };
-  }
 
-  if (!user && !loading) {
-    toast.error("Please log in to access this page");
-    router.push("/");
-    return { user: null, loading: false, LoadingComponent: null };
-  }
+    checkSession();
+  }, [router.pathname]);
 
-  return { user, loading: false, LoadingComponent: null };
+  return {
+    user,
+    loading,
+    LoadingComponent: (
+      <div className="flex items-center justify-center min-h-screen">
+        Loading...
+      </div>
+    ),
+  };
 };

@@ -1,19 +1,97 @@
-// data/nav.js
 export const sidebarNav = [
   {
-    href: "/overview",
-    icon: "mdi:view-dashboard",
-    label: "Dashboard Overview",
+    category: "Business Opportunities",
+    items: [
+      {
+        href: "/opportunities",
+        icon: "mdi:briefcase",
+        label: "View Opportunities",
+      },
+    ],
   },
-  { href: "/run-query", icon: "mdi:database-search", label: "Run Query" },
-
-  { href: "/tenders", icon: "mdi:briefcase-search", label: "View Tenders" },
-
-  { href: "/keyword-manager", icon: "mdi:tag", label: "Keyword Manager" },
   {
-    href: "/upload-website",
-    icon: "mdi:cloud-upload",
-    label: "Upload Website",
+    category: "Updates",
+    items: [
+      {
+        href: "/updates",
+        icon: "mdi:bullhorn",
+        label: "Latest News",
+      },
+      {
+        href: "/updates/events",
+        icon: "mdi:calendar",
+        label: "Event Announcements",
+      },
+    ],
   },
-  { href: "/scheduler", icon: "akar-icons:schedule", label: "Scheduler" },
+  {
+    category: "Market Intelligence",
+    items: [
+      {
+        href: "/market-intel",
+        icon: "mdi:chart-line",
+        label: "Industry Reports",
+      },
+      {
+        href: "/market-intel/regional",
+        icon: "mdi:map",
+        label: "Regional Insights",
+      },
+    ],
+  },
+  {
+    category: "Events",
+    items: [
+      {
+        href: "/events",
+        icon: "mdi:calendar-star",
+        label: "All Events",
+      },
+      {
+        href: "/events/networking",
+        icon: "mdi:account-group",
+        label: "Networking Events",
+      },
+      {
+        href: "/events/workshops",
+        icon: "mdi:school",
+        label: "Workshops & Training",
+      },
+    ],
+  },
+  {
+    category: "Resources",
+    items: [
+      {
+        href: "/resources",
+        icon: "mdi:book-open",
+        label: "Knowledge Hub",
+      },
+      {
+        href: "/resources/downloads",
+        icon: "mdi:download",
+        label: "Downloadable Guides",
+      },
+      {
+        href: "/resources/courses",
+        icon: "mdi:video",
+        label: "Courses & Tutorials",
+      },
+    ],
+  },
+  {
+    category: "Offers",
+    items: [
+      {
+        href: "/offers",
+        icon: "mdi:tag",
+        label: "Exclusive Offers",
+      },
+      {
+        href: "/offers/partnerships",
+        icon: "mdi:handshake",
+        label: "Partner Opportunities",
+      },
+    ],
+  },
 ];

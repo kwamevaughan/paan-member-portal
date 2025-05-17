@@ -13,3 +13,12 @@
 .animate-shake {
   animation: shake 0.5s;
 }
+
+.bg-login{
+  background-image: url('/assets/images/paan-login-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 100vh;
+  width: 100%;
+}

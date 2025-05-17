@@ -11,7 +11,6 @@ const LoginPage = () => {
     email: "john@paan.africa",
     password: "Test1234",
     rememberMe: false,
-    uniqueCode: "ABC123", // Adding the unique code field
   });
   const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
@@ -75,9 +74,8 @@ const LoginPage = () => {
             <div className="pb-6 space-y-2">
               <p className="text-3xl text-paan-blue font-bold">Welcome back!</p>
               <p className="text-paan-blue font-light">
-                Access business opportunities for your agency, Co-bidding
-                opportunities, Resources, Templates, Market intelligence, Market
-                trends, Events & more to stay ahead of the curve in Africa.
+                PAAN portal offers members business, co-bidding, PR, revenue,
+                events, news, templates, and freelancer access across Africa.
               </p>
             </div>
 
@@ -101,7 +99,7 @@ const LoginPage = () => {
                 </div>
               </div>
 
-              <div className="">
+              <div className="mb-8">
                 <label
                   className="block text-gray-300 text-sm md:text-base mb-2"
                   htmlFor="password"
@@ -127,26 +125,6 @@ const LoginPage = () => {
                       <Icon icon="heroicons:eye" className="w-5 h-5" />
                     )}
                   </span>
-                </div>
-              </div>
-
-              {/* Unique Code Field */}
-              <div className="mb-8">
-                <label
-                  className="block text-gray-300 text-sm md:text-base mb-2"
-                  htmlFor="uniqueCode"
-                >
-                  Unique Code
-                </label>
-                <div className="relative">
-                  <input
-                    id="uniqueCode"
-                    name="uniqueCode"
-                    type="text"
-                    value={loginData.uniqueCode}
-                    onChange={handleLoginChange}
-                    className="w-full bg-transparent text-paan-blue font-light border-b-2 border-gray-700 rounded-none py-2.5 md:py-3 px-2 focus:outline-none focus:border-blue-500"
-                  />
                 </div>
               </div>
 
@@ -209,7 +187,6 @@ const LoginPage = () => {
                 <Icon icon="devicon:google" className="w-5 h-5 mr-2" />
                 Continue with Google
               </button>
-              <span className="text-gray-400 hidden md:block">|</span>
               <button
                 onClick={() => handleSocialLogin("Facebook")}
                 className="flex items-center hover:underline text-gray-600 font-normal py-2 rounded-lg transform transition-transform duration-300 ease-in-out hover:translate-y-[-5px]"

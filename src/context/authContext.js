@@ -163,8 +163,13 @@ export const AuthProvider = ({ children }) => {
             console.log(
               "AuthContext: User not found, redirecting to registration"
             );
+            toast.error("User not found. Redirecting to create an account...", {
+              duration: 2000,
+            });
             await supabase.auth.signOut(); // Clear Supabase session
-            window.location.href = "https://membership.paan.africa/";
+            setTimeout(() => {
+              window.location.href = "https://membership.paan.africa/";
+            }, 2000); // Delay redirect to show toast
             return;
           }
 

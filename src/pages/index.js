@@ -1,35 +1,23 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useRouter } from "next/router";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
 import Image from "next/image";
 import CustomSlider from "@/components/CustomSlider";
-import { useAuth } from "@/hooks/useAuth";
 import { Toaster } from "react-hot-toast";
+import useLogin from "@/hooks/useLogin"; // Import the useLogin hook
 
 const LoginPage = () => {
   const router = useRouter();
-  const [showPassword, setShowPassword] = useState(false);
-  const [loginData, setLoginData] = useState({
-    email: "",
-    password: "",
-    rememberMe: false,
-  });
-  const { login, signInWithSocial } = useAuth();
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      await login(loginData.email, loginData.password, loginData.rememberMe);
-      console.log("LoginPage: Login successful");
-    } catch (error) {
-      console.error("LoginPage: Login error:", error);
-    }
-  };
+  const {
+    loginData,
+    setLoginData,
+    showPassword,
+    togglePasswordVisibility,
+    handleLogin,
+    handleLoginChange,
+    handleSocialLogin,
+  } = useLogin();
 
   useEffect(() => {
     if (router.isReady) {
@@ -37,26 +25,9 @@ const LoginPage = () => {
     }
   }, [router.isReady, router.pathname]);
 
-  const handleLoginChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setLoginData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
-
-  const handleSocialLogin = async (provider) => {
-    try {
-      await signInWithSocial(provider.toLowerCase());
-      console.log(`LoginPage: Initiated login with ${provider}`);
-    } catch (error) {
-      console.error(`LoginPage: Social login error with ${provider}:`, error);
-    }
-  };
-
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-[#D1D3D4]">
-      <Toaster />
+    <div className="flex flex-col md:flex-row min-h-screen bg-[#D1D3D4] pt-0">
+
       <div className="w-full md:w-2/5 flex flex-col justify-between md:p-6 overflow-y-auto">
         <div className="flex flex-col items-center">
           <div className="w-full max-w-md">

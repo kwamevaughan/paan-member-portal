@@ -29,7 +29,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
         mode === "dark" ? "bg-gradient-to-b from-gray-900 to-gray-800" : ""
       }`}
     >
-      <Toaster />
+
       <HrHeader
         toggleSidebar={toggleSidebar}
         isSidebarOpen={isSidebarOpen}

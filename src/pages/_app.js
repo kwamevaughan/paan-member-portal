@@ -73,6 +73,14 @@ function MyApp({ Component, pageProps }) {
       });
     };
 
+    const handleRouteChange = () => {
+      // Reset any unexpected padding/margin or layout issues on route change
+      document.body.style.paddingTop = "0px"; // Reset any extra padding
+    };
+
+    router.events.on("routeChangeComplete", handleRouteChange);
+
+
     const routeChangeComplete = () => {
       toast.dismiss("route-loading");
     };

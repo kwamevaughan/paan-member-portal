@@ -64,6 +64,7 @@ export const AuthProvider = ({ children }) => {
       if (error || !userData) {
         console.error("AuthContext: Login error:", error);
         setShowLoginError(true);
+        toast.error("Invalid email or password"); // Toast for invalid login
         throw new Error("Invalid email or password");
       }
 
@@ -75,9 +76,11 @@ export const AuthProvider = ({ children }) => {
       if (!passwordMatch) {
         console.error("AuthContext: Password mismatch");
         setShowLoginError(true);
+        toast.error("Invalid email or password"); // Toast for password mismatch
         throw new Error("Invalid email or password");
       }
 
+      // Set session data and navigate
       localStorage.setItem("paan_member_session", "authenticated");
       localStorage.setItem("user_email", userData.primaryContactEmail);
 
@@ -100,12 +103,14 @@ export const AuthProvider = ({ children }) => {
 
       setUser(user);
       console.log("AuthContext: User authenticated:", user);
+      toast.success("Login successful! Redirecting..."); // Success toast
       router.push("/dashboard");
     } catch (error) {
       console.error("AuthContext: Login error:", error);
       throw error;
     }
   };
+
 
   const signInWithSocial = async (provider) => {
     try {
@@ -121,14 +126,17 @@ export const AuthProvider = ({ children }) => {
           `AuthContext: Social login error with ${provider}:`,
           error
         );
+        toast.error(`Failed to sign in with ${provider}`); // Social login error toast
         throw new Error(`Failed to sign in with ${provider}`);
       }
       // Supabase redirects to provider's login page
     } catch (error) {
       console.error("AuthContext: Social login error:", error);
+      toast.error("Social login error occurred"); // Error toast
       throw error;
     }
   };
+
 
   useEffect(() => {
     const handleSocialLoginCallback = async () => {

@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }) => {
             setUser({
               email: data.primaryContactEmail,
               primaryContactName: data.primaryContactName,
-              role: "agency_member",
+              role: data.job_type,
             });
           } else {
             console.error("AuthContext: Session invalid:", error);
@@ -95,7 +95,7 @@ export const AuthProvider = ({ children }) => {
       const user = {
         email: userData.primaryContactEmail,
         primaryContactName: userData.primaryContactName,
-        role: "agency_member",
+        role: userData.job_type,
       };
 
       setUser(user);
@@ -179,7 +179,7 @@ export const AuthProvider = ({ children }) => {
           setUser({
             email,
             primaryContactName: existingUser.primaryContactName,
-            role: "agency_member",
+            role: existingUser.job_type,
           });
 
           toast.success("Social login successful! Redirecting...");

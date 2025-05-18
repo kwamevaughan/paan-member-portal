@@ -18,7 +18,7 @@ export const useUser = () => {
         try {
           const { data, error } = await supabase
             .from("candidates")
-            .select("primaryContactEmail, primaryContactName, job_type, selected_tier")
+            .select("primaryContactEmail, primaryContactName, job_type, selected_tier, agencyName")
             .eq("primaryContactEmail", email)
             .single();
 
@@ -31,6 +31,7 @@ export const useUser = () => {
               name: data.primaryContactName,
               job_type: data.job_type,
               selected_tier: data.selected_tier,
+              agencyName: data.agencyName,
             });
           } else {
             console.error(

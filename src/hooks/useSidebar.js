@@ -1,8 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 const useSidebar = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(null); // Initial state is null
   const [isLoading, setIsLoading] = useState(true); // Loading state
+  const [sidebarState, setSidebarState] = useState({
+    hidden: false,
+    offset: 0,
+  });
 
   const getInitialSidebarState = () => {
     if (typeof window === "undefined") return false; // SSR default
@@ -32,7 +36,40 @@ const useSidebar = () => {
 
   const toggleSidebar = () => setSidebarOpen((prev) => !prev);
 
-  return { isSidebarOpen, toggleSidebar, isLoading }; // Return loading state
+  // Handle sidebar visibility changes from custom events
+  useEffect(() => {
+    const handleSidebarChange = (e) => {
+      const newHidden = e.detail.hidden;
+      setSidebarState((prev) => {
+        if (prev.hidden === newHidden) return prev;
+        return { ...prev, hidden: newHidden };
+      });
+    };
+
+    // Add event listener to listen for sidebar visibility change events
+    document.addEventListener("sidebarVisibilityChange", handleSidebarChange);
+
+    return () =>
+      document.removeEventListener(
+        "sidebarVisibilityChange",
+        handleSidebarChange
+      );
+  }, []);
+
+  const updateDragOffset = useCallback((offset) => {
+    setSidebarState((prev) => {
+      if (prev.offset === offset) return prev;
+      return { ...prev, offset };
+    });
+  }, []);
+
+  return {
+    isSidebarOpen,
+    toggleSidebar,
+    isLoading,
+    sidebarState,
+    updateDragOffset,
+  };
 };
 
 export default useSidebar;

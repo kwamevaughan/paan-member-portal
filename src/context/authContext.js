@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { toast } from "react-toastify";
+import toast from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
 import bcrypt from "bcryptjs";
 import SessionExpiredModal from "@/components/modals/SessionExpiredModal";
@@ -78,7 +78,7 @@ export const AuthProvider = ({ children }) => {
         throw new Error("Invalid email or password");
       }
 
-      localStorage.setItem("hr_session", "authenticated");
+      localStorage.setItem("paan_member_session", "authenticated");
       localStorage.setItem("user_email", userData.primaryContactEmail);
 
       if (rememberMe) {
@@ -107,8 +107,93 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const signInWithSocial = async (provider) => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (error) {
+        console.error(
+          `AuthContext: Social login error with ${provider}:`,
+          error
+        );
+        throw new Error(`Failed to sign in with ${provider}`);
+      }
+      // Supabase redirects to provider's login page
+    } catch (error) {
+      console.error("AuthContext: Social login error:", error);
+      throw error;
+    }
+  };
+
+  useEffect(() => {
+    const handleSocialLoginCallback = async () => {
+      if (router.pathname !== "/auth/callback") return;
+
+      try {
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession();
+
+        if (error) {
+          console.error("AuthContext: Error retrieving session:", error);
+          setShowLoginError(true);
+          return;
+        }
+
+        if (session?.user) {
+          const { user } = session;
+          const email = user.email;
+          const name =
+            user.user_metadata.full_name || user.user_metadata.name || "User";
+
+          // Check if user exists in candidates table
+          const { data: existingUser, error: fetchError } = await supabase
+            .from("candidates")
+            .select("primaryContactEmail, primaryContactName")
+            .eq("primaryContactEmail", email)
+            .single();
+
+          if (fetchError || !existingUser) {
+            console.log(
+              "AuthContext: User not found, redirecting to registration"
+            );
+            await supabase.auth.signOut(); // Clear Supabase session
+            window.location.href = "https://membership.paan.africa/";
+            return;
+          }
+
+          localStorage.setItem("paan_member_session", "authenticated");
+          localStorage.setItem("user_email", email);
+
+          setUser({
+            email,
+            primaryContactName: existingUser.primaryContactName,
+            role: "agency_member",
+          });
+
+          toast.success("Social login successful! Redirecting...");
+          router.push("/dashboard");
+        } else {
+          setShowLoginError(true);
+        }
+      } catch (error) {
+        console.error("AuthContext: Social login callback error:", error);
+        setShowLoginError(true);
+      }
+    };
+
+    handleSocialLoginCallback();
+  }, [router]);
+
   const logout = async () => {
     console.log("AuthContext: Logging out...");
+    await supabase.auth.signOut();
     setUser(null);
     localStorage.removeItem("paan_member_session");
     localStorage.removeItem("user_email");
@@ -118,7 +203,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider
+      value={{ user, loading, login, logout, signInWithSocial }}
+    >
       {children}
       <SessionExpiredModal
         isOpen={showExpiredModal}

@@ -12,6 +12,9 @@ const HrHeader = ({
   isSidebarOpen,
   onLogout,
   sidebarState,
+  fullName = "Member",
+  jobTitle = "",
+  selectedTier = "",
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -34,7 +37,6 @@ const HrHeader = ({
     }
   }, []);
 
-  const fullName = "PAAN HR Team";
 
   return (
     <header
@@ -121,7 +123,7 @@ const HrHeader = ({
                     {fullName}
                   </span>
                   <span className="block text-sm font-normal text-right text-[#f05d23]">
-                    Admin
+                    {selectedTier}
                   </span>
                 </div>
                 <div className="w-10 h-10 overflow-hidden">

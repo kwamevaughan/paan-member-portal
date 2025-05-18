@@ -10,7 +10,7 @@ export const useUser = () => {
   useEffect(() => {
     const checkSession = async () => {
       console.log("useUser: Checking session, current route:", router.pathname);
-      const session = localStorage.getItem("hr_session");
+      const session = localStorage.getItem("paan_member_session");
       const email = localStorage.getItem("user_email");
 
       if (session === "authenticated" && email) {
@@ -18,7 +18,7 @@ export const useUser = () => {
         try {
           const { data, error } = await supabase
             .from("candidates")
-            .select("primaryContactEmail, primaryContactName")
+            .select("primaryContactEmail, primaryContactName, job_type, selected_tier")
             .eq("primaryContactEmail", email)
             .single();
 
@@ -28,8 +28,9 @@ export const useUser = () => {
             console.log("useUser: User data fetched:", data);
             setUser({
               email: data.primaryContactEmail,
-              primaryContactName: data.primaryContactName,
-              role: "agency_member",
+              name: data.primaryContactName,
+              job_type: data.job_type,
+              selected_tier: data.selected_tier,
             });
           } else {
             console.error(
@@ -38,7 +39,7 @@ export const useUser = () => {
               "data:",
               data
             );
-            localStorage.removeItem("hr_session");
+            localStorage.removeItem("paan_member_session");
             localStorage.removeItem("user_email");
             if (router.pathname !== "/") {
               console.log("useUser: Invalid session, redirecting to /");
@@ -47,7 +48,7 @@ export const useUser = () => {
           }
         } catch (err) {
           console.error("useUser: Unexpected error:", err);
-          localStorage.removeItem("hr_session");
+          localStorage.removeItem("paan_member_session");
           localStorage.removeItem("user_email");
           if (router.pathname !== "/") {
             console.log("useUser: Unexpected error, redirecting to /");

@@ -8,7 +8,7 @@ export const useAuth = () => {
     throw new Error("useAuth must be used within an AuthProvider");
   }
 
-  const { login, logout } = context;
+  const { login, logout, signInWithSocial } = context;
 
   const handleLogin = async (email, password, rememberMe) => {
     toast.info("Please wait...", { autoClose: false, toastId: "loginToast" });
@@ -22,5 +22,19 @@ export const useAuth = () => {
     }
   };
 
-  return { login: handleLogin, logout };
+  const handleSocialLogin = async (provider) => {
+    toast.info(`Signing in with ${provider}...`, {
+      autoClose: false,
+      toastId: "socialLoginToast",
+    });
+    try {
+      await signInWithSocial(provider);
+      // Toast handled in AuthContext after redirect
+    } catch (error) {
+      toast.dismiss("socialLoginToast");
+      toast.error(error.message || "An error occurred. Please try again.");
+    }
+  };
+
+  return { login: handleLogin, logout, signInWithSocial: handleSocialLogin };
 };

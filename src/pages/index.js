@@ -5,18 +5,17 @@ import Link from "next/link";
 import Image from "next/image";
 import CustomSlider from "@/components/CustomSlider";
 import { useAuth } from "@/hooks/useAuth";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { Toaster } from "react-hot-toast";
 
 const LoginPage = () => {
   const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
   const [loginData, setLoginData] = useState({
     email: "",
     password: "",
     rememberMe: false,
   });
-  const [showPassword, setShowPassword] = useState(false);
-  const { login } = useAuth();
+  const { login, signInWithSocial } = useAuth();
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -24,20 +23,17 @@ const LoginPage = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    const { email, password, rememberMe } = loginData;
-
     try {
-      await login(email, password, rememberMe);
-      console.log("index.js: Login successful");
-      // Redirect handled by authContext
+      await login(loginData.email, loginData.password, loginData.rememberMe);
+      console.log("LoginPage: Login successful");
     } catch (error) {
-      console.error("index.js: Login error:", error);
+      console.error("LoginPage: Login error:", error);
     }
   };
 
   useEffect(() => {
     if (router.isReady) {
-      console.log("index.js: Current route:", router.pathname);
+      console.log("LoginPage: Current route:", router.pathname);
     }
   }, [router.isReady, router.pathname]);
 
@@ -49,13 +45,18 @@ const LoginPage = () => {
     }));
   };
 
-  const handleSocialLogin = (provider) => {
-    console.log(`Initiating login with ${provider}`);
+  const handleSocialLogin = async (provider) => {
+    try {
+      await signInWithSocial(provider.toLowerCase());
+      console.log(`LoginPage: Initiated login with ${provider}`);
+    } catch (error) {
+      console.error(`LoginPage: Social login error with ${provider}:`, error);
+    }
   };
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-[#D1D3D4]">
-      <ToastContainer />
+      <Toaster />
       <div className="w-full md:w-2/5 flex flex-col justify-between md:p-6 overflow-y-auto">
         <div className="flex flex-col items-center">
           <div className="w-full max-w-md">
@@ -98,6 +99,7 @@ const LoginPage = () => {
                     name="email"
                     type="email"
                     value={loginData.email}
+                    placeholder="Enter your email"
                     onChange={handleLoginChange}
                     className="w-full bg-transparent text-paan-blue font-light border-b-2 border-gray-700 rounded-none py-2.5 md:py-3 px-2 focus:outline-none focus:border-blue-500"
                   />
@@ -120,6 +122,7 @@ const LoginPage = () => {
                     name="password"
                     type={showPassword ? "text" : "password"}
                     value={loginData.password}
+                    placeholder="Enter your password"
                     onChange={handleLoginChange}
                     className="w-full bg-transparent text-paan-blue font-light border-b-2 border-gray-700 rounded-none py-2.5 md:py-3 px-2 focus:outline-none focus:border-blue-500"
                   />

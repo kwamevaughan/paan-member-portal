@@ -15,6 +15,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
   const { isSidebarOpen, toggleSidebar } = useSidebar();
   const router = useRouter();
   const { user, loading, LoadingComponent } = useUser();
+
   const logout = useLogout();
 
   // Define sidebarState and setSidebarState
@@ -86,6 +87,9 @@ export default function Dashboard({ mode = "light", toggleMode }) {
         toggleSidebar={toggleSidebar}
         isSidebarOpen={isSidebarOpen}
         sidebarState={sidebarState}
+        fullName={user?.name ?? "Member"}
+        jobTitle={user.job_type}
+        selectedTier={user.selected_tier}
         mode={mode}
         toggleMode={toggleMode}
         onLogout={handleLogout}
@@ -115,14 +119,11 @@ export default function Dashboard({ mode = "light", toggleMode }) {
           <div className="max-w-7xl mx-auto space-y-8">
             <div className="bg-white rounded-lg shadow-md p-6 mb-6">
               <h1 className="text-3xl text-paan-blue font-bold mb-2">
-                Welcome, {user.primaryContactName}!
+                Welcome, {user.name}!
               </h1>
               <p className="text-paan-blue">
                 You are logged in as{" "}
-                <span className="font-semibold">
-                  {user.role.replace("_", " ")}
-                </span>
-                .
+                <span className="font-semibold">{user.job_type}</span>.
               </p>
             </div>
 
@@ -245,31 +246,3 @@ export default function Dashboard({ mode = "light", toggleMode }) {
   );
 }
 
-export async function getServerSideProps(context) {
-  const { req } = context;
-
-  if (!req.cookies.hr_session) {
-    console.log("No paan_member_session cookie, redirecting to login");
-    return {
-      redirect: {
-        destination: "/",
-        permanent: false,
-      },
-    };
-  }
-
-  try {
-    // Add logic for when the cookie is found, if necessary.
-    return {
-      props: {}, // Return empty props or any necessary props here.
-    };
-  } catch (error) {
-    console.error("Error in getServerSideProps:", error);
-    return {
-      redirect: {
-        destination: "/",
-        permanent: false,
-      },
-    };
-  }
-}

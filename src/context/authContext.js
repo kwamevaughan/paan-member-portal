@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }) => {
             setUser({
               email: data.primaryContactEmail,
               primaryContactName: data.primaryContactName,
-              role: data.job_type,
+              role: "agency_member",
             });
           } else {
             console.error("AuthContext: Session invalid:", error);
@@ -64,7 +64,6 @@ export const AuthProvider = ({ children }) => {
       if (error || !userData) {
         console.error("AuthContext: Login error:", error);
         setShowLoginError(true);
-        toast.error("Invalid email or password"); // Toast for invalid login
         throw new Error("Invalid email or password");
       }
 
@@ -76,11 +75,9 @@ export const AuthProvider = ({ children }) => {
       if (!passwordMatch) {
         console.error("AuthContext: Password mismatch");
         setShowLoginError(true);
-        toast.error("Invalid email or password"); // Toast for password mismatch
         throw new Error("Invalid email or password");
       }
 
-      // Set session data and navigate
       localStorage.setItem("paan_member_session", "authenticated");
       localStorage.setItem("user_email", userData.primaryContactEmail);
 
@@ -98,12 +95,11 @@ export const AuthProvider = ({ children }) => {
       const user = {
         email: userData.primaryContactEmail,
         primaryContactName: userData.primaryContactName,
-        role: userData.job_type,
+        role: "agency_member",
       };
 
       setUser(user);
       console.log("AuthContext: User authenticated:", user);
-      toast.success("Login successful! Redirecting..."); // Success toast
       router.push("/dashboard");
     } catch (error) {
       console.error("AuthContext: Login error:", error);
@@ -111,13 +107,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-
   const signInWithSocial = async (provider) => {
     try {
+      const baseUrl =
+        process.env.NODE_ENV === "development"
+          ? process.env.NEXT_PUBLIC_BASE_URL_DEV
+          : process.env.NEXT_PUBLIC_BASE_URL_PROD;
+      const redirectTo = `${baseUrl}/auth/callback`;
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo,
         },
       });
 
@@ -126,17 +126,16 @@ export const AuthProvider = ({ children }) => {
           `AuthContext: Social login error with ${provider}:`,
           error
         );
-        toast.error(`Failed to sign in with ${provider}`); // Social login error toast
         throw new Error(`Failed to sign in with ${provider}`);
       }
-      // Supabase redirects to provider's login page
+      console.log(
+        `AuthContext: Redirecting to ${redirectTo} for ${provider} login`
+      );
     } catch (error) {
       console.error("AuthContext: Social login error:", error);
-      toast.error("Social login error occurred"); // Error toast
       throw error;
     }
   };
-
 
   useEffect(() => {
     const handleSocialLoginCallback = async () => {
@@ -171,13 +170,16 @@ export const AuthProvider = ({ children }) => {
             console.log(
               "AuthContext: User not found, redirecting to registration"
             );
-            toast.error("User not found. Redirecting to create an account...", {
-              duration: 2000,
-            });
+            toast.error(
+              "User not found. Redirecting to Membership page to create an account.",
+              {
+                duration: 3000,
+              }
+            );
             await supabase.auth.signOut(); // Clear Supabase session
             setTimeout(() => {
               window.location.href = "https://membership.paan.africa/";
-            }, 2000); // Delay redirect to show toast
+            }, 3000); // Delay redirect to show toast
             return;
           }
 
@@ -187,7 +189,7 @@ export const AuthProvider = ({ children }) => {
           setUser({
             email,
             primaryContactName: existingUser.primaryContactName,
-            role: existingUser.job_type,
+            role: "agency_member",
           });
 
           toast.success("Social login successful! Redirecting...");

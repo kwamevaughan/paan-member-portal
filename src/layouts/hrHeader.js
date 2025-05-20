@@ -13,8 +13,9 @@ const HrHeader = ({
   onLogout,
   sidebarState,
   fullName = "Member",
-  jobTitle = "",
   selectedTier = "",
+  jobTitle,
+  agencyName,
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -36,7 +37,6 @@ const HrHeader = ({
       document.body.style.paddingTop = `${headerHeight}px`;
     }
   }, []);
-
 
   return (
     <header
@@ -114,18 +114,6 @@ const HrHeader = ({
               onClick={() => setDropdownOpen(!dropdownOpen)}
             >
               <div className="flex items-center gap-2 cursor-pointer">
-                <div className="hidden md:block">
-                  <span
-                    className={`font-bold text-xs ${
-                      mode === "dark" ? "text-white" : "text-[#231812]"
-                    }`}
-                  >
-                    {fullName}
-                  </span>
-                  <span className="block text-sm font-normal text-right text-[#f05d23]">
-                    {selectedTier}
-                  </span>
-                </div>
                 <div className="w-10 h-10 overflow-hidden">
                   <Image
                     src={
@@ -150,7 +138,6 @@ const HrHeader = ({
                   }`}
                 >
                   <div className="p-8">
-                    <p className="text-lg mb-6">User Profile</p>
                     <div className="flex items-center gap-2 border-b pb-6 w-full">
                       <div className="overflow-hidden flex-shrink-0">
                         <Image
@@ -166,8 +153,16 @@ const HrHeader = ({
                         />
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-md font-bold">{fullName}</span>
-                        <span className="text-sm">Business Department</span>
+                        <div className="flex gap-2">
+                          <span className="text-md font-bold">
+                            {fullName}
+                          </span>
+                          <span class="rounded-md capitalize bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-green-600/20 ring-inset">
+                            {jobTitle}
+                          </span>
+                        </div>
+
+                        <span className="text-sm">{agencyName}</span>
                       </div>
                     </div>
                     <button

@@ -109,11 +109,23 @@ export const AuthProvider = ({ children }) => {
 
   const signInWithSocial = async (provider) => {
     try {
+      console.log("NODE_ENV:", process.env.NODE_ENV);
+      console.log(
+        "NEXT_PUBLIC_BASE_URL_DEV:",
+        process.env.NEXT_PUBLIC_BASE_URL_DEV
+      );
+      console.log(
+        "NEXT_PUBLIC_BASE_URL_PROD:",
+        process.env.NEXT_PUBLIC_BASE_URL_PROD
+      );
       const baseUrl =
         process.env.NODE_ENV === "development"
           ? process.env.NEXT_PUBLIC_BASE_URL_DEV
           : process.env.NEXT_PUBLIC_BASE_URL_PROD;
       const redirectTo = `${baseUrl}/auth/callback`;
+      console.log(
+        `AuthContext: Redirecting to ${redirectTo} for ${provider} login`
+      );
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
@@ -128,9 +140,6 @@ export const AuthProvider = ({ children }) => {
         );
         throw new Error(`Failed to sign in with ${provider}`);
       }
-      console.log(
-        `AuthContext: Redirecting to ${redirectTo} for ${provider} login`
-      );
     } catch (error) {
       console.error("AuthContext: Social login error:", error);
       throw error;

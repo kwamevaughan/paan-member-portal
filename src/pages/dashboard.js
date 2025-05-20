@@ -29,7 +29,6 @@ export default function Dashboard({ mode = "light", toggleMode }) {
         mode === "dark" ? "bg-gradient-to-b from-gray-900 to-gray-800" : ""
       }`}
     >
-
       <HrHeader
         toggleSidebar={toggleSidebar}
         isSidebarOpen={isSidebarOpen}
@@ -37,6 +36,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
         fullName={user?.name ?? "Member"}
         jobTitle={user.job_type}
         selectedTier={user.selected_tier}
+        agencyName={user.agencyName}
         mode={mode}
         toggleMode={toggleMode}
         onLogout={handleLogout} // Pass handleLogout to HrHeader

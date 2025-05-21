@@ -40,3 +40,6 @@ build/
 
 # Editor history
 .history/
+
+
+scripts/align-users.js

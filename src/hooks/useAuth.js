@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { AuthContext } from "@/context/authContext";
-import { toast } from "react-toastify";
+import toast from "react-hot-toast";
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -11,27 +11,25 @@ export const useAuth = () => {
   const { login, logout, signInWithSocial } = context;
 
   const handleLogin = async (email, password, rememberMe) => {
-    toast.info("Please wait...", { autoClose: false, toastId: "loginToast" });
+    const toastId = toast.loading("Please wait...");
     try {
       await login(email, password, rememberMe);
-      toast.dismiss("loginToast");
+      toast.dismiss(toastId);
       toast.success("Login successful! Redirecting...");
     } catch (error) {
-      toast.dismiss("loginToast");
+      toast.dismiss(toastId);
       toast.error(error.message || "An error occurred. Please try again.");
     }
   };
 
   const handleSocialLogin = async (provider) => {
-    toast.info(`Signing in with ${provider}...`, {
-      autoClose: false,
-      toastId: "socialLoginToast",
-    });
+    const toastId = toast.loading(`Signing in with ${provider}...`);
     try {
       await signInWithSocial(provider);
+      toast.dismiss(toastId);
       // Toast handled in AuthContext after redirect
     } catch (error) {
-      toast.dismiss("socialLoginToast");
+      toast.dismiss(toastId);
       toast.error(error.message || "An error occurred. Please try again.");
     }
   };

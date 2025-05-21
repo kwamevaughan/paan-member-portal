@@ -3,7 +3,7 @@ export const sidebarNav = [
     category: "Business Opportunities",
     items: [
       {
-        href: "/opportunities",
+        href: "/business-opportunities",
         icon: "mdi:briefcase",
         label: "View Opportunities",
       },

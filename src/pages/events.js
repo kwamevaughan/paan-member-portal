@@ -44,7 +44,7 @@ export default function Events({ mode = "light", toggleMode }) {
     loading: eventsLoading,
     error,
     handleEventRegistration,
-  } = useEvents(filters, reverseTierMap[user?.selected_tier] || "Associate");
+  } = useEvents(filters, reverseTierMap[user?.selected_tier] || "Member");
 
   useEffect(() => {
     console.log("[Events] registeredEvents:", registeredEvents);
@@ -63,7 +63,7 @@ export default function Events({ mode = "light", toggleMode }) {
   const canAccessEvent = (eventTier) => {
     if (eventTier === "All") return true;
     const tiers = ["Associate", "Full", "Founding"];
-    const userTier = reverseTierMap[user?.selected_tier] || "Associate";
+    const userTier = reverseTierMap[user?.selected_tier] || "Member";
     const eventTierIndex = tiers.indexOf(eventTier);
     const userTierIndex = tiers.indexOf(userTier);
     return userTierIndex >= eventTierIndex;
@@ -194,7 +194,7 @@ export default function Events({ mode = "light", toggleMode }) {
                       </div>
                       <TierBadge
                         tier={
-                          user?.selected_tier || "Associate Member (Tier 3)"
+                          user?.selected_tier || "Member"
                         }
                         mode={mode}
                       />

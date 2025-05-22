@@ -30,6 +30,22 @@ const getTierBadgeColor = (tier, mode) => {
   }
 };
 
+const tierBadgeStyles = {
+  "Founding Members":
+    "bg-gradient-to-r from-yellow-600 to-amber-600 text-white",
+  "Full Members": "bg-gradient-to-r from-blue-600 to-indigo-600 text-white",
+  "Associate Members": "bg-gradient-to-r from-green-600 to-teal-600 text-white",
+  All: "bg-gradient-to-r from-purple-600 to-pink-600 text-white",
+};
+
+const normalizeTier = (tier) => {
+  if (!tier) return "Associate Members";
+  if (tier.includes("Associate Member")) return "Associate Members";
+  if (tier.includes("Full Member")) return "Full Members";
+  if (tier.includes("Founding Member")) return "Founding Members";
+  return tier;
+};
+
 const getStatusBadgeColor = (days, mode) => {
   if (days < 3) {
     return {
@@ -80,7 +96,7 @@ const getRegistrationStatusColor = (status, mode) => {
   }
 };
 
-export const TierBadge = ({ tier, mode }) => {
+const TierBadge = ({ tier, mode }) => {
   const colors = getTierBadgeColor(tier, mode);
   return (
     <span
@@ -91,7 +107,7 @@ export const TierBadge = ({ tier, mode }) => {
   );
 };
 
-export const StatusBadge = ({ days, mode }) => {
+const StatusBadge = ({ days, mode }) => {
   const colors = getStatusBadgeColor(days, mode);
   return (
     <div
@@ -105,7 +121,7 @@ export const StatusBadge = ({ days, mode }) => {
   );
 };
 
-export const RegistrationStatusBadge = ({ status, mode }) => {
+const RegistrationStatusBadge = ({ status, mode }) => {
   const colors = getRegistrationStatusColor(status, mode);
   return (
     <span
@@ -114,6 +130,15 @@ export const RegistrationStatusBadge = ({ status, mode }) => {
       {status.charAt(0).toUpperCase() + status.slice(1)}
     </span>
   );
+};
+
+// Single export statement for all named exports
+export {
+  TierBadge,
+  StatusBadge,
+  RegistrationStatusBadge,
+  tierBadgeStyles,
+  normalizeTier,
 };
 
 TierBadge.propTypes = {

@@ -75,6 +75,12 @@ const getRegistrationStatusColor = (status, mode) => {
       text: mode === "dark" ? "text-yellow-200" : "text-yellow-800",
       border: mode === "dark" ? "border-yellow-800" : "border-yellow-200",
     };
+  } else if (status === "confirmed") {
+    return {
+      bg: mode === "dark" ? "bg-blue-900/30" : "bg-blue-50", // Blue shade for confirmed
+      text: mode === "dark" ? "text-blue-200" : "text-blue-800",
+      border: mode === "dark" ? "border-blue-800" : "border-blue-200",
+    };
   } else if (status === "approved") {
     return {
       bg: mode === "dark" ? "bg-green-900/30" : "bg-green-50",
@@ -95,6 +101,7 @@ const getRegistrationStatusColor = (status, mode) => {
     };
   }
 };
+
 
 const TierBadge = ({ tier, mode }) => {
   const colors = getTierBadgeColor(tier, mode);

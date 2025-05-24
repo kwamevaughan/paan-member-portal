@@ -251,22 +251,20 @@ const CustomSlider = () => {
       <div className="relative z-10 flex flex-col items-start justify-end px-10 w-3/4">
         <div className="relative w-2/3 overflow-hidden ">
           <div
-            className="flex relative"
-            style={{ height: "200px" }}
+            className="flex relative bg-[#84C1D9] rounded-lg mb-10"
+            style={{ height: "170px" }}
             ref={slidesRef}
           >
             {extendedSlides.map((slide, index) => (
               <div
                 key={index}
-                className="absolute top-0 left-0 flex justify-center items-center"
+                className="absolute top-0 left-0 flex flex-col p-8"
                 style={getSlideStyle(index)}
               >
-                <div className="p-8 rounded-lg bg-paan-blue ">
-                  <h2 className="text-2xl font-bold text-paan-orange">
+                  <h2 className="text-2xl font-bold paan-text-color">
                     {slide.title}
                   </h2>
-                  <p className="text-gray-300">{slide.description}</p>
-                </div>
+                  <p className="paan-text-color">{slide.description}</p>
               </div>
             ))}
           </div>

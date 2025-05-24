@@ -26,10 +26,9 @@ const LoginPage = () => {
   }, [router.isReady, router.pathname]);
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-[#D1D3D4] pt-0">
-
-      <div className="w-full md:w-2/5 flex flex-col justify-between md:p-6 overflow-y-auto">
-        <div className="flex flex-col items-center">
+    <div className="flex flex-col md:flex-row min-h-screen bg-white pt-0">
+      <div className="w-full md:w-2/5 flex flex-col justify-between overflow-y-auto gap-10">
+        <div className="flex flex-col items-center pt-10">
           <div className="w-full max-w-md">
             <Link
               href="https://paan.africa"
@@ -190,9 +189,10 @@ const LoginPage = () => {
             </div>
           </div>
         </div>
+        <div className="w-full bg-login-footer"></div>
       </div>
 
-      <div className="hidden md:block w-full md:w-3/5 bg-login">
+      <div className="hidden md:block w-full md:w-3/5 bg-login bg-[#172840]">
         <CustomSlider />
       </div>
     </div>

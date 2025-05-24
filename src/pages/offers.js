@@ -133,10 +133,10 @@ export default function Offers({ mode = "light", toggleMode }) {
               <div className="relative p-8 md:p-12">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                   <div>
-                    <h1 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-3">
+                    <h1 className="text-2xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-3">
                       Exclusive Offers
                     </h1>
-                    <p className={`text-lg ${mode === "dark" ? "text-gray-300" : "text-gray-600"} max-w-2xl`}>
+                    <p className={`text-md ${mode === "dark" ? "text-gray-300" : "text-gray-600"} max-w-2xl`}>
                       Discover premium opportunities, discounts, and partnerships tailored for your membership tier.
                     </p>
                   </div>

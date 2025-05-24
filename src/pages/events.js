@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Icon } from "@iconify/react";
 import { useUser } from "@/hooks/useUser";
-import useEvents from "@/hooks/useEvents"; // Changed to default import
+import useEvents from "@/hooks/useEvents";
 import useLogout from "@/hooks/useLogout";
 import HrHeader from "@/layouts/hrHeader";
 import HrSidebar from "@/layouts/hrSidebar";
@@ -10,12 +10,16 @@ import useSidebar from "@/hooks/useSidebar";
 import toast from "react-hot-toast";
 import { TierBadge, StatusBadge } from "@/components/Badge";
 import RegisteredEventsModal from "@/components/RegisteredEventsModal";
+import { useRouter } from "next/router";
 
 export default function Events({ mode = "light", toggleMode }) {
   const { isSidebarOpen, toggleSidebar, sidebarState, updateDragOffset } =
     useSidebar();
   const { user, loading: userLoading, LoadingComponent } = useUser();
   const { handleLogout } = useLogout();
+  const router = useRouter();
+  const { eventType } = router.query; // Get eventType from query parameters
+
   const [filters, setFilters] = useState({
     eventType: "",
     tier: "",
@@ -46,18 +50,48 @@ export default function Events({ mode = "light", toggleMode }) {
     handleEventRegistration,
   } = useEvents(filters, reverseTierMap[user?.selected_tier] || "Member");
 
+  // Set eventType filter based on URL query
+  useEffect(() => {
+    if (eventType && typeof eventType === "string") {
+      // Capitalize the event type to match filterOptions.eventTypes (e.g., "networking" -> "Networking")
+      const capitalizedEventType =
+        eventType.charAt(0).toUpperCase() + eventType.slice(1).toLowerCase();
+      if (
+        filterOptions.eventTypes.includes(capitalizedEventType) &&
+        filters.eventType !== capitalizedEventType
+      ) {
+        setFilters((prev) => ({ ...prev, eventType: capitalizedEventType }));
+        setShowFilterPanel(true); // Show filter panel when eventType is set
+      }
+    } else if (!eventType && filters.eventType) {
+      // Clear eventType filter if URL has no eventType
+      setFilters((prev) => ({ ...prev, eventType: "" }));
+    }
+  }, [eventType, filterOptions.eventTypes]);
+
   useEffect(() => {
     console.log("[Events] registeredEvents:", registeredEvents);
   }, [registeredEvents]);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-    setFilters((prev) => ({ ...prev, [name]: value }));
+    setFilters((prev) => {
+      const newFilters = { ...prev, [name]: value };
+      // Update URL only if eventType changes
+      if (name === "eventType") {
+        const newUrl = value
+          ? `/events?eventType=${value.toLowerCase()}`
+          : "/events";
+        router.push(newUrl, undefined, { shallow: true });
+      }
+      return newFilters;
+    });
   };
 
   const handleResetFilters = () => {
     setFilters({ eventType: "", tier: "" });
     setShowFilterPanel(false);
+    router.push("/events", undefined, { shallow: true });
   };
 
   const canAccessEvent = (eventTier) => {
@@ -178,9 +212,8 @@ export default function Events({ mode = "light", toggleMode }) {
                       Events
                     </h1>
                     <p className="text-gray-600 dark:text-gray-300 max-w-2xl">
-                      Connect with industry leaders and grow your network
-                      through our exclusive events tailored for your membership
-                      tier.
+                      Connect with industry leaders and grow your network through
+                      our exclusive events tailored for your membership tier.
                     </p>
                   </div>
                   <div className="md:self-end">
@@ -192,12 +225,7 @@ export default function Events({ mode = "light", toggleMode }) {
                       <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
                         Your current tier
                       </div>
-                      <TierBadge
-                        tier={
-                          user?.selected_tier || "Member"
-                        }
-                        mode={mode}
-                      />
+                      <TierBadge tier={user?.selected_tier || "Member"} mode={mode} />
                     </div>
                   </div>
                 </div>
@@ -238,9 +266,7 @@ export default function Events({ mode = "light", toggleMode }) {
                   Upcoming
                 </button>
                 <button
-                  onClick={() =>
-                    !eventsLoading && setShowRegistrationsModal(true)
-                  }
+                  onClick={() => !eventsLoading && setShowRegistrationsModal(true)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium ${
                     eventsLoading
                       ? "bg-gray-400 text-gray-700 cursor-not-allowed"
@@ -394,9 +420,7 @@ export default function Events({ mode = "light", toggleMode }) {
                               icon="heroicons:calendar"
                               className="w-3.5 h-3.5 mr-1.5"
                             />
-                            <span className="font-medium">
-                              {event.event_type}
-                            </span>
+                            <span className="font-medium">{event.event_type}</span>
                           </div>
                           {event.is_virtual && (
                             <div className="flex items-center text-xs px-2.5 py-1.5 rounded-lg bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300">
@@ -410,8 +434,8 @@ export default function Events({ mode = "light", toggleMode }) {
                         </div>
                         {!isAccessible && (
                           <p className="text-sm text-red-600 dark:text-red-400 italic">
-                            Restricted to {displayTier}. Upgrade your membership
-                            to access.
+                            Restricted to {displayTier}. Upgrade your membership to
+                            access.
                           </p>
                         )}
                       </div>
@@ -443,10 +467,7 @@ export default function Events({ mode = "light", toggleMode }) {
                                 : "Register for this event"
                             }
                           >
-                            <Icon
-                              icon="heroicons:plus"
-                              className="w-5 h-5 mr-2"
-                            />
+                            <Icon icon="heroicons:plus" className="w-5 h-5 mr-2" />
                             Register
                           </button>
                         </div>

@@ -1,5 +1,15 @@
 export const sidebarNav = [
   {
+    category: "Dashboard",
+    items: [
+      {
+        href: "/dashboard",
+        icon: "mdi:view-dashboard",
+        label: "Dashboard Overview",
+      },
+    ],
+  },
+  {
     category: "Business Opportunities",
     items: [
       {
@@ -24,7 +34,7 @@ export const sidebarNav = [
     items: [
       {
         href: "/market-intel",
-        icon: "mdi:chart-line",
+        icon: "mdi:chart-bar",
         label: "Industry Reports",
       },
     ],
@@ -54,7 +64,7 @@ export const sidebarNav = [
       },
       {
         href: "/events?eventType=conference",
-        icon: "mdi:school",
+        icon: "mdi:presentation",
         label: "Conferences & Seminars",
       },
     ],

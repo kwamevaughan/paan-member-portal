@@ -17,11 +17,6 @@ export const sidebarNav = [
         icon: "mdi:bullhorn",
         label: "Latest News",
       },
-      {
-        href: "/updates/events",
-        icon: "mdi:calendar",
-        label: "Event Announcements",
-      },
     ],
   },
   {
@@ -31,11 +26,6 @@ export const sidebarNav = [
         href: "/market-intel",
         icon: "mdi:chart-line",
         label: "Industry Reports",
-      },
-      {
-        href: "/market-intel/regional",
-        icon: "mdi:map",
-        label: "Regional Insights",
       },
     ],
   },
@@ -48,14 +38,24 @@ export const sidebarNav = [
         label: "All Events",
       },
       {
-        href: "/events/networking",
+        href: "/events?eventType=networking",
         icon: "mdi:account-group",
         label: "Networking Events",
       },
       {
-        href: "/events/workshops",
+        href: "/events?eventType=workshop",
         icon: "mdi:school",
         label: "Workshops & Training",
+      },
+      {
+        href: "/events?eventType=webinar",
+        icon: "mdi:video",
+        label: "Webinars",
+      },
+      {
+        href: "/events?eventType=conference",
+        icon: "mdi:school",
+        label: "Conferences & Seminars",
       },
     ],
   },
@@ -67,16 +67,6 @@ export const sidebarNav = [
         icon: "mdi:book-open",
         label: "Knowledge Hub",
       },
-      {
-        href: "/resources/downloads",
-        icon: "mdi:download",
-        label: "Downloadable Guides",
-      },
-      {
-        href: "/resources/courses",
-        icon: "mdi:video",
-        label: "Courses & Tutorials",
-      },
     ],
   },
   {
@@ -86,11 +76,6 @@ export const sidebarNav = [
         href: "/offers",
         icon: "mdi:tag",
         label: "Exclusive Offers",
-      },
-      {
-        href: "/offers/partnerships",
-        icon: "mdi:handshake",
-        label: "Partner Opportunities",
       },
     ],
   },

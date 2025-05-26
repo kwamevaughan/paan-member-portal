@@ -7,6 +7,7 @@ import HrSidebar from "@/layouts/hrSidebar";
 import SimpleFooter from "@/layouts/simpleFooter";
 import useSidebar from "@/hooks/useSidebar";
 import toast, { Toaster } from "react-hot-toast";
+import WelcomeCard from "@/components/WelcomeCard";
 
 export default function Dashboard({ mode = "light", toggleMode }) {
   const { isSidebarOpen, toggleSidebar, sidebarState, updateDragOffset } =
@@ -51,7 +52,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
           setDragOffset={updateDragOffset}
         />
         <div
-          className={`content-container flex-1 p-10 pt-4 transition-all duration-300 overflow-hidden ${
+          className={`content-container flex-1 p-4 md:p-6 lg:p-8 transition-all duration-300 overflow-hidden ${
             isSidebarOpen ? "sidebar-open" : ""
           } ${sidebarState.hidden ? "sidebar-hidden" : ""}`}
           style={{
@@ -60,19 +61,20 @@ export default function Dashboard({ mode = "light", toggleMode }) {
               : `${84 + (isSidebarOpen ? 120 : 0) + sidebarState.offset}px`,
           }}
         >
-          <div className="max-w-7xl mx-auto space-y-8">
-            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-              <h1 className="text-3xl text-paan-blue font-bold mb-2">
-                Welcome, {user.name}!
-              </h1>
-              <p className="text-paan-blue">
-                You are logged in as{" "}
-                <span className="font-semibold">{user.job_type}</span>.
-                <br />
-                Your agency name is{" "}
-                <span className="font-semibold">{user.agencyName}</span>.
-              </p>
-            </div>
+          <div className="max-w-7xl mx-auto space-y-6">
+            {/* Hero Section */}
+
+            <WelcomeCard
+              mode={mode}
+              user={user}
+              agencyName={user.agencyName}
+              jobType={user.job_type}
+              selectedTier={user.selected_tier}
+            />
+
+
+
+            
           </div>
           <SimpleFooter mode={mode} isSidebarOpen={isSidebarOpen} />
         </div>

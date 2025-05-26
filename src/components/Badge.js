@@ -2,117 +2,177 @@ import React from "react";
 import { Icon } from "@iconify/react";
 import PropTypes from "prop-types";
 
-const getTierBadgeColor = (tier, mode) => {
-  if (tier === "Associate Member (Tier 1)") {
-    return {
-      bg: mode === "dark" ? "bg-blue-900/30" : "bg-blue-50",
-      text: mode === "dark" ? "text-blue-200" : "text-blue-800",
-      border: mode === "dark" ? "border-blue-800" : "border-blue-200",
-    };
-  } else if (tier === "Full Member (Tier 2)") {
-    return {
-      bg: mode === "dark" ? "bg-emerald-900/30" : "bg-emerald-50",
-      text: mode === "dark" ? "text-emerald-200" : "text-emerald-800",
-      border: mode === "dark" ? "border-emerald-800" : "border-emerald-200",
-    };
-  } else if (tier === "Gold Member (Tier 3)") {
-    return {
-      bg: mode === "dark" ? "bg-amber-900/30" : "bg-amber-50",
-      text: mode === "dark" ? "text-amber-200" : "text-amber-800",
-      border: mode === "dark" ? "border-amber-800" : "border-amber-200",
-    };
-  } else if (tier === "Free Member (Tier 4)") {
-    return {
-      bg: mode === "dark" ? "bg-red-900/30" : "bg-red-50",
-      text: mode === "dark" ? "text-red-200" : "text-red-800",
-      border: mode === "dark" ? "border-red-800" : "border-red-200",
-    };
-  } else {
-    return {
-      bg: mode === "dark" ? "bg-gray-700/30" : "bg-gray-100",
-      text: mode === "dark" ? "text-gray-200" : "text-gray-800",
-      border: mode === "dark" ? "border-gray-600" : "border-gray-200",
-    };
+// Cache for tier and status lookups
+const badgeCache = {
+  tier: {},
+  status: {},
+};
+
+// Helper function to get badge colors from a given color map
+const getBadgeColor = (type, mode, colorMap) => {
+  if (badgeCache[type] && badgeCache[type][mode]) {
+    return badgeCache[type][mode];
   }
+
+  const colors = colorMap[type] || colorMap["default"];
+  const result = {
+    bg: mode === "dark" ? colors.bgDark : colors.bgLight,
+    text: mode === "dark" ? colors.textDark : colors.textLight,
+    border: mode === "dark" ? colors.borderDark : colors.borderLight,
+  };
+
+  // Cache the result for the current type and mode
+  if (!badgeCache[type]) {
+    badgeCache[type] = {};
+  }
+  badgeCache[type][mode] = result;
+
+  return result;
 };
 
-const tierBadgeStyles = {
-  "Associate Member":
-    "bg-gradient-to-r from-yellow-600 to-amber-600 text-white",
-  "Full Member": "bg-gradient-to-r from-blue-600 to-indigo-600 text-white",
-  "Gold Member": "bg-gradient-to-r from-green-600 to-teal-600 text-white",
-  "Free Member": "bg-gradient-to-r from-red-600 to-pink-600 text-white",
-  All: "bg-gradient-to-r from-purple-600 to-pink-600 text-white",
+// Simplified color maps for tier and status
+const colorMaps = {
+  tier: {
+    "associate member": {
+      bgDark: "bg-blue-900/30",
+      bgLight: "bg-blue-50",
+      textDark: "text-blue-200",
+      textLight: "text-blue-800",
+      borderDark: "border-blue-800",
+      borderLight: "border-blue-200",
+    },
+    "full member": {
+      bgDark: "bg-green-900/30",
+      bgLight: "bg-green-50",
+      textDark: "text-green-200",
+      textLight: "text-green-800",
+      borderDark: "border-green-800",
+      borderLight: "border-green-200",
+    },
+    "gold member": {
+      bgDark: "bg-amber-900/30",
+      bgLight: "bg-amber-50",
+      textDark: "text-amber-200",
+      textLight: "text-amber-800",
+      borderDark: "border-amber-800",
+      borderLight: "border-amber-200",
+    },
+    "free member": {
+      bgDark: "bg-red-900/30",
+      bgLight: "bg-red-50",
+      textDark: "text-red-200",
+      textLight: "text-red-800",
+      borderDark: "border-red-800",
+      borderLight: "border-red-200",
+    },
+    default: {
+      bgDark: "bg-gray-700/30",
+      bgLight: "bg-gray-100",
+      textDark: "text-gray-200",
+      textLight: "text-gray-800",
+      borderDark: "border-gray-600",
+      borderLight: "border-gray-200",
+    },
+  },
+
+  status: {
+    pending: {
+      bgDark: "bg-yellow-900/30",
+      bgLight: "bg-yellow-50",
+      textDark: "text-yellow-200",
+      textLight: "text-yellow-800",
+      borderDark: "border-yellow-800",
+      borderLight: "border-yellow-200",
+    },
+    confirmed: {
+      bgDark: "bg-blue-900/30",
+      bgLight: "bg-blue-50",
+      textDark: "text-blue-200",
+      textLight: "text-blue-800",
+      borderDark: "border-blue-800",
+      borderLight: "border-blue-200",
+    },
+    approved: {
+      bgDark: "bg-green-900/30",
+      bgLight: "bg-green-50",
+      textDark: "text-green-200",
+      textLight: "text-green-800",
+      borderDark: "border-green-800",
+      borderLight: "border-green-200",
+    },
+    rejected: {
+      bgDark: "bg-red-900/30",
+      bgLight: "bg-red-50",
+      textDark: "text-red-200",
+      textLight: "text-red-800",
+      borderDark: "border-red-800",
+      borderLight: "border-red-200",
+    },
+    default: {
+      bgDark: "bg-gray-700/30",
+      bgLight: "bg-gray-100",
+      textDark: "text-gray-200",
+      textLight: "text-gray-800",
+      borderDark: "border-gray-600",
+      borderLight: "border-gray-200",
+    },
+  },
+
+  registrationStatus: {
+    pending: {
+      bgDark: "bg-yellow-900/30",
+      bgLight: "bg-yellow-50",
+      textDark: "text-yellow-200",
+      textLight: "text-yellow-800",
+      borderDark: "border-yellow-800",
+      borderLight: "border-yellow-200",
+    },
+    confirmed: {
+      bgDark: "bg-blue-900/30",
+      bgLight: "bg-blue-50",
+      textDark: "text-blue-200",
+      textLight: "text-blue-800",
+      borderDark: "border-blue-800",
+      borderLight: "border-blue-200",
+    },
+    approved: {
+      bgDark: "bg-green-900/30",
+      bgLight: "bg-green-50",
+      textDark: "text-green-200",
+      textLight: "text-green-800",
+      borderDark: "border-green-800",
+      borderLight: "border-green-200",
+    },
+    rejected: {
+      bgDark: "bg-red-900/30",
+      bgLight: "bg-red-50",
+      textDark: "text-red-200",
+      textLight: "text-red-800",
+      borderDark: "border-red-800",
+      borderLight: "border-red-200",
+    },
+    default: {
+      bgDark: "bg-gray-700/30",
+      bgLight: "bg-gray-100",
+      textDark: "text-gray-200",
+      textLight: "text-gray-800",
+      borderDark: "border-gray-600",
+      borderLight: "border-gray-200",
+    },
+  },
 };
 
+// Normalize the tier name for consistency
 const normalizeTier = (tier) => {
-  if (!tier) return "Associate Member";
-  if (tier.includes("Associate Member")) return "Associate Member";
-  if (tier.includes("Full Member")) return "Full Member";
-  if (tier.includes("Gold Member")) return "Gold Member";
-  if (tier.includes("Free Member")) return "Free Member";
-  return tier;
+  if (!tier) return "free member";
+  return tier.toLowerCase().replace(/\s*\(tier.*\)\s*/g, ""); // Normalize and remove extra details like "(Tier 3)"
 };
 
-const getStatusBadgeColor = (days, mode) => {
-  if (days < 3) {
-    return {
-      bg: mode === "dark" ? "bg-red-900/30" : "bg-red-50",
-      text: mode === "dark" ? "text-red-200" : "text-red-800",
-      icon: "text-red-400",
-    };
-  } else if (days < 7) {
-    return {
-      bg: mode === "dark" ? "bg-amber-900/30" : "bg-amber-50",
-      text: mode === "dark" ? "text-amber-200" : "text-amber-800",
-      icon: "text-amber-400",
-    };
-  } else {
-    return {
-      bg: mode === "dark" ? "bg-emerald-900/30" : "bg-emerald-50",
-      text: mode === "dark" ? "text-emerald-200" : "text-emerald-800",
-      icon: "text-emerald-400",
-    };
-  }
-};
-
-const getRegistrationStatusColor = (status, mode) => {
-  if (status === "pending") {
-    return {
-      bg: mode === "dark" ? "bg-yellow-900/30" : "bg-yellow-50",
-      text: mode === "dark" ? "text-yellow-200" : "text-yellow-800",
-      border: mode === "dark" ? "border-yellow-800" : "border-yellow-200",
-    };
-  } else if (status === "confirmed") {
-    return {
-      bg: mode === "dark" ? "bg-blue-900/30" : "bg-blue-50", // Blue shade for confirmed
-      text: mode === "dark" ? "text-blue-200" : "text-blue-800",
-      border: mode === "dark" ? "border-blue-800" : "border-blue-200",
-    };
-  } else if (status === "approved") {
-    return {
-      bg: mode === "dark" ? "bg-green-900/30" : "bg-green-50",
-      text: mode === "dark" ? "text-green-200" : "text-green-800",
-      border: mode === "dark" ? "border-green-800" : "border-green-200",
-    };
-  } else if (status === "rejected") {
-    return {
-      bg: mode === "dark" ? "bg-red-900/30" : "bg-red-50",
-      text: mode === "dark" ? "text-red-200" : "text-red-800",
-      border: mode === "dark" ? "border-red-800" : "border-red-200",
-    };
-  } else {
-    return {
-      bg: mode === "dark" ? "bg-gray-700/30" : "bg-gray-100",
-      text: mode === "dark" ? "text-gray-200" : "text-gray-800",
-      border: mode === "dark" ? "border-gray-600" : "border-gray-200",
-    };
-  }
-};
-
-
+// Tier Badge Component
 const TierBadge = ({ tier, mode }) => {
-  const colors = getTierBadgeColor(tier, mode);
+  const normalizedTier = normalizeTier(tier); // Normalize the tier name
+  const colors = getBadgeColor(normalizedTier, mode, colorMaps.tier); // Get colors based on mode and tier
+
   return (
     <span
       className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${colors.bg} ${colors.text} ${colors.border}`}
@@ -122,8 +182,10 @@ const TierBadge = ({ tier, mode }) => {
   );
 };
 
+// Status Badge Component
 const StatusBadge = ({ days, mode }) => {
-  const colors = getStatusBadgeColor(days, mode);
+  const status = days < 3 ? "pending" : days < 7 ? "confirmed" : "approved";
+  const colors = getBadgeColor(status, mode, colorMaps.status);
   return (
     <div
       className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg ${colors.bg}`}
@@ -136,8 +198,9 @@ const StatusBadge = ({ days, mode }) => {
   );
 };
 
+// Registration Status Badge Component
 const RegistrationStatusBadge = ({ status, mode }) => {
-  const colors = getRegistrationStatusColor(status, mode);
+  const colors = getBadgeColor(status, mode, colorMaps.registrationStatus);
   return (
     <span
       className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${colors.bg} ${colors.text} ${colors.border}`}
@@ -147,15 +210,7 @@ const RegistrationStatusBadge = ({ status, mode }) => {
   );
 };
 
-// Single export statement for all named exports
-export {
-  TierBadge,
-  StatusBadge,
-  RegistrationStatusBadge,
-  tierBadgeStyles,
-  normalizeTier,
-};
-
+// Prop Types for validation
 TierBadge.propTypes = {
   tier: PropTypes.string.isRequired,
   mode: PropTypes.oneOf(["light", "dark"]).isRequired,
@@ -170,3 +225,5 @@ RegistrationStatusBadge.propTypes = {
   status: PropTypes.string.isRequired,
   mode: PropTypes.oneOf(["light", "dark"]).isRequired,
 };
+
+export { TierBadge, StatusBadge, RegistrationStatusBadge };

@@ -9,7 +9,7 @@ import HrSidebar from "@/layouts/hrSidebar";
 import SimpleFooter from "@/layouts/simpleFooter";
 import useSidebar from "@/hooks/useSidebar";
 import toast, { Toaster } from "react-hot-toast";
-import { tierBadgeStyles } from "@/components/Badge";
+import { TierBadge } from "@/components/Badge";
 
 export default function BusinessOpportunities({ mode = "light", toggleMode }) {
   const { isSidebarOpen, toggleSidebar, sidebarState, updateDragOffset } =
@@ -210,11 +210,9 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
                         Your current tier
                       </div>
                       <div
-                        className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg ${
-                          tierBadgeStyles[
-                            user?.selected_tier || "Free Member (Tier 4)"
-                          ]
-                        }`}
+                        className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg ${(
+                          <TierBadge tier={user?.selected_tier} mode={mode} />
+                        )}`}
                       >
                         <span className="iconify" data-icon="mdi:crown"></span>
                         <span className="font-semibold">

@@ -115,9 +115,10 @@ export default function OffersFilters({
                     className={`w-full px-4 py-3 rounded-xl ${inputBg} ${textColor} border border-transparent focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/50 backdrop-blur-sm`}
                   >
                     <option value="all">All Tiers</option>
-                    <option value="Associate Members">Associate Members</option>
-                    <option value="Full Members">Full Members</option>
-                    <option value="Founding Members">Founding Members</option>
+                    <option value="Associate Member">Associate Member</option>
+                    <option value="Full Member">Full Member</option>
+                    <option value="Gold Member">Gold Member</option>
+                    <option value="Free Member">Free Member</option>
                   </select>
                 </div>
               </form>

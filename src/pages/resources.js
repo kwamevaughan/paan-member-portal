@@ -11,6 +11,7 @@ import useSidebar from "@/hooks/useSidebar";
 import toast, { Toaster } from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
 import VideoModal from "@/components/VideoModal";
+import { tierBadgeStyles } from "@/components/Badge";
 
 export default function Resources({ mode = "light", toggleMode }) {
   const { isSidebarOpen, toggleSidebar, sidebarState, updateDragOffset } =
@@ -37,8 +38,8 @@ export default function Resources({ mode = "light", toggleMode }) {
 
   const canAccessResource = (resourceTier) => {
     if (resourceTier === "All") return true;
-    const tiers = ["Associate", "Full", "Founding"];
-    const userTier = user?.selected_tier || "Associate";
+    const tiers = ["Associate", "Full", "Gold", "Free"];
+    const userTier = user?.selected_tier || "Free Member";
     const userTierIndex = tiers.indexOf(userTier);
     const resourceTierIndex = tiers.indexOf(resourceTier);
     return userTierIndex >= resourceTierIndex;
@@ -87,12 +88,6 @@ export default function Resources({ mode = "light", toggleMode }) {
     }
   };
 
-  const tierBadgeStyles = {
-    Founding: "bg-gradient-to-r from-blue-500 to-indigo-600 text-white",
-    Full: "bg-gradient-to-r from-green-500 to-teal-600 text-white",
-    Associate: "bg-gradient-to-r from-yellow-400 to-amber-500 text-white",
-    All: "bg-gradient-to-r from-gray-500 to-gray-600 text-white",
-  };
 
   if (userLoading || resourcesLoading) {
     return LoadingComponent;
@@ -195,12 +190,12 @@ export default function Resources({ mode = "light", toggleMode }) {
                       </div>
                       <div
                         className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg ${
-                          tierBadgeStyles[user?.selected_tier || "Associate"]
+                          tierBadgeStyles[user?.selected_tier || "Free Member"]
                         }`}
                       >
                         <Icon icon="mdi:crown" />
                         <span className="font-semibold">
-                          {user?.selected_tier || "Associate"}
+                          {user?.selected_tier || "Free Member"}
                         </span>
                       </div>
                     </div>

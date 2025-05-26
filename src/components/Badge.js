@@ -3,7 +3,7 @@ import { Icon } from "@iconify/react";
 import PropTypes from "prop-types";
 
 const getTierBadgeColor = (tier, mode) => {
-  if (tier === "Founding Agency (Tier 1)") {
+  if (tier === "Associate Member (Tier 1)") {
     return {
       bg: mode === "dark" ? "bg-blue-900/30" : "bg-blue-50",
       text: mode === "dark" ? "text-blue-200" : "text-blue-800",
@@ -15,11 +15,17 @@ const getTierBadgeColor = (tier, mode) => {
       text: mode === "dark" ? "text-emerald-200" : "text-emerald-800",
       border: mode === "dark" ? "border-emerald-800" : "border-emerald-200",
     };
-  } else if (tier === "Associate Member (Tier 3)") {
+  } else if (tier === "Gold Member (Tier 3)") {
     return {
       bg: mode === "dark" ? "bg-amber-900/30" : "bg-amber-50",
       text: mode === "dark" ? "text-amber-200" : "text-amber-800",
       border: mode === "dark" ? "border-amber-800" : "border-amber-200",
+    };
+  } else if (tier === "Free Member (Tier 4)") {
+    return {
+      bg: mode === "dark" ? "bg-red-900/30" : "bg-red-50",
+      text: mode === "dark" ? "text-red-200" : "text-red-800",
+      border: mode === "dark" ? "border-red-800" : "border-red-200",
     };
   } else {
     return {
@@ -31,18 +37,20 @@ const getTierBadgeColor = (tier, mode) => {
 };
 
 const tierBadgeStyles = {
-  "Founding Members":
+  "Associate Member":
     "bg-gradient-to-r from-yellow-600 to-amber-600 text-white",
-  "Full Members": "bg-gradient-to-r from-blue-600 to-indigo-600 text-white",
-  "Associate Members": "bg-gradient-to-r from-green-600 to-teal-600 text-white",
+  "Full Member": "bg-gradient-to-r from-blue-600 to-indigo-600 text-white",
+  "Gold Member": "bg-gradient-to-r from-green-600 to-teal-600 text-white",
+  "Free Member": "bg-gradient-to-r from-red-600 to-pink-600 text-white",
   All: "bg-gradient-to-r from-purple-600 to-pink-600 text-white",
 };
 
 const normalizeTier = (tier) => {
-  if (!tier) return "Associate Members";
-  if (tier.includes("Associate Member")) return "Associate Members";
-  if (tier.includes("Full Member")) return "Full Members";
-  if (tier.includes("Founding Member")) return "Founding Members";
+  if (!tier) return "Associate Member";
+  if (tier.includes("Associate Member")) return "Associate Member";
+  if (tier.includes("Full Member")) return "Full Member";
+  if (tier.includes("Gold Member")) return "Gold Member";
+  if (tier.includes("Free Member")) return "Free Member";
   return tier;
 };
 

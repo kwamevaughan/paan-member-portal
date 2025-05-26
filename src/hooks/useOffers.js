@@ -1,29 +1,23 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
+import { normalizeTier } from "@/components/Badge";
 
 const useOffers = (filters = { tier_restriction: "" }) => {
   const [offers, setOffers] = useState([]);
   const [filterOptions, setFilterOptions] = useState({
     tier_restrictions: [
       "all",
-      "Associate Members",
-      "Full Members",
-      "Founding Members",
+      "Associate Member",
+      "Full Member",
+      "Gold Member",
+      "Free Member",
     ],
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Normalize tier names
-  const normalizeTier = (tier) => {
-    if (!tier) return "Associate Members";
-    if (tier.includes("Associate Member")) return "Associate Members";
-    if (tier.includes("Full Member")) return "Full Members";
-    if (tier.includes("Founding Member")) return "Founding Members";
-    return tier;
-  };
-
+  
   const fetchOffers = async () => {
     try {
       setLoading(true);

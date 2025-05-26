@@ -29,19 +29,21 @@ export default function Updates({ mode = "light", toggleMode }) {
 
   // Normalize tier for comparison
   const normalizeTier = (tier) => {
-    if (!tier) return "Associate Members";
-    if (tier.includes("Associate")) return "Associate Members";
-    if (tier.includes("Full")) return "Full Members";
-    if (tier.includes("Founding")) return "Founding Members";
+    if (!tier) return "Associate Member";
+    if (tier.includes("Associate")) return "Associate Member";
+    if (tier.includes("Full")) return "Full Member";
+    if (tier.includes("Gold")) return "Gold Member";
+    if (tier.includes("Free")) return "Free Member";
     return tier;
   };
 
   // Tier hierarchy for access checking
   const tierHierarchy = {
-    "Associate Members": 1,
-    "Full Members": 2,
-    "Founding Members": 3,
-    "All": 0,
+    "Associate Member": 1,
+    "Full Member": 2,
+    "Gold Member": 3,
+    "Free Member": 4,
+    All: 0,
   };
 
   // Check if update is accessible based on user's tier
@@ -50,8 +52,7 @@ export default function Updates({ mode = "light", toggleMode }) {
     const normalizedUserTier = normalizeTier(userTier);
     return (
       tierHierarchy[normalizedUpdateTier] <=
-        tierHierarchy[normalizedUserTier] ||
-      normalizedUpdateTier === "All"
+        tierHierarchy[normalizedUserTier] || normalizedUpdateTier === "All"
     );
   };
 
@@ -84,23 +85,30 @@ export default function Updates({ mode = "light", toggleMode }) {
         update.description?.toLowerCase().includes(filterTerm.toLowerCase())
     )
     .sort((a, b) => {
-      const aAccessible = isUpdateAccessible(a.tier_restriction, user?.selected_tier);
-      const bAccessible = isUpdateAccessible(b.tier_restriction, user?.selected_tier);
+      const aAccessible = isUpdateAccessible(
+        a.tier_restriction,
+        user?.selected_tier
+      );
+      const bAccessible = isUpdateAccessible(
+        b.tier_restriction,
+        user?.selected_tier
+      );
       if (aAccessible && !bAccessible) return -1; // Accessible first
       if (!aAccessible && bAccessible) return 1; // Disabled last
       return new Date(b.created_at) - new Date(a.created_at); // Maintain created_at order within groups
     });
 
   // Get the latest updated_at date
-  const latestUpdateDate = updates.length > 0
-    ? new Date(
-        Math.max(...updates.map((update) => new Date(update.updated_at)))
-      ).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })
-    : "No updates available";
+  const latestUpdateDate =
+    updates.length > 0
+      ? new Date(
+          Math.max(...updates.map((update) => new Date(update.updated_at)))
+        ).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })
+      : "No updates available";
 
   // Debug router changes
   useEffect(() => {
@@ -525,9 +533,7 @@ export default function Updates({ mode = "light", toggleMode }) {
                                   ? "bg-blue-500/10 text-blue-600"
                                   : "bg-gray-200/20 text-gray-400"
                               } ${
-                                isAccessible
-                                  ? "group-hover:scale-110"
-                                  : ""
+                                isAccessible ? "group-hover:scale-110" : ""
                               } transition-transform duration-200`}
                             >
                               <Icon
@@ -560,8 +566,8 @@ export default function Updates({ mode = "light", toggleMode }) {
                                       ? "text-gray-300"
                                       : "text-gray-500"
                                     : isAccessible
-                                      ? "text-gray-600"
-                                      : "text-gray-400"
+                                    ? "text-gray-600"
+                                    : "text-gray-400"
                                 } ${
                                   viewMode === "grid"
                                     ? "line-clamp-3"
@@ -586,8 +592,8 @@ export default function Updates({ mode = "light", toggleMode }) {
                                     ? "text-gray-400"
                                     : "text-gray-500"
                                   : isAccessible
-                                    ? "text-gray-500"
-                                    : "text-gray-400"
+                                  ? "text-gray-500"
+                                  : "text-gray-400"
                               }`}
                             >
                               {new Date(update.created_at).toLocaleDateString(
@@ -618,7 +624,9 @@ export default function Updates({ mode = "light", toggleMode }) {
                                 } shadow-md ${
                                   isAccessible ? "hover:shadow-lg" : ""
                                 }`}
-                                onClick={(e) => !isAccessible && e.preventDefault()}
+                                onClick={(e) =>
+                                  !isAccessible && e.preventDefault()
+                                }
                               >
                                 <span>{update.cta_text}</span>
                                 <Icon

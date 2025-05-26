@@ -8,7 +8,7 @@ const useResources = (
   const [resources, setResources] = useState([]);
   const [filterOptions, setFilterOptions] = useState({
     resource_types: ["PDF", "Video", "Workshop"],
-    tier_restrictions: ["All", "Associate", "Full", "Founding"],
+    tier_restrictions: ["All", "Associate", "Full", "Gold", "Free"],
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

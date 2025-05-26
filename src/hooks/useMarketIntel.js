@@ -1,20 +1,22 @@
 import { useState, useEffect, useMemo } from "react";
 import toast from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
+import { normalizeTier } from "@/components/Badge";
 
 const useMarketIntel = (
   filters = { tier_restriction: "all", region: "all", type: "all" },
   searchTerm = "",
   initialMarketIntel = [],
-  userTier = "Associate Members"
+  userTier = "Associate Member"
 ) => {
   const [marketIntel, setMarketIntel] = useState(initialMarketIntel);
   const [filterOptions, setFilterOptions] = useState({
     tier_restrictions: [
       "all",
-      "Associate Members",
-      "Full Members",
-      "Founding Members",
+      "Associate Member",
+      "Full Member",
+      "Gold Member",
+      "Free Member",
     ],
     regions: ["all"],
     types: ["all"],
@@ -22,20 +24,15 @@ const useMarketIntel = (
   const [loading, setLoading] = useState(!initialMarketIntel.length);
   const [error, setError] = useState(null);
 
-  const normalizeTier = (tier) => {
-    if (!tier) return "Associate Members";
-    if (tier.includes("Associate Member")) return "Associate Members";
-    if (tier.includes("Full Member")) return "Full Members";
-    if (tier.includes("Founding Member")) return "Founding Members";
-    return tier;
-  };
+  
 
   const getAccessibleTiers = (userTier) => {
     const normalizedUserTier = normalizeTier(userTier);
     const tierHierarchy = [
-      "Associate Members",
-      "Full Members",
-      "Founding Members",
+      "Associate Member",
+      "Full Member",
+      "Gold Member",
+      "Free Member",
     ];
     const userTierIndex = tierHierarchy.indexOf(normalizedUserTier);
     return ["All", ...tierHierarchy.slice(0, userTierIndex + 1)];

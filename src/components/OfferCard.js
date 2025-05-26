@@ -1,34 +1,30 @@
 import { Icon } from "@iconify/react";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
+import { normalizeTier } from "@/components/Badge";
 
 export default function OfferCard({ offer, userTier, onClick, mode }) {
   const isDark = mode === "dark";
   const tierColors = {
-    "Founding Members": isDark
+    "Associate Member": isDark
       ? "bg-yellow-900/30 text-yellow-400 border-yellow-700/50"
       : "bg-yellow-100 text-yellow-800 border-yellow-200",
-    "Full Members": isDark
+    "Full Member": isDark
       ? "bg-blue-900/30 text-blue-400 border-blue-700/50"
       : "bg-blue-100 text-blue-800 border-blue-200",
-    "Associate Members": isDark
+    "Gold Member": isDark
       ? "bg-green-900/30 text-green-400 border-green-700/50"
       : "bg-green-100 text-green-800 border-green-200",
+    "Free Member": isDark
+      ? "bg-red-900/30 text-red-400 border-red-700/50"
+      : "bg-red-100 text-red-800 border-red-200",
     All: isDark
       ? "bg-purple-900/30 text-purple-400 border-purple-700/50"
       : "bg-purple-100 text-purple-800 border-purple-200",
   };
 
-  // Normalize tier names
-  const normalizeTier = (tier) => {
-    if (!tier) return "Associate Members";
-    if (tier.includes("Associate Member")) return "Associate Members";
-    if (tier.includes("Full Member")) return "Full Members";
-    if (tier.includes("Founding Member")) return "Founding Members";
-    return tier;
-  };
 
-  const tiers = ["Associate Members", "Full Members", "Founding Members"];
+  const tiers = ["Associate Member", "Full Member", "Gold Member", "Free Member"];
   const normalizedUserTier = normalizeTier(userTier);
   const normalizedOfferTier = normalizeTier(offer.tier_restriction);
   const userTierIndex = normalizedUserTier

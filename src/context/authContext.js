@@ -218,7 +218,7 @@ export const AuthProvider = ({ children }) => {
                 primaryContactName: name,
                 auth_user_id: authUserId,
                 job_type: "agency",
-                selected_tier: "Associate Member (Tier 3)",
+                selected_tier: "Free Member (Tier 4)",
               })
               .select()
               .single();

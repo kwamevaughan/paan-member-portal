@@ -9,6 +9,7 @@ import HrSidebar from "@/layouts/hrSidebar";
 import SimpleFooter from "@/layouts/simpleFooter";
 import useSidebar from "@/hooks/useSidebar";
 import toast, { Toaster } from "react-hot-toast";
+import { tierBadgeStyles } from "@/components/Badge";
 
 export default function BusinessOpportunities({ mode = "light", toggleMode }) {
   const { isSidebarOpen, toggleSidebar, sidebarState, updateDragOffset } =
@@ -63,11 +64,12 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
 
   const canAccessOpportunity = (opportunityTier) => {
     const tiers = [
-      "Associate Member (Tier 3)",
+      "Associate Member (Tier 1)",
       "Full Member (Tier 2)",
-      "Founding Agency (Tier 1)",
+      "Gold Member (Tier 3)",
+      "Free Member (Tier 4)",
     ];
-    const userTier = user?.selected_tier || "Associate Member (Tier 3)";
+    const userTier = user?.selected_tier || "Free Member (Tier 4)";
     const userTierIndex = tiers.indexOf(userTier);
     const oppTierIndex = tiers.indexOf(opportunityTier);
     return userTierIndex >= oppTierIndex;
@@ -119,14 +121,7 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
     );
   }
 
-  const tierBadgeStyles = {
-    "Founding Agency (Tier 1)":
-      "bg-gradient-to-r from-blue-500 to-indigo-600 text-white",
-    "Full Member (Tier 2)":
-      "bg-gradient-to-r from-green-500 to-teal-600 text-white",
-    "Associate Member (Tier 3)":
-      "bg-gradient-to-r from-yellow-400 to-amber-500 text-white",
-  };
+  
 
   return (
     <div
@@ -217,13 +212,13 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
                       <div
                         className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg ${
                           tierBadgeStyles[
-                            user?.selected_tier || "Associate Member (Tier 3)"
+                            user?.selected_tier || "Free Member (Tier 4)"
                           ]
                         }`}
                       >
                         <span className="iconify" data-icon="mdi:crown"></span>
                         <span className="font-semibold">
-                          {user?.selected_tier || "Associate Member (Tier 3)"}
+                          {user?.selected_tier || "Free Member (Tier 4)"}
                         </span>
                       </div>
                     </div>
@@ -411,7 +406,7 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
                     <div className="absolute top-0 right-0 p-3">
                       <span
                         className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
-                          opp.tier.includes("Founding")
+                          opp.tier.includes("Associate")
                             ? "bg-blue-600 text-white"
                             : opp.tier.includes("Full")
                             ? "bg-emerald-600 text-white"
@@ -421,7 +416,7 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
                         <span
                           className="iconify"
                           data-icon={
-                            opp.tier.includes("Founding")
+                            opp.tier.includes("Associate")
                               ? "mdi:crown"
                               : opp.tier.includes("Full")
                               ? "mdi:check-decagram"

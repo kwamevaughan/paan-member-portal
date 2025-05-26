@@ -28,19 +28,6 @@ export default function Events({ mode = "light", toggleMode }) {
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [showRegistrationsModal, setShowRegistrationsModal] = useState(false);
 
-  // Tier mappings
-  const tierMap = {
-    Founding: "Founding Agency (Tier 1)",
-    Full: "Full Member (Tier 2)",
-    Associate: "Associate Member (Tier 3)",
-    All: "All Members",
-  };
-  const reverseTierMap = {
-    "Founding Agency (Tier 1)": "Founding",
-    "Full Member (Tier 2)": "Full",
-    "Associate Member (Tier 3)": "Associate",
-  };
-
   const {
     events,
     registeredEvents,
@@ -48,7 +35,7 @@ export default function Events({ mode = "light", toggleMode }) {
     loading: eventsLoading,
     error,
     handleEventRegistration,
-  } = useEvents(filters, reverseTierMap[user?.selected_tier] || "Member");
+  } = useEvents(filters, user?.selected_tier || "Free Member");
 
   // Set eventType filter based on URL query
   useEffect(() => {
@@ -96,8 +83,8 @@ export default function Events({ mode = "light", toggleMode }) {
 
   const canAccessEvent = (eventTier) => {
     if (eventTier === "All") return true;
-    const tiers = ["Associate", "Full", "Founding"];
-    const userTier = reverseTierMap[user?.selected_tier] || "Member";
+    const tiers = ["Associate Member", "Full Member", "Gold Member", "Free Member"];
+  const userTier = user?.selected_tier || "Member";
     const eventTierIndex = tiers.indexOf(eventTier);
     const userTierIndex = tiers.indexOf(userTier);
     return userTierIndex >= eventTierIndex;

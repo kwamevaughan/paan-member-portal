@@ -8,6 +8,17 @@ const badgeCache = {
   status: {},
 };
 
+// Add a mapping of tiers to icons
+const tierIcons = {
+  "associate member": "mdi:account-group",
+  "full member": "mdi:account-check-outline",
+  "gold member": "tabler:medal",
+  "free member": "mdi:account-off",
+  default: "mdi:account-question",
+};
+
+
+
 // Helper function to get badge colors from a given color map
 const getBadgeColor = (type, mode, colorMap) => {
   if (badgeCache[type] && badgeCache[type][mode]) {
@@ -172,11 +183,13 @@ const normalizeTier = (tier) => {
 const TierBadge = ({ tier, mode }) => {
   const normalizedTier = normalizeTier(tier); // Normalize the tier name
   const colors = getBadgeColor(normalizedTier, mode, colorMaps.tier); // Get colors based on mode and tier
+  const icon = tierIcons[normalizedTier] || tierIcons["default"]; // Get the appropriate icon
 
   return (
     <span
       className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${colors.bg} ${colors.text} ${colors.border}`}
     >
+      <Icon icon={icon} className="mr-1 w-6 h-6" />
       {tier}
     </span>
   );

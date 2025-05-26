@@ -1,4 +1,3 @@
-// hooks/useBusinessOpportunities.js
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import debounce from "lodash.debounce";
@@ -12,15 +11,14 @@ export const useBusinessOpportunities = (filters = {}) => {
     projectTypes: [],
     tiers: [],
   });
-  const [loading, setLoading] = useState(false); // Start false to avoid flicker
+  const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
   const [error, setError] = useState(null);
   const [isInitialFetch, setIsInitialFetch] = useState(true);
 
-  // Fetch filter options once on mount
   useEffect(() => {
     const fetchFilterOptions = async () => {
-      setLoading(true); // Show loading for initial options fetch
+      setLoading(true);
       try {
         const [
           countriesRes,
@@ -45,9 +43,11 @@ export const useBusinessOpportunities = (filters = {}) => {
             .from("business_opportunities")
             .select("project_type")
             .order("project_type"),
-          supabase.from("business_opportunities").select("tier").order("tier"),
+          supabase
+            .from("business_opportunities")
+            .select("tier_restriction")
+            .order("tier_restriction"), // Updated to tier_restriction
         ]);
-
 
         const newFilterOptions = {
           countries: [
@@ -81,7 +81,9 @@ export const useBusinessOpportunities = (filters = {}) => {
             .filter(Boolean)
             .slice(0, 10),
           tiers: [
-            ...new Set(tiersRes.data?.map((item) => item.tier?.trim()) || []),
+            ...new Set(
+              tiersRes.data?.map((item) => item.tier_restriction?.trim()) || []
+            ),
           ]
             .filter(Boolean)
             .slice(0, 10),
@@ -97,20 +99,17 @@ export const useBusinessOpportunities = (filters = {}) => {
     };
 
     fetchFilterOptions();
-  }, []); // Run once on mount
+  }, []);
 
   const fetchOpportunities = useMemo(
     () =>
       debounce(async (currentFilters, isInitial = false) => {
-        if (fetching) {
-          return;
-        }
+        if (fetching) return;
         setFetching(true);
-        if (isInitial) setLoading(true); // Only set loading on initial fetch
+        if (isInitial) setLoading(true);
         try {
           setError(null);
 
-          // Apply server-side filters
           let query = supabase
             .from("business_opportunities")
             .select("*")
@@ -125,7 +124,7 @@ export const useBusinessOpportunities = (filters = {}) => {
           if (currentFilters.projectType)
             query = query.eq("project_type", currentFilters.projectType);
           if (currentFilters.tier)
-            query = query.eq("tier", currentFilters.tier);
+            query = query.eq("tier_restriction", currentFilters.tier); // Updated to tier_restriction
 
           const { data, error } = await query;
 
@@ -153,7 +152,6 @@ export const useBusinessOpportunities = (filters = {}) => {
   );
 
   useEffect(() => {
-    
     fetchOpportunities(filters, isInitialFetch);
   }, [
     filters.country,

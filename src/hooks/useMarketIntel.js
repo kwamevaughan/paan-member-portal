@@ -24,8 +24,6 @@ const useMarketIntel = (
   const [loading, setLoading] = useState(!initialMarketIntel.length);
   const [error, setError] = useState(null);
 
-  
-
   const getAccessibleTiers = (userTier) => {
     const normalizedUserTier = normalizeTier(userTier);
     const tierHierarchy = [
@@ -75,12 +73,18 @@ const useMarketIntel = (
       }
 
       const { data: intelData, error: intelError } = await query;
-      if (intelError) throw new Error(intelError.message);
+      if (intelError) {
+        console.error("[useMarketIntel] Supabase error:", intelError);
+        throw new Error(intelError.message);
+      }
 
       const { data: feedbackData, error: feedbackError } = await supabase
         .from("market_intel_feedback")
         .select("market_intel_id, user_id, rating, comment, created_at");
-      if (feedbackError) throw new Error(feedbackError.message);
+      if (feedbackError) {
+        console.error("[useMarketIntel] Feedback error:", feedbackError);
+        throw new Error(feedbackError.message);
+      }
 
       const feedbackByIntel = feedbackData.reduce((acc, fb) => {
         acc[fb.market_intel_id] = acc[fb.market_intel_id] || [];
@@ -132,7 +136,7 @@ const useMarketIntel = (
         ],
       }));
     } catch (err) {
-      console.error("[useMarketIntel] Error:", err.message);
+      console.error("[useMarketIntel] Detailed error:", err);
       setError(err.message);
       toast.error("Failed to load market intel");
     } finally {

@@ -1,8 +1,7 @@
 import { Icon } from "@iconify/react";
 import Link from "next/link";
-import { TierBadge, normalizeTier } from "@/components/Badge"; 
 
-export default function WelcomeCard({ user, mode }) {
+export default function WelcomeCard({ user, mode, TierBadge }) {
   return (
     <div className="relative mt-6 mb-10 group">
       {/* Glass morphism backdrop */}
@@ -75,35 +74,23 @@ export default function WelcomeCard({ user, mode }) {
               {/* Stats section */}
               <div className="flex items-center space-x-6 pt-2">
                 <div
-                  className={`px-4 py-2 rounded-xl ${
+                  className={`py-2 rounded-xl pr-4 ${
                     mode === "dark"
                       ? "bg-blue-500/20 border border-blue-400/30"
                       : "bg-blue-50 border border-blue-200"
                   }`}
                 >
-                  {/* <span
-                    className={`text-sm font-medium ${
-                      mode === "dark" ? "text-blue-300" : "text-blue-700"
+                  <span
+                    className={`px-2 py-2 rounded-xl mr-2 ${
+                      mode === "dark"
+                        ? "bg-orange-500/20 border border-orange-400/30"
+                        : "bg-orange-50 border border-orange-200"
                     }`}
                   >
-                    {totalApplicants} candidates
-                  </span> */}
-                </div>
-
-                <div
-                  className={`px-4 py-2 rounded-xl ${
-                    mode === "dark"
-                      ? "bg-orange-500/20 border border-orange-400/30"
-                      : "bg-orange-50 border border-orange-200"
-                  }`}
-                >
-                  {/* <span
-                    className={`text-sm font-medium ${
-                      mode === "dark" ? "text-orange-300" : "text-orange-700"
-                    }`}
-                  >
-                    {pendingReviews} pending reviews
-                  </span> */}
+                    Latest:
+                  </span>
+                  Global Brand Partnership ||{" "}
+                  <span className="">Posted under Business Opportunities</span>
                 </div>
               </div>
             </div>

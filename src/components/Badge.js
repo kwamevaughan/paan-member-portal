@@ -239,4 +239,4 @@ RegistrationStatusBadge.propTypes = {
   mode: PropTypes.oneOf(["light", "dark"]).isRequired,
 };
 
-export { TierBadge, StatusBadge, RegistrationStatusBadge };
+export { TierBadge, StatusBadge, RegistrationStatusBadge, normalizeTier };

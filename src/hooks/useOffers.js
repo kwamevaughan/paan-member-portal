@@ -17,7 +17,6 @@ const useOffers = (filters = { tier_restriction: "" }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  
   const fetchOffers = async () => {
     try {
       setLoading(true);
@@ -42,10 +41,7 @@ const useOffers = (filters = { tier_restriction: "" }) => {
       const { data: offersData, error: offersError } = await query;
 
       if (offersError) {
-        console.error(
-          "[useOffers] Error fetching offers:",
-          offersError.message
-        );
+        console.error("[useOffers] Supabase error:", offersError);
         throw new Error(`Failed to fetch offers: ${offersError.message}`);
       }
 
@@ -57,10 +53,7 @@ const useOffers = (filters = { tier_restriction: "" }) => {
         .select("offer_id, rating");
 
       if (feedbackError) {
-        console.error(
-          "[useOffers] Error fetching feedback:",
-          feedbackError.message
-        );
+        console.error("[useOffers] Feedback error:", feedbackError);
         throw new Error(`Failed to fetch feedback: ${feedbackError.message}`);
       }
 
@@ -90,7 +83,7 @@ const useOffers = (filters = { tier_restriction: "" }) => {
       console.log("[useOffers] Enriched offers:", enrichedOffers);
       setOffers(enrichedOffers);
     } catch (err) {
-      console.error("[useOffers] Error:", err.message);
+      console.error("[useOffers] Detailed error:", err);
       setError(err.message);
       toast.error("Failed to load offers");
     } finally {

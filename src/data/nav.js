@@ -20,6 +20,17 @@ export const sidebarNav = [
     ],
   },
   {
+    category: "Regional Hubs",
+    items: [
+      {
+        href: "/regional-hubs",
+        icon: "mdi:office-building",
+        label: "Access Hubs",
+      },
+    ],
+  },
+
+  {
     category: "Updates",
     items: [
       {

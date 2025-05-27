@@ -19,6 +19,19 @@ export default function WelcomeCard({ user, mode }) {
     null
   );
 
+  const getSectionRoute = (section) => {
+    const routes = {
+      "Business Opportunities": "business-opportunities",
+      Events: "events",
+      Resources: "resources",
+      "Market Intel": "market-intel",
+      Offers: "offers",
+      Updates: "updates",
+    };
+    return routes[section] || "dashboard"; // fallback if section is missing
+  };
+
+
   // Format created_at to a readable date
   const formatJoinDate = (createdAt) => {
     if (!createdAt) return "N/A";
@@ -132,16 +145,19 @@ export default function WelcomeCard({ user, mode }) {
                         mode === "dark" ? "text-white" : "text-gray-900"
                       }
                     >
-                      {latestItem.title}
+                      "{latestItem.title}"
                     </span>{" "}
-                    ||{" "}
-                    <span
+                    {" "}
+                    <Link
+                      href={`/${getSectionRoute(latestItem.section)}`}
                       className={
-                        mode === "dark" ? "text-gray-300" : "text-gray-600"
+                        mode === "dark"
+                          ? "text-blue-400 hover:underline"
+                          : "text-gray-600 hover:underline"
                       }
                     >
                       Posted under {latestItem.section}
-                    </span>
+                    </Link>
                   </>
                 ) : (
                   <span
@@ -171,36 +187,36 @@ export default function WelcomeCard({ user, mode }) {
             >
               {/* Membership info */}
               <Link href="/profile/">
-              <div className="space-y-3 mb-4">
-                <div
-                  className={`text-xs font-bold uppercase tracking-wide ${
-                    mode === "dark" ? "text-gray-400" : "text-gray-900"
-                  }`}
-                >
-                  Your Membership
-                </div>
-                <div className="flex flex-wrap gap-2 pb-2 capitalize">
-                  <TierBadge tier={user?.selected_tier} mode={mode} />
-                  <JobTypeBadge jobType={user?.job_type} mode={mode} />
-                </div>
-                <div className="text-sm">
-                  <span
-                    className={`font-medium ${
-                      mode === "dark" ? "text-gray-200" : "text-gray-700"
+                <div className="space-y-3 mb-4">
+                  <div
+                    className={`text-xs font-bold uppercase tracking-wide ${
+                      mode === "dark" ? "text-gray-400" : "text-gray-900"
                     }`}
                   >
-                    Member since:
-                  </span>{" "}
-                  <span
-                    className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${
-                      mode === "dark"
-                        ? "bg-blue-800 text-blue-100"
-                        : "bg-blue-100 text-blue-800"
-                    }`}
-                  >
-                    {formatJoinDate(user?.created_at)}
-                  </span>
-                </div>
+                    Your Membership
+                  </div>
+                  <div className="flex flex-wrap gap-2 pb-2 capitalize">
+                    <TierBadge tier={user?.selected_tier} mode={mode} />
+                    <JobTypeBadge jobType={user?.job_type} mode={mode} />
+                  </div>
+                  <div className="text-sm">
+                    <span
+                      className={`font-medium ${
+                        mode === "dark" ? "text-gray-200" : "text-gray-700"
+                      }`}
+                    >
+                      Member since:
+                    </span>{" "}
+                    <span
+                      className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${
+                        mode === "dark"
+                          ? "bg-blue-800 text-blue-100"
+                          : "bg-blue-100 text-blue-800"
+                      }`}
+                    >
+                      {formatJoinDate(user?.created_at)}
+                    </span>
+                  </div>
                 </div>
               </Link>
             </div>

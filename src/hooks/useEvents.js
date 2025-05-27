@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import toast from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
 import { canAccessTier } from "@/utils/tierUtils";
+import toast from "react-hot-toast";
 
 const useEvents = (
   filters = { eventType: "", tier: "" },
@@ -15,50 +15,87 @@ const useEvents = (
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [eventsLoading, setEventsLoading] = useState([]);
 
   const fetchEvents = async () => {
     try {
       setLoading(true);
+      setError(null);
+
+      // Fetch all future events
       let query = supabase
         .from("events")
-        .select("*")
+        .select(
+          "id, title, description, date, location, event_type, is_virtual, tier_restriction"
+        )
         .gte("date", new Date().toISOString())
         .order("date", { ascending: true });
 
       if (filters.eventType) {
         query = query.eq("event_type", filters.eventType);
       }
-      if (filters.tier) {
-        query = query.eq("tier_restriction", filters.tier);
-      }
 
       const { data: eventsData, error: eventsError } = await query;
-      if (eventsError) throw eventsError;
+      if (eventsError) {
+        console.error("[useEvents] Error fetching events:", eventsError);
+        throw new Error("Failed to fetch events");
+      }
+
+      // Apply tier filter if specified
+      const filteredEvents = (eventsData || []).filter((event) => {
+        if (!filters.tier) return true;
+        // Compare using canAccessTier to ensure tier hierarchy
+        const eventTier = event.tier_restriction || "Free Member";
+        return canAccessTier(eventTier, filters.tier);
+      });
 
       // Transform events to include isAccessible
-      const transformedEvents = (eventsData || []).map((event) => ({
+      const transformedEvents = filteredEvents.map((event) => ({
         ...event,
         tier_restriction: event.tier_restriction || "Free Member",
-        isAccessible: canAccessTier(event.tier_restriction, userTier),
+        isAccessible: canAccessTier(
+          event.tier_restriction || "Free Member",
+          userTier
+        ),
       }));
 
       // Fetch filter options
       const { data: allEvents, error: allEventsError } = await supabase
         .from("events")
         .select("event_type, tier_restriction");
-      if (allEventsError) throw allEventsError;
+      if (allEventsError) {
+        console.error(
+          "[useEvents] Error fetching filter options:",
+          allEventsError
+        );
+        throw new Error("Failed to fetch filter options");
+      }
 
       const eventTypes = [
         ...new Set(allEvents.map((e) => e.event_type)),
       ].sort();
+      // Only include tiers the user can access
       const tiers = [
-        ...new Set(allEvents.map((e) => e.tier_restriction || "Free Member")),
+        ...new Set(
+          allEvents
+            .filter((e) =>
+              canAccessTier(e.tier_restriction || "Free Member", userTier)
+            )
+            .map((e) => {
+              const tier = e.tier_restriction || "Free Member";
+              // Use normalize from canAccessTier if available
+              const normalized = canAccessTier.normalize
+                ? canAccessTier.normalize(tier)
+                : tier;
+              return normalized;
+            })
+        ),
       ].sort();
 
       setEvents(transformedEvents);
       setFilterOptions({ eventTypes, tiers });
     } catch (err) {
-      console.error("[useEvents] Error fetching events:", err);
+      console.error("[useEvents] Error:", err);
       setError(err.message);
       toast.error("Failed to load events");
     } finally {
@@ -138,6 +175,7 @@ const useEvents = (
 
   const handleEventRegistration = async (eventId) => {
     try {
+      setEventsLoading((prev) => [...prev, eventId]);
       const {
         data: { user },
         error: authError,
@@ -194,6 +232,8 @@ const useEvents = (
     } catch (error) {
       console.error("[useEvents] Error registering for event:", error);
       toast.error(`Failed to register: ${error.message}`);
+    } finally {
+      setEventsLoading((prev) => prev.filter((id) => id !== eventId));
     }
   };
 
@@ -208,6 +248,7 @@ const useEvents = (
     filterOptions,
     loading,
     error,
+    eventsLoading,
     handleEventRegistration,
   };
 };

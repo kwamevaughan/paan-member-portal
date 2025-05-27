@@ -47,17 +47,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     user?.selected_tier?.replace(/\(.*?\)/g, "").trim() || "Free Member"
   );
 
-  // Log opportunity filters
-  useEffect(() => {
-    console.log(
-      "[Dashboard] Opportunity filters:",
-      filters.opportunities,
-      "User tier:",
-      user?.selected_tier,
-      "Normalized:",
-      user?.selected_tier?.replace(/\(.*?\)/g, "").trim() || "Free Member"
-    );
-  }, [filters.opportunities, user]);
+  
 
   const {
     events,
@@ -115,17 +105,6 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     toast.error(message, { duration: 3000 });
   };
 
-  // Log filter changes
-  useEffect(() => {
-    console.log(
-      "[Dashboard] Filters:",
-      filters,
-      "User tier:",
-      user?.selected_tier,
-      "Normalized:",
-      user?.selected_tier?.replace(/\(.*?\)/g, "").trim() || "Free Member"
-    );
-  }, [filters, user]);
 
   // Early returns
   if (userLoading && LoadingComponent) return LoadingComponent;

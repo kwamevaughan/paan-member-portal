@@ -38,16 +38,10 @@ const ResourcesSection = ({
       );
     }
 
-    console.log("[ResourcesSection] user selected tier:", user.selected_tier);
-    console.log("[ResourcesSection] resources and their access:");
-
     resources.forEach((resource) => {
       const canAccess = canAccessTier(
         resource.tier_restriction,
         user.selected_tier
-      );
-      console.log(
-        ` - Resource "${resource.title}" requires "${resource.tier_restriction}", access: ${canAccess}`
       );
     });
 

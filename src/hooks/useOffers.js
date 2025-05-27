@@ -25,13 +25,6 @@ const useOffers = (
       setLoading(true);
       setError(null);
 
-      console.log(
-        "[useOffers] Fetching with filters:",
-        filters,
-        "User tier:",
-        userTier
-      );
-
       let query = supabase
         .from("offers")
         .select(
@@ -41,16 +34,8 @@ const useOffers = (
 
       if (filters.tier_restriction && filters.tier_restriction !== "") {
         const normalizedFilter = normalizeTier(filters.tier_restriction);
-        console.log(
-          "[useOffers] Applying filter: tier_restriction =",
-          normalizedFilter
-        );
         query = query.eq("tier_restriction", normalizedFilter);
-      } else {
-        console.log("[useOffers] No tier filter applied (showing all offers)");
       }
-
-      console.log("[useOffers] Query:", JSON.stringify(query));
 
       const { data: offersData, error: offersError } = await query;
 
@@ -59,9 +44,6 @@ const useOffers = (
         throw new Error(`Failed to fetch offers: ${offersError.message}`);
       }
 
-      console.log("[useOffers] Raw offers data:", offersData);
-
-      // Fetch feedback to compute average ratings
       const { data: feedbackData, error: feedbackError } = await supabase
         .from("offer_feedback")
         .select("offer_id, rating");
@@ -71,9 +53,6 @@ const useOffers = (
         throw new Error(`Failed to fetch feedback: ${feedbackError.message}`);
       }
 
-      console.log("[useOffers] Feedback data:", feedbackData);
-
-      // Compute average ratings
       const feedbackByOffer = feedbackData.reduce((acc, fb) => {
         acc[fb.offer_id] = acc[fb.offer_id] || [];
         acc[fb.offer_id].push(fb.rating);
@@ -89,9 +68,7 @@ const useOffers = (
         const tierRestriction =
           normalizeTier(offer.tier_restriction) || "Free Member";
         const isAccessible = canAccessTier(tierRestriction, userTier);
-        console.log(
-          `[useOffers] Offer: ${offer.title}, tier_restriction: ${tierRestriction}, userTier: ${userTier}, isAccessible: ${isAccessible}`
-        );
+
         return {
           ...offer,
           tier_restriction: tierRestriction,
@@ -101,16 +78,6 @@ const useOffers = (
         };
       });
 
-      console.log(
-        "[useOffers] Enriched offers:",
-        enrichedOffers.map((o) => ({
-          id: o.id,
-          title: o.title,
-          tier: o.tier_restriction,
-          created_at: o.created_at,
-          isAccessible: o.isAccessible,
-        }))
-      );
       setOffers(enrichedOffers);
     } catch (err) {
       console.error("[useOffers] Detailed error:", err);
@@ -122,12 +89,6 @@ const useOffers = (
   };
 
   useEffect(() => {
-    console.log(
-      "[useOffers] Effect triggered with filters.tier_restriction:",
-      filters.tier_restriction,
-      "User tier:",
-      userTier
-    );
     fetchOffers();
   }, [filters.tier_restriction, userTier]);
 

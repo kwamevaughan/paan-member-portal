@@ -11,9 +11,7 @@ const useFilters = () => {
   });
 
   const handleFilterChange = (section, key, value) => {
-    console.log(
-      `[useFilters] Updating filter: section=${section}, key=${key}, value=${value}`
-    );
+    
     setFilters((prev) => ({
       ...prev,
       [section]: { ...prev[section], [key]: value || "" },

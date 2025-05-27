@@ -38,17 +38,7 @@ const UpdatesSection = ({
       );
     }
 
-    // Log input updates
-    console.log(
-      "[UpdatesSection] Input updates:",
-      updates.map((u) => ({
-        id: u.id,
-        title: u.title,
-        tier: u.tier_restriction,
-        created_at: u.created_at,
-        isAccessible: u.isAccessible,
-      }))
-    );
+    
 
     // Normalize tier for comparison
     const normalizeTier = (tier) => {
@@ -93,58 +83,32 @@ const UpdatesSection = ({
         const aIsExact = aIndex === userIndex;
         const bIsExact = bIndex === userIndex;
         if (aIsExact !== bIsExact) {
-          console.log(
-            `[UpdatesSection] Comparing ${a.title} (exact: ${aIsExact}) vs ${
-              b.title
-            } (exact: ${bIsExact}) -> ${aIsExact ? "a first" : "b first"}`
-          );
+          
           return aIsExact ? -1 : 1;
         }
         // Both same precedence (exact or not), maintain order
-        console.log(
-          `[UpdatesSection] Both accessible, same precedence: ${a.title} vs ${b.title}, maintaining order`
-        );
+        
         return 0;
       }
 
       // One accessible, one not
       if (a.isAccessible !== b.isAccessible) {
-        console.log(
-          `[UpdatesSection] Comparing ${a.title} (access: ${
-            a.isAccessible
-          }) vs ${b.title} (access: ${b.isAccessible}) -> ${
-            a.isAccessible ? "a first" : "b first"
-          }`
-        );
+        
         return a.isAccessible ? -1 : 1;
       }
 
       // Both restricted, maintain order
-      console.log(
-        `[UpdatesSection] Both restricted: ${a.title} vs ${b.title}, maintaining order`
-      );
+      
       return 0;
     });
 
-    // Log sorted updates
-    console.log(
-      "[UpdatesSection] Sorted updates:",
-      sortedUpdates.map((u) => ({
-        id: u.id,
-        title: u.title,
-        tier: u.tier_restriction,
-        created_at: u.created_at,
-        isAccessible: u.isAccessible,
-      }))
-    );
+    
 
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {sortedUpdates.map((update) => {
           const isRestricted = !update.isAccessible;
-          console.log(
-            `[UpdatesSection] Rendering: ${update.title}, isRestricted: ${isRestricted}, User Tier: ${user.selected_tier}`
-          );
+          
           return (
             <UpdateCard
               key={update.id}

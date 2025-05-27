@@ -37,20 +37,6 @@ const MarketIntelSection = ({
       );
     }
 
-    // Log input market intel and current filters
-    console.log(
-      "[MarketIntelSection] Input market intel:",
-      marketIntel.map((i) => ({
-        id: i.id,
-        title: i.title,
-        tier: i.tier_restriction,
-        region: i.region,
-        type: i.type,
-        isAccessible: i.isAccessible,
-      }))
-    );
-    console.log("[MarketIntelSection] Current filters:", marketIntelFilters);
-
     return (
       <>
         {marketIntel.map((intel) => (
@@ -80,9 +66,7 @@ const MarketIntelSection = ({
           <FilterDropdown
             value={marketIntelFilters.region || ""}
             onChange={(value) => {
-              console.log(
-                `[MarketIntelSection] Region filter changed to: ${value}`
-              );
+              
               handleMarketIntelFilterChange("region", value);
             }}
             options={[
@@ -100,9 +84,7 @@ const MarketIntelSection = ({
           <FilterDropdown
             value={marketIntelFilters.type || ""}
             onChange={(value) => {
-              console.log(
-                `[MarketIntelSection] Type filter changed to: ${value}`
-              );
+              
               handleMarketIntelFilterChange("type", value);
             }}
             options={[
@@ -120,9 +102,7 @@ const MarketIntelSection = ({
           <FilterDropdown
             value={marketIntelFilters.tier_restriction || ""}
             onChange={(value) => {
-              console.log(
-                `[MarketIntelSection] Tier filter changed to: ${value}`
-              );
+              
               handleMarketIntelFilterChange("tier_restriction", value);
             }}
             options={[

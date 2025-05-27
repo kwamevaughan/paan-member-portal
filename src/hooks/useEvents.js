@@ -55,18 +55,6 @@ const useEvents = (
         ...new Set(allEvents.map((e) => e.tier_restriction || "Free Member")),
       ].sort();
 
-      console.log(
-        "[useEvents] User tier:",
-        userTier,
-        "Fetched events:",
-        transformedEvents.map((e) => ({
-          id: e.id,
-          title: e.title,
-          tier: e.tier_restriction,
-          isAccessible: e.isAccessible,
-        }))
-      );
-
       setEvents(transformedEvents);
       setFilterOptions({ eventTypes, tiers });
     } catch (err) {

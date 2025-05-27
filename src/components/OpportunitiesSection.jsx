@@ -43,18 +43,6 @@ const OpportunitiesSection = ({
       );
     }
 
-    // Log input opportunities and current filters
-    console.log(
-      "[OpportunitiesSection] Input opportunities:",
-      opportunities.map((o) => ({
-        id: o.id,
-        title: o.title,
-        tier: o.tier_restriction,
-        country: o.location,
-        isAccessible: canAccessTier(o.tier_restriction, user.selected_tier),
-      }))
-    );
-    console.log("[OpportunitiesSection] Current filters:", opportunityFilters);
 
     // Sorting is now handled in useBusinessOpportunities, but verify
     return (
@@ -88,9 +76,7 @@ const OpportunitiesSection = ({
           <FilterDropdown
             value={opportunityFilters.country || ""}
             onChange={(value) => {
-              console.log(
-                `[OpportunitiesSection] Country filter changed to: ${value}`
-              );
+              
               handleOpportunityFilterChange("country", value);
             }}
             options={[
@@ -108,9 +94,7 @@ const OpportunitiesSection = ({
           <FilterDropdown
             value={opportunityFilters.tier_restriction || ""}
             onChange={(value) => {
-              console.log(
-                `[OpportunitiesSection] Tier filter changed to: ${value}`
-              );
+              
               handleOpportunityFilterChange("tier_restriction", value);
             }}
             options={[

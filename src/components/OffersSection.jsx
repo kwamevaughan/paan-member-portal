@@ -38,23 +38,6 @@ const OffersSection = ({
       );
     }
 
-    // Log input offers and current filter
-    console.log(
-      "[OffersSection] Input offers:",
-      offers.map((o) => ({
-        id: o.id,
-        title: o.title,
-        tier: o.tier_restriction,
-        created_at: o.created_at,
-        isAccessible: o.isAccessible,
-      }))
-    );
-    console.log(
-      "[OffersSection] Current filter:",
-      offerFilters.tier_restriction
-    );
-
-    // Normalize tier for comparison
     const normalizeTier = (tier) => {
       if (!tier) return "free member";
       const tierMap = {
@@ -83,7 +66,6 @@ const OffersSection = ({
       "free member",
     ];
 
-    // Sort offers: exact tier match first, then other accessible, then restricted
     const sortedOffers = [...offers].sort((a, b) => {
       const aTier = normalizeTier(a.tier_restriction);
       const bTier = normalizeTier(b.tier_restriction);
@@ -91,64 +73,26 @@ const OffersSection = ({
       const bIndex = tierHierarchy.indexOf(bTier);
       const userIndex = tierHierarchy.indexOf(userTier);
 
-      // Determine sorting based on tier proximity
       if (a.isAccessible && b.isAccessible) {
-        // Both accessible: prioritize exact tier match
         const aIsExact = aIndex === userIndex;
         const bIsExact = bIndex === userIndex;
         if (aIsExact !== bIsExact) {
-          console.log(
-            `[OffersSection] Comparing ${a.title} (exact: ${aIsExact}) vs ${
-              b.title
-            } (exact: ${bIsExact}) -> ${aIsExact ? "a first" : "b first"}`
-          );
           return aIsExact ? -1 : 1;
         }
-        // Both same precedence (exact or not), maintain order
-        console.log(
-          `[OffersSection] Both accessible, same precedence: ${a.title} vs ${b.title}, maintaining order`
-        );
         return 0;
       }
 
-      // One accessible, one not
       if (a.isAccessible !== b.isAccessible) {
-        console.log(
-          `[OffersSection] Comparing ${a.title} (access: ${
-            a.isAccessible
-          }) vs ${b.title} (access: ${b.isAccessible}) -> ${
-            a.isAccessible ? "a first" : "b first"
-          }`
-        );
         return a.isAccessible ? -1 : 1;
       }
 
-      // Both restricted, maintain order
-      console.log(
-        `[OffersSection] Both restricted: ${a.title} vs ${b.title}, maintaining order`
-      );
       return 0;
     });
-
-    // Log sorted offers
-    console.log(
-      "[OffersSection] Sorted offers:",
-      sortedOffers.map((o) => ({
-        id: o.id,
-        title: o.title,
-        tier: o.tier_restriction,
-        created_at: o.created_at,
-        isAccessible: o.isAccessible,
-      }))
-    );
 
     return (
       <>
         {sortedOffers.map((offer) => {
           const isRestricted = !offer.isAccessible;
-          console.log(
-            `[OffersSection] Rendering: ${offer.title}, isRestricted: ${isRestricted}, User Tier: ${user.selected_tier}`
-          );
           return (
             <OfferItem
               key={offer.id}
@@ -176,12 +120,9 @@ const OffersSection = ({
         <div className="flex space-x-2">
           <FilterDropdown
             value={offerFilters.tier_restriction || ""}
-            onChange={(value) => {
-              console.log(
-                `[OffersSection] FilterDropdown changed to: ${value}`
-              );
-              handleOfferFilterChange("tier_restriction", value);
-            }}
+            onChange={(value) =>
+              handleOfferFilterChange("tier_restriction", value)
+            }
             options={[
               { value: "", label: "All Tiers" },
               ...offerFilterOptions.tier_restrictions

@@ -4,12 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { canAccessTier } from "@/utils/tierUtils";
 
 const useUpdates = (filters = { tags: "All" }, userTier = "Free Member") => {
-  console.log(
-    "[useUpdates] Mount with filters:",
-    filters,
-    "User tier:",
-    userTier
-  );
+  
   const [updates, setUpdates] = useState([]);
   const [filterOptions] = useState({
     tags: [
@@ -32,17 +27,11 @@ const useUpdates = (filters = { tags: "All" }, userTier = "Free Member") => {
   };
 
   const fetchUpdates = async () => {
-    console.log(
-      "[useUpdates] Fetching updates with filters:",
-      filters,
-      "User tier:",
-      userTier
-    );
+    
     try {
       const {
         data: { session },
       } = await supabase.auth.getSession();
-      console.log("[useUpdates] Supabase session:", session);
 
       setLoading(true);
       setError(null);
@@ -58,7 +47,6 @@ const useUpdates = (filters = { tags: "All" }, userTier = "Free Member") => {
         query = query.contains("tags", [filters.tags]);
       }
 
-      console.log("[useUpdates] Query:", JSON.stringify(query));
 
       const { data: updatesData, error: updatesError } = await query;
 
@@ -73,9 +61,7 @@ const useUpdates = (filters = { tags: "All" }, userTier = "Free Member") => {
       const transformedUpdates = (updatesData || []).map((update) => {
         const tierRestriction = update.tier_restriction || "Free Member";
         const isAccessible = canAccessTier(tierRestriction, userTier);
-        console.log(
-          `[useUpdates] Update: ${update.title}, tier_restriction: ${tierRestriction}, userTier: ${userTier}, isAccessible: ${isAccessible}`
-        );
+        
         return {
           ...update,
           tier_restriction: tierRestriction,
@@ -83,16 +69,7 @@ const useUpdates = (filters = { tags: "All" }, userTier = "Free Member") => {
         };
       });
 
-      console.log(
-        "[useUpdates] Fetched updates:",
-        transformedUpdates.map((u) => ({
-          id: u.id,
-          title: u.title,
-          tier: u.tier_restriction,
-          created_at: u.created_at,
-          isAccessible: u.isAccessible,
-        }))
-      );
+      
       setUpdates(transformedUpdates);
     } catch (err) {
       console.error("[useUpdates] Error:", err.message);
@@ -106,26 +83,11 @@ const useUpdates = (filters = { tags: "All" }, userTier = "Free Member") => {
   const debouncedFetchUpdates = debounce(fetchUpdates, 500);
 
   useEffect(() => {
-    console.log(
-      "[useUpdates] Effect triggered with filters.tags:",
-      filters.tags,
-      "User tier:",
-      userTier
-    );
+    
     debouncedFetchUpdates();
   }, [filters.tags, userTier]);
 
-  useEffect(() => {
-    console.log("[useUpdates] Updates state:", updates);
-  }, [updates]);
-
-  useEffect(() => {
-    console.log("[useUpdates] Loading state:", loading);
-  }, [loading]);
-
-  useEffect(() => {
-    console.log("[useUpdates] Error state:", error);
-  }, [error]);
+  
 
   return useMemo(
     () => ({

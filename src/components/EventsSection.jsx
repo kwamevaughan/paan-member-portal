@@ -52,14 +52,7 @@ const EventsSection = ({
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {sortedEvents.map((event) => {
-          console.log(
-            `[EventsSection] Event: ${
-              event.title
-            }, isRestricted: ${!canAccessTier(
-              event.tier_restriction,
-              user.selected_tier
-            )}, User Tier: ${user.selected_tier}`
-          );
+          
           return (
             <EventCard
               key={event.id}

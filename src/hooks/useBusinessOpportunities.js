@@ -102,10 +102,7 @@ export const useBusinessOpportunities = (
             .slice(0, 10),
         };
 
-        console.log(
-          "[useBusinessOpportunities] Filter options:",
-          newFilterOptions
-        );
+        
         setFilterOptions(newFilterOptions);
       } catch (err) {
         console.error(
@@ -130,12 +127,7 @@ export const useBusinessOpportunities = (
         try {
           setError(null);
 
-          console.log(
-            "[useBusinessOpportunities] Fetching with filters:",
-            currentFilters,
-            "User tier:",
-            userTier
-          );
+          
 
           let query = supabase
             .from("business_opportunities")
@@ -145,31 +137,19 @@ export const useBusinessOpportunities = (
             .gte("deadline", new Date().toISOString().split("T")[0]);
 
           if (currentFilters.country) {
-            console.log(
-              "[useBusinessOpportunities] Applying filter: country =",
-              currentFilters.country
-            );
+            
             query = query.eq("location", currentFilters.country);
           }
           if (currentFilters.serviceType) {
-            console.log(
-              "[useBusinessOpportunities] Applying filter: service_type =",
-              currentFilters.serviceType
-            );
+            
             query = query.eq("service_type", currentFilters.serviceType);
           }
           if (currentFilters.industry) {
-            console.log(
-              "[useBusinessOpportunities] Applying filter: industry =",
-              currentFilters.industry
-            );
+            
             query = query.eq("industry", currentFilters.industry);
           }
           if (currentFilters.projectType) {
-            console.log(
-              "[useBusinessOpportunities] Applying filter: project_type =",
-              currentFilters.projectType
-            );
+            
             query = query.eq("project_type", currentFilters.projectType);
           }
           if (
@@ -180,20 +160,11 @@ export const useBusinessOpportunities = (
               currentFilters.tier_restriction
             );
             const dbFilter = getDatabaseTier(normalizedFilter);
-            console.log(
-              "[useBusinessOpportunities] Applying filter: tier_restriction =",
-              dbFilter,
-              "(normalized:",
-              normalizedFilter,
-              ")"
-            );
+            
             query = query.eq("tier_restriction", dbFilter);
           }
 
-          console.log(
-            "[useBusinessOpportunities] Query:",
-            JSON.stringify(query)
-          );
+         
 
           const { data, error } = await query;
 
@@ -202,10 +173,7 @@ export const useBusinessOpportunities = (
             throw new Error(`Failed to fetch opportunities: ${error.message}`);
           }
 
-          console.log(
-            "[useBusinessOpportunities] Raw opportunities data:",
-            data
-          );
+          
 
           // Transform and sort data
           const userTierNormalized = normalizeTier(userTier);
@@ -219,9 +187,7 @@ export const useBusinessOpportunities = (
             const tierRestriction =
               normalizeTier(opp.tier_restriction) || "Free Member";
             const isAccessible = canAccessTier(tierRestriction, userTier);
-            console.log(
-              `[useBusinessOpportunities] Opportunity: ${opp.title}, tier_restriction: ${tierRestriction}, userTier: ${userTier}, isAccessible: ${isAccessible}`
-            );
+            
             return {
               ...opp,
               tier_restriction: tierRestriction,
@@ -241,50 +207,24 @@ export const useBusinessOpportunities = (
               const aIsExact = aIndex === userIndex;
               const bIsExact = bIndex === userIndex;
               if (aIsExact !== bIsExact) {
-                console.log(
-                  `[useBusinessOpportunities] Comparing ${
-                    a.title
-                  } (exact: ${aIsExact}) vs ${
-                    b.title
-                  } (exact: ${bIsExact}) -> ${aIsExact ? "a first" : "b first"}`
-                );
+                
                 return aIsExact ? -1 : 1;
               }
               // Both same precedence, sort by created_at
-              console.log(
-                `[useBusinessOpportunities] Both accessible, same precedence: ${a.title} vs ${b.title}, sorting by created_at`
-              );
+              
               return new Date(b.created_at) - new Date(a.created_at);
             }
 
             if (a.isAccessible !== b.isAccessible) {
-              console.log(
-                `[useBusinessOpportunities] Comparing ${a.title} (access: ${
-                  a.isAccessible
-                }) vs ${b.title} (access: ${b.isAccessible}) -> ${
-                  a.isAccessible ? "a first" : "b first"
-                }`
-              );
+              
               return a.isAccessible ? -1 : 1;
             }
 
-            // Both restricted, sort by created_at
-            console.log(
-              `[useBusinessOpportunities] Both restricted: ${a.title} vs ${b.title}, sorting by created_at`
-            );
+            
             return new Date(b.created_at) - new Date(a.created_at);
           });
 
-          console.log(
-            "[useBusinessOpportunities] Sorted opportunities:",
-            sortedData.map((o) => ({
-              id: o.id,
-              title: o.title,
-              tier: o.tier_restriction,
-              country: o.location,
-              isAccessible: o.isAccessible,
-            }))
-          );
+          
 
           setOpportunities(sortedData);
         } catch (err) {
@@ -302,12 +242,7 @@ export const useBusinessOpportunities = (
   );
 
   useEffect(() => {
-    console.log(
-      "[useBusinessOpportunities] Effect triggered - Filters:",
-      filters,
-      "UserTier:",
-      userTier
-    );
+    
     fetchOpportunities(filters, isInitialFetch);
   }, [
     filters.country,

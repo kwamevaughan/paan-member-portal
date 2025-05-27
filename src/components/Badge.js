@@ -30,7 +30,6 @@ const getBadgeColor = (type, mode, colorMap) => {
     border: mode === "dark" ? colors.borderDark : colors.borderLight,
   };
 
-  // Cache the result for the current type and mode
   if (!badgeCache[type]) {
     badgeCache[type] = {};
   }
@@ -178,20 +177,22 @@ const tierBadgeStyles = {
   default: "bg-gray-100 text-gray-800 border border-gray-200",
 };
 
+// Tier mapping for normalization
+const tierMap = {
+  "gold member (tier 3)": "Gold Member",
+  "full member (tier 2)": "Full Member",
+  "associate member (tier 1)": "Associate Member",
+  "free member (tier 4)": "Free Member",
+  "associate agency (tier 1)": "Associate Member",
+  "gold member": "Gold Member",
+  "full member": "Full Member",
+  "associate member": "Associate Member",
+  "free member": "Free Member",
+};
+
 // Normalize the tier name for consistency
 const normalizeTier = (tier) => {
   if (!tier) return "Free Member";
-  const tierMap = {
-    "gold member (tier 3)": "Gold Member",
-    "full member (tier 2)": "Full Member",
-    "associate member (tier 1)": "Associate Member",
-    "free member (tier 4)": "Free Member",
-    "associate agency (tier 1)": "Associate Member",
-    "gold member": "Gold Member",
-    "full member": "Full Member",
-    "associate member": "Associate Member",
-    "free member": "Free Member",
-  };
   const cleanTier = tier
     .replace(/\(.*?\)/g, "")
     .trim()
@@ -277,4 +278,5 @@ export {
   normalizeTier,
   getDatabaseTier,
   tierBadgeStyles,
+  tierMap,
 };

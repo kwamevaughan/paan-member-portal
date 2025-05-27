@@ -41,7 +41,7 @@ export const useUser = () => {
           const { data, error } = await supabase
             .from("candidates")
             .select(
-              "id, primaryContactEmail, primaryContactName, job_type, selected_tier, agencyName"
+              "id, primaryContactEmail, primaryContactName, job_type, selected_tier, agencyName, created_at"
             )
             .eq("primaryContactEmail", email)
             .single();
@@ -62,6 +62,7 @@ export const useUser = () => {
               job_type: data.job_type,
               selected_tier: data.selected_tier,
               agencyName: data.agencyName,
+              created_at: data.created_at,
             });
             localStorage.setItem("paan_member_session", "authenticated");
             localStorage.setItem("user_email", email);

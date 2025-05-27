@@ -38,6 +38,14 @@ const getBadgeColor = (type, mode, colorMap) => {
   return result;
 };
 
+// Add job type icons
+const jobTypeIcons = {
+  freelancer: "mdi:account-star", 
+  agency: "mdi:domain",
+  default: "solar:question-circle-linear", 
+};
+
+
 // Simplified color maps for tier and status
 const colorMaps = {
   tier: {
@@ -72,6 +80,32 @@ const colorMaps = {
       textLight: "text-red-800",
       borderDark: "border-red-800",
       borderLight: "border-red-200",
+    },
+    default: {
+      bgDark: "bg-gray-700/30",
+      bgLight: "bg-gray-100",
+      textDark: "text-gray-200",
+      textLight: "text-gray-800",
+      borderDark: "border-gray-600",
+      borderLight: "border-gray-200",
+    },
+  },
+  jobType: {
+    freelancer: {
+      bgDark: "bg-purple-900/30",
+      bgLight: "bg-purple-50",
+      textDark: "text-purple-200",
+      textLight: "text-purple-800",
+      borderDark: "border-purple-800",
+      borderLight: "border-purple-200",
+    },
+    agency: {
+      bgDark: "bg-teal-900/30",
+      bgLight: "bg-teal-50",
+      textDark: "text-teal-200",
+      textLight: "text-teal-800",
+      borderDark: "border-teal-800",
+      borderLight: "border-teal-200",
     },
     default: {
       bgDark: "bg-gray-700/30",
@@ -255,6 +289,28 @@ const RegistrationStatusBadge = ({ status, mode }) => {
   );
 };
 
+// Job Type Badge Component
+const JobTypeBadge = ({ jobType, mode }) => {
+  const normalizedJobType = jobType || "Freelancer"; // Default to Freelancer if not provided
+  const colors = getBadgeColor(normalizedJobType, mode, colorMaps.jobType);
+  const icon = jobTypeIcons[normalizedJobType] || jobTypeIcons["default"];
+
+  return (
+    <span
+      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${colors.bg} ${colors.text} ${colors.border}`}
+    >
+      <Icon icon={icon} className="mr-1 w-6 h-6" />
+      {normalizedJobType}
+    </span>
+  );
+};
+
+// Add PropTypes for JobTypeBadge
+JobTypeBadge.propTypes = {
+  jobType: PropTypes.string.isRequired,
+  mode: PropTypes.oneOf(["light", "dark"]).isRequired,
+};
+
 // Prop Types for validation
 TierBadge.propTypes = {
   tier: PropTypes.string.isRequired,
@@ -275,6 +331,7 @@ export {
   TierBadge,
   StatusBadge,
   RegistrationStatusBadge,
+  JobTypeBadge,
   normalizeTier,
   getDatabaseTier,
   tierBadgeStyles,

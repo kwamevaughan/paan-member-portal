@@ -1,14 +1,17 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { Icon } from "@iconify/react";
-import { TierBadge, RegistrationStatusBadge } from "@/components/Badge";
+import {
+  TierBadge,
+  RegistrationStatusBadge,
+  normalizeTier,
+} from "@/components/Badge";
 
 const RegisteredEventsModal = ({
   isOpen,
   onClose,
   registeredEvents = [],
   mode,
-  tierMap,
   formatDate,
   getDaysRemaining,
 }) => {
@@ -35,8 +38,7 @@ const RegisteredEventsModal = ({
         {registeredEvents && registeredEvents.length > 0 ? (
           <div className="space-y-4">
             {registeredEvents.map((event) => {
-              const displayTier =
-                tierMap[event.tier_restriction] || event.tier_restriction;
+              const displayTier = normalizeTier(event.tier_restriction);
               const daysLeft = getDaysRemaining(event.date);
 
               return (
@@ -50,7 +52,7 @@ const RegisteredEventsModal = ({
                     <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                       {event.title}
                     </h3>
-                    <TierBadge tier={displayTier} mode={mode} />
+                    <TierBadge tier={event.tier_restriction} mode={mode} />
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                     {event.location || "Virtual"} • {formatDate(event.date)}
@@ -108,7 +110,6 @@ RegisteredEventsModal.propTypes = {
     })
   ),
   mode: PropTypes.oneOf(["light", "dark"]).isRequired,
-  tierMap: PropTypes.object.isRequired,
   formatDate: PropTypes.func.isRequired,
   getDaysRemaining: PropTypes.func.isRequired,
 };

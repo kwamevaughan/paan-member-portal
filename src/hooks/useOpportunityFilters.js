@@ -1,17 +1,17 @@
-// hooks/useOpportunityFilters.js
-import { useState } from "react";
+// // hooks/useOpportunityFilters.js
+// import { useState } from "react";
 
-const useOpportunityFilters = () => {
-  const [filters, setFilters] = useState({
-    country: undefined,
-    tier_restriction: undefined,
-  });
+// const useOpportunityFilters = () => {
+//   const [filters, setFilters] = useState({
+//     country: undefined,
+//     tier_restriction: undefined,
+//   });
 
-  const handleFilterChange = (key, value) => {
-    setFilters((prev) => ({ ...prev, [key]: value || undefined }));
-  };
+//   const handleFilterChange = (key, value) => {
+//     setFilters((prev) => ({ ...prev, [key]: value || undefined }));
+//   };
 
-  return { filters, handleFilterChange };
-};
+//   return { filters, handleFilterChange };
+// };
 
-export default useOpportunityFilters;
+// export default useOpportunityFilters;

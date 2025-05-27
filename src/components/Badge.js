@@ -1,4 +1,4 @@
-import React from "react";
+import React from "prop-types";
 import { Icon } from "@iconify/react";
 import PropTypes from "prop-types";
 
@@ -10,14 +10,12 @@ const badgeCache = {
 
 // Add a mapping of tiers to icons
 const tierIcons = {
-  "associate member": "mdi:account-group",
-  "full member": "mdi:account-check-outline",
-  "gold member": "tabler:medal",
-  "free member": "mdi:account-off",
+  "Associate Member": "mdi:account-group",
+  "Full Member": "mdi:account-check-outline",
+  "Gold Member": "tabler:medal",
+  "Free Member": "mdi:account-off",
   default: "mdi:account-question",
 };
-
-
 
 // Helper function to get badge colors from a given color map
 const getBadgeColor = (type, mode, colorMap) => {
@@ -44,7 +42,7 @@ const getBadgeColor = (type, mode, colorMap) => {
 // Simplified color maps for tier and status
 const colorMaps = {
   tier: {
-    "associate member": {
+    "Associate Member": {
       bgDark: "bg-blue-900/30",
       bgLight: "bg-blue-50",
       textDark: "text-blue-200",
@@ -52,7 +50,7 @@ const colorMaps = {
       borderDark: "border-blue-800",
       borderLight: "border-blue-200",
     },
-    "full member": {
+    "Full Member": {
       bgDark: "bg-green-900/30",
       bgLight: "bg-green-50",
       textDark: "text-green-200",
@@ -60,7 +58,7 @@ const colorMaps = {
       borderDark: "border-green-800",
       borderLight: "border-green-200",
     },
-    "gold member": {
+    "Gold Member": {
       bgDark: "bg-amber-900/30",
       bgLight: "bg-amber-50",
       textDark: "text-amber-200",
@@ -68,7 +66,7 @@ const colorMaps = {
       borderDark: "border-amber-800",
       borderLight: "border-amber-200",
     },
-    "free member": {
+    "Free Member": {
       bgDark: "bg-red-900/30",
       bgLight: "bg-red-50",
       textDark: "text-red-200",
@@ -85,7 +83,6 @@ const colorMaps = {
       borderLight: "border-gray-200",
     },
   },
-
   status: {
     pending: {
       bgDark: "bg-yellow-900/30",
@@ -128,7 +125,6 @@ const colorMaps = {
       borderLight: "border-gray-200",
     },
   },
-
   registrationStatus: {
     pending: {
       bgDark: "bg-yellow-900/30",
@@ -173,24 +169,59 @@ const colorMaps = {
   },
 };
 
+// Define tierBadgeStyles for export, simplified for market-intel.js
+const tierBadgeStyles = {
+  "Associate Member": "bg-blue-50 text-blue-800 border border-blue-200",
+  "Full Member": "bg-green-50 text-green-800 border border-green-200",
+  "Gold Member": "bg-amber-50 text-amber-800 border border-amber-200",
+  "Free Member": "bg-red-50 text-red-800 border border-red-200",
+  default: "bg-gray-100 text-gray-800 border border-gray-200",
+};
+
 // Normalize the tier name for consistency
 const normalizeTier = (tier) => {
-  if (!tier) return "free member";
-  return tier.toLowerCase().replace(/\s*\(tier.*\)\s*/g, ""); // Normalize and remove extra details like "(Tier 3)"
+  if (!tier) return "Free Member";
+  const tierMap = {
+    "gold member (tier 3)": "Gold Member",
+    "full member (tier 2)": "Full Member",
+    "associate member (tier 1)": "Associate Member",
+    "free member (tier 4)": "Free Member",
+    "associate agency (tier 1)": "Associate Member",
+    "gold member": "Gold Member",
+    "full member": "Full Member",
+    "associate member": "Associate Member",
+    "free member": "Free Member",
+  };
+  const cleanTier = tier
+    .replace(/\(.*?\)/g, "")
+    .trim()
+    .toLowerCase();
+  return tierMap[cleanTier] || tier;
+};
+
+// Get the database tier value for queries
+const getDatabaseTier = (normalizedTier) => {
+  const reverseTierMap = {
+    "Gold Member": "Gold Member (Tier 3)",
+    "Full Member": "Full Member (Tier 2)",
+    "Associate Member": "Associate Member (Tier 1)",
+    "Free Member": "Free Member (Tier 4)",
+  };
+  return reverseTierMap[normalizedTier] || normalizedTier;
 };
 
 // Tier Badge Component
 const TierBadge = ({ tier, mode }) => {
-  const normalizedTier = normalizeTier(tier); // Normalize the tier name
-  const colors = getBadgeColor(normalizedTier, mode, colorMaps.tier); // Get colors based on mode and tier
-  const icon = tierIcons[normalizedTier] || tierIcons["default"]; // Get the appropriate icon
+  const normalizedTier = normalizeTier(tier);
+  const colors = getBadgeColor(normalizedTier, mode, colorMaps.tier);
+  const icon = tierIcons[normalizedTier] || tierIcons["default"];
 
   return (
     <span
       className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${colors.bg} ${colors.text} ${colors.border}`}
     >
       <Icon icon={icon} className="mr-1 w-6 h-6" />
-      {tier}
+      {normalizedTier}
     </span>
   );
 };
@@ -239,4 +270,11 @@ RegistrationStatusBadge.propTypes = {
   mode: PropTypes.oneOf(["light", "dark"]).isRequired,
 };
 
-export { TierBadge, StatusBadge, RegistrationStatusBadge, normalizeTier };
+export {
+  TierBadge,
+  StatusBadge,
+  RegistrationStatusBadge,
+  normalizeTier,
+  getDatabaseTier,
+  tierBadgeStyles,
+};

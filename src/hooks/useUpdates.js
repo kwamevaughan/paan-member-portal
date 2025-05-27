@@ -1,10 +1,15 @@
 import { useState, useEffect, useMemo } from "react";
 import toast from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
+import { canAccessTier } from "@/utils/tierUtils";
 
-const useUpdates = (filters = { tags: "All" }, user = null) => {
-  console.log("[useUpdates] Mount");
-  console.log("[useUpdates] Render with filters:", filters, "User:", user);
+const useUpdates = (filters = { tags: "All" }, userTier = "Free Member") => {
+  console.log(
+    "[useUpdates] Mount with filters:",
+    filters,
+    "User tier:",
+    userTier
+  );
   const [updates, setUpdates] = useState([]);
   const [filterOptions] = useState({
     tags: [
@@ -15,10 +20,9 @@ const useUpdates = (filters = { tags: "All" }, user = null) => {
       "Regional Growth",
     ],
   });
-  const [loading, setLoading] = useState(false); // Start with false to avoid initial flicker
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Debounce function to limit fetch calls
   const debounce = (func, wait) => {
     let timeout;
     return (...args) => {
@@ -31,11 +35,10 @@ const useUpdates = (filters = { tags: "All" }, user = null) => {
     console.log(
       "[useUpdates] Fetching updates with filters:",
       filters,
-      "User:",
-      user
+      "User tier:",
+      userTier
     );
     try {
-      // Log Supabase session
       const {
         data: { session },
       } = await supabase.auth.getSession();
@@ -55,6 +58,8 @@ const useUpdates = (filters = { tags: "All" }, user = null) => {
         query = query.contains("tags", [filters.tags]);
       }
 
+      console.log("[useUpdates] Query:", JSON.stringify(query));
+
       const { data: updatesData, error: updatesError } = await query;
 
       if (updatesError) {
@@ -65,8 +70,30 @@ const useUpdates = (filters = { tags: "All" }, user = null) => {
         throw new Error(`Failed to fetch updates: ${updatesError.message}`);
       }
 
-      console.log("[useUpdates] Fetched updates:", updatesData);
-      setUpdates(updatesData || []);
+      const transformedUpdates = (updatesData || []).map((update) => {
+        const tierRestriction = update.tier_restriction || "Free Member";
+        const isAccessible = canAccessTier(tierRestriction, userTier);
+        console.log(
+          `[useUpdates] Update: ${update.title}, tier_restriction: ${tierRestriction}, userTier: ${userTier}, isAccessible: ${isAccessible}`
+        );
+        return {
+          ...update,
+          tier_restriction: tierRestriction,
+          isAccessible,
+        };
+      });
+
+      console.log(
+        "[useUpdates] Fetched updates:",
+        transformedUpdates.map((u) => ({
+          id: u.id,
+          title: u.title,
+          tier: u.tier_restriction,
+          created_at: u.created_at,
+          isAccessible: u.isAccessible,
+        }))
+      );
+      setUpdates(transformedUpdates);
     } catch (err) {
       console.error("[useUpdates] Error:", err.message);
       setError(err.message);
@@ -76,18 +103,18 @@ const useUpdates = (filters = { tags: "All" }, user = null) => {
     }
   };
 
-  // Debounced fetch
   const debouncedFetchUpdates = debounce(fetchUpdates, 500);
 
   useEffect(() => {
     console.log(
       "[useUpdates] Effect triggered with filters.tags:",
-      filters.tags
+      filters.tags,
+      "User tier:",
+      userTier
     );
     debouncedFetchUpdates();
-  }, [filters.tags]);
+  }, [filters.tags, userTier]);
 
-  // Log state changes
   useEffect(() => {
     console.log("[useUpdates] Updates state:", updates);
   }, [updates]);
@@ -100,7 +127,6 @@ const useUpdates = (filters = { tags: "All" }, user = null) => {
     console.log("[useUpdates] Error state:", error);
   }, [error]);
 
-  // Memoize returned values
   return useMemo(
     () => ({
       updates,

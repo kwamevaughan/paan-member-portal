@@ -2,12 +2,15 @@ import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
 import { normalizeTier } from "@/components/Badge";
+import { canAccessTier } from "@/utils/tierUtils";
 
-const useOffers = (filters = { tier_restriction: "" }) => {
+const useOffers = (
+  filters = { tier_restriction: "" },
+  userTier = "Free Member"
+) => {
   const [offers, setOffers] = useState([]);
   const [filterOptions, setFilterOptions] = useState({
     tier_restrictions: [
-      "all",
       "Associate Member",
       "Full Member",
       "Gold Member",
@@ -22,7 +25,12 @@ const useOffers = (filters = { tier_restriction: "" }) => {
       setLoading(true);
       setError(null);
 
-      console.log("[useOffers] Fetching with filters:", filters);
+      console.log(
+        "[useOffers] Fetching with filters:",
+        filters,
+        "User tier:",
+        userTier
+      );
 
       let query = supabase
         .from("offers")
@@ -31,12 +39,18 @@ const useOffers = (filters = { tier_restriction: "" }) => {
         )
         .order("created_at", { ascending: false });
 
-      if (filters.tier_restriction && filters.tier_restriction !== "all") {
-        query = query.eq(
-          "tier_restriction",
-          normalizeTier(filters.tier_restriction)
+      if (filters.tier_restriction && filters.tier_restriction !== "") {
+        const normalizedFilter = normalizeTier(filters.tier_restriction);
+        console.log(
+          "[useOffers] Applying filter: tier_restriction =",
+          normalizedFilter
         );
+        query = query.eq("tier_restriction", normalizedFilter);
+      } else {
+        console.log("[useOffers] No tier filter applied (showing all offers)");
       }
+
+      console.log("[useOffers] Query:", JSON.stringify(query));
 
       const { data: offersData, error: offersError } = await query;
 
@@ -72,15 +86,31 @@ const useOffers = (filters = { tier_restriction: "" }) => {
           ratings.length > 0
             ? ratings.reduce((sum, r) => sum + r, 0) / ratings.length
             : 0;
+        const tierRestriction =
+          normalizeTier(offer.tier_restriction) || "Free Member";
+        const isAccessible = canAccessTier(tierRestriction, userTier);
+        console.log(
+          `[useOffers] Offer: ${offer.title}, tier_restriction: ${tierRestriction}, userTier: ${userTier}, isAccessible: ${isAccessible}`
+        );
         return {
           ...offer,
-          tier_restriction: normalizeTier(offer.tier_restriction),
+          tier_restriction: tierRestriction,
           averageRating,
           feedbackCount: ratings.length,
+          isAccessible,
         };
       });
 
-      console.log("[useOffers] Enriched offers:", enrichedOffers);
+      console.log(
+        "[useOffers] Enriched offers:",
+        enrichedOffers.map((o) => ({
+          id: o.id,
+          title: o.title,
+          tier: o.tier_restriction,
+          created_at: o.created_at,
+          isAccessible: o.isAccessible,
+        }))
+      );
       setOffers(enrichedOffers);
     } catch (err) {
       console.error("[useOffers] Detailed error:", err);
@@ -92,8 +122,14 @@ const useOffers = (filters = { tier_restriction: "" }) => {
   };
 
   useEffect(() => {
+    console.log(
+      "[useOffers] Effect triggered with filters.tier_restriction:",
+      filters.tier_restriction,
+      "User tier:",
+      userTier
+    );
     fetchOffers();
-  }, [filters.tier_restriction]);
+  }, [filters.tier_restriction, userTier]);
 
   return {
     offers,

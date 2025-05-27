@@ -40,28 +40,48 @@ const EventsSection = ({
         </div>
       );
     }
+
+    // Sort events: accessible ones first
+    const sortedEvents = [...events].sort((a, b) => {
+      const aAccess = canAccessTier(a.tier_restriction, user.selected_tier);
+      const bAccess = canAccessTier(b.tier_restriction, user.selected_tier);
+      if (aAccess === bAccess) return 0;
+      return aAccess ? -1 : 1;
+    });
+
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {events.map((event) => (
-          <EventCard
-            key={event.id}
-            event={event}
-            mode={mode}
-            onRegister={handleEventRegistration}
-            isRegistered={registeredEvents.some((reg) => reg.id === event.id)}
-            isRestricted={
-              !canAccessTier(event.tier_restriction, user.selected_tier)
-            }
-            onRestrictedClick={() =>
-              handleRestrictedClick(
-                `Access restricted: ${event.tier_restriction} tier required for "${event.title}"`
-              )
-            }
-          />
-        ))}
+        {sortedEvents.map((event) => {
+          console.log(
+            `[EventsSection] Event: ${
+              event.title
+            }, isRestricted: ${!canAccessTier(
+              event.tier_restriction,
+              user.selected_tier
+            )}, User Tier: ${user.selected_tier}`
+          );
+          return (
+            <EventCard
+              key={event.id}
+              event={event}
+              mode={mode}
+              onRegister={handleEventRegistration}
+              isRegistered={registeredEvents.some((reg) => reg.id === event.id)}
+              isRestricted={
+                !canAccessTier(event.tier_restriction, user.selected_tier)
+              }
+              onRestrictedClick={() =>
+                handleRestrictedClick(
+                  `Access restricted: ${event.tier_restriction} tier required for "${event.title}"`
+                )
+              }
+            />
+          );
+        })}
       </div>
     );
   };
+
 
   return (
     <SectionCard

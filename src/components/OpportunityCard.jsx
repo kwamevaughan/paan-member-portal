@@ -1,5 +1,6 @@
 import React from "react";
 import { useRouter } from "next/router";
+import { TierBadge } from "./Badge";
 
 const OpportunityCard = ({
   opportunity,
@@ -9,25 +10,12 @@ const OpportunityCard = ({
 }) => {
   const router = useRouter();
 
-  console.log("[OpportunityCard] Props:", {
-    title: opportunity.title,
-    tier_restriction: opportunity.tier_restriction,
-    isRestricted,
-  });
-
   const handleClick = () => {
-    console.log("[OpportunityCard] Clicked:", {
-      title: opportunity.title,
-      isRestricted,
-    });
     if (isRestricted) {
       onRestrictedClick();
       return;
     }
-    console.log("[OpportunityCard] Navigating:", {
-      title: opportunity.title,
-      application_link: opportunity.application_link,
-    });
+    // If the opportunity has an application link, open it in a new tab
     if (opportunity.application_link) {
       window.location.href = opportunity.application_link;
     } else {
@@ -73,19 +61,10 @@ const OpportunityCard = ({
             </span>
           )}
         </h3>
-        <span
-          className={`px-2 py-1 text-xs rounded-full ${
-            opportunity.tier_restriction === "Gold Member (Tier 3)"
-              ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-              : opportunity.tier_restriction === "Full Member (Tier 2)"
-              ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-              : opportunity.tier_restriction === "Associate Agency (Tier 1)"
-              ? "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
-              : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
-          }`}
-        >
-          {opportunity.tier_restriction}
-        </span>
+        <TierBadge
+          tier={opportunity.tier_restriction || "Free Member"}
+          mode={mode}
+        />
       </div>
       <div
         className={`flex items-center space-x-4 text-sm ${

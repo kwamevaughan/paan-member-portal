@@ -1,45 +1,82 @@
 import React from "react";
+import { TierBadge } from "./Badge";
 
 const OfferItem = ({ offer, mode, isRestricted, onRestrictedClick }) => {
-  const handleClick = () => {
+  const handleClick = (e) => {
     if (isRestricted) {
-      onRestrictedClick(`Access restricted: ${offer.tier_restriction} tier required for "${offer.title}"`);
+      e.preventDefault();
+      onRestrictedClick?.();
+      return;
+    }
+    if (offer.url) {
+      window.open(offer.url, "_blank", "noopener,noreferrer");
     }
   };
 
   return (
     <div
-      className={`flex items-center justify-between p-3 rounded-lg border transition-all duration-200 hover:shadow-sm cursor-pointer ${
+      className={`p-4 rounded-lg border transition-all duration-200 ${
+        isRestricted
+          ? "opacity-50 cursor-not-allowed"
+          : "hover:shadow-md cursor-pointer"
+      } ${
         mode === "dark"
-          ? "bg-gray-700/30 border-gray-600 hover:bg-gray-700/50"
+          ? "bg-gray-700/50 border-gray-600 hover:bg-gray-700/70"
           : "bg-gray-50 border-gray-200 hover:bg-gray-100"
-      } ${isRestricted ? "opacity-50 pointer-events-auto cursor-not-allowed" : ""}`}
+      }`}
       onClick={handleClick}
+      aria-disabled={isRestricted}
+      role="button"
+      tabIndex={isRestricted ? -1 : 0}
+      aria-label={
+        isRestricted
+          ? `Restricted offer: ${offer.title}`
+          : `View offer: ${offer.title}`
+      }
     >
-      <div className="flex items-center space-x-3">
-        <div className="p-2 rounded bg-gradient-to-r from-orange-500 to-red-600">
-          <iconify-icon
-            icon="mdi:gift"
-            className="text-white text-sm"
-          ></iconify-icon>
-        </div>
-        <div>
-          <h4
-            className={`font-medium ${mode === "dark" ? "text-white" : "text-gray-900"}`}
-          >
-            {offer.title}
-          </h4>
-          <p
-            className={`text-sm ${mode === "dark" ? "text-gray-400" : "text-gray-600"}`}
-          >
-            Tier: {offer.tier_restriction}
-          </p>
-        </div>
+      <div className="flex items-start justify-between mb-2">
+        <h3
+          className={`font-medium ${
+            mode === "dark" ? "text-white" : "text-gray-900"
+          } ${isRestricted ? "text-gray-500 dark:text-gray-400" : ""}`}
+        >
+          {offer.title}
+          {isRestricted && (
+            <span className="ml-2 text-xs text-red-500">
+              <iconify-icon icon="mdi:lock" className="inline mr-1" />
+              Restricted
+            </span>
+          )}
+        </h3>
+        <TierBadge tier={offer.tier_restriction || "Free Member"} mode={mode} />
       </div>
-      <iconify-icon
-        icon="mdi:chevron-right"
-        className={`${mode === "dark" ? "text-gray-400" : "text-gray-600"}`}
-      ></iconify-icon>
+      <p
+        className={`text-sm ${
+          mode === "dark" ? "text-gray-400" : "text-gray-600"
+        } ${isRestricted ? "text-gray-400 dark:text-gray-500" : ""}`}
+      >
+        {offer.description}
+      </p>
+      <div className="mt-2 flex items-center justify-between">
+        <span
+          className={`text-sm ${
+            mode === "dark" ? "text-gray-400" : "text-gray-600"
+          }`}
+        >
+          Rating: {offer.averageRating.toFixed(1)} ({offer.feedbackCount})
+        </span>
+        <button
+          onClick={handleClick}
+          disabled={isRestricted}
+          className={`text-sm font-medium transition-colors ${
+            isRestricted
+              ? "text-gray-400 cursor-not-allowed"
+              : "text-blue-600 hover:text-blue-700"
+          }`}
+        >
+          Learn More
+        </button>
+      </div>
     </div>
   );
 };

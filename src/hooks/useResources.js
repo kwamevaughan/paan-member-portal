@@ -8,7 +8,12 @@ const useResources = (
   const [resources, setResources] = useState([]);
   const [filterOptions, setFilterOptions] = useState({
     resource_types: ["PDF", "Video", "Workshop"],
-    tier_restrictions: ["All", "Associate", "Full", "Gold", "Free"],
+    tier_restrictions: [
+      "Free Member",
+      "Associate Member",
+      "Full Member",
+      "Gold Member",
+    ],
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -37,10 +42,8 @@ const useResources = (
       if (resourcesError)
         throw new Error(`Failed to fetch resources: ${resourcesError.message}`);
 
-      console.log("[useResources] Fetched resources:", resourcesData);
       setResources(resourcesData || []);
     } catch (err) {
-      console.error("[useResources] Error fetching resources:", err);
       setError(err.message);
       toast.error("Failed to load resources");
     } finally {

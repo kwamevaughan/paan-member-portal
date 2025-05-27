@@ -1,20 +1,22 @@
-// hooks/useFilters.js
 import { useState } from "react";
 
 const useFilters = () => {
   const [filters, setFilters] = useState({
-    opportunities: { country: undefined, tier_restriction: undefined },
-    events: { eventType: undefined, tier: undefined },
-    resources: { resource_type: undefined, tier_restriction: undefined },
-    marketIntel: { region: undefined, type: undefined },
-    offers: { tier_restriction: undefined },
-    updates: { tags: undefined },
+    opportunities: { country: "", tier_restriction: "" },
+    events: { eventType: "", tier: "" },
+    resources: { resource_type: "", tier_restriction: "" },
+    marketIntel: { region: "", type: "" },
+    offers: { tier_restriction: "" },
+    updates: { tags: "" },
   });
 
   const handleFilterChange = (section, key, value) => {
+    console.log(
+      `[useFilters] Updating filter: section=${section}, key=${key}, value=${value}`
+    );
     setFilters((prev) => ({
       ...prev,
-      [section]: { ...prev[section], [key]: value || undefined },
+      [section]: { ...prev[section], [key]: value || "" },
     }));
   };
 

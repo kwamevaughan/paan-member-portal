@@ -42,7 +42,22 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     filterOptions: opportunityFilterOptions,
     loading: opportunitiesLoading,
     error: opportunitiesError,
-  } = useBusinessOpportunities(filters.opportunities);
+  } = useBusinessOpportunities(
+    filters.opportunities,
+    user?.selected_tier?.replace(/\(.*?\)/g, "").trim() || "Free Member"
+  );
+
+  // Log opportunity filters
+  useEffect(() => {
+    console.log(
+      "[Dashboard] Opportunity filters:",
+      filters.opportunities,
+      "User tier:",
+      user?.selected_tier,
+      "Normalized:",
+      user?.selected_tier?.replace(/\(.*?\)/g, "").trim() || "Free Member"
+    );
+  }, [filters.opportunities, user]);
 
   const {
     events,
@@ -51,7 +66,10 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     loading: eventsLoading,
     error: eventsError,
     handleEventRegistration,
-  } = useEvents(filters.events, user?.selected_tier || "Associate Member");
+  } = useEvents(
+    filters.events,
+    user?.selected_tier?.replace(/\(.*?\)/g, "").trim() || "Free Member"
+  );
 
   const {
     resources,
@@ -65,7 +83,10 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     filterOptions: updateFilterOptions,
     loading: updatesLoading,
     error: updatesError,
-  } = useUpdates(filters.updates, user);
+  } = useUpdates(
+    filters.updates,
+    user?.selected_tier?.replace(/\(.*?\)/g, "").trim() || "Free Member"
+  );
 
   const {
     marketIntel,
@@ -76,7 +97,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     filters.marketIntel,
     "",
     [],
-    user?.selected_tier || "Associate Member"
+    user?.selected_tier?.replace(/\(.*?\)/g, "").trim() || "Free Member"
   );
 
   const {
@@ -84,12 +105,27 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     filterOptions: offerFilterOptions,
     loading: offersLoading,
     error: offersError,
-  } = useOffers(filters.offers);
+  } = useOffers(
+    filters.offers,
+    user?.selected_tier?.replace(/\(.*?\)/g, "").trim() || "Free Member"
+  );
 
   // Handle restricted access
   const handleRestrictedClick = (message) => {
     toast.error(message, { duration: 3000 });
   };
+
+  // Log filter changes
+  useEffect(() => {
+    console.log(
+      "[Dashboard] Filters:",
+      filters,
+      "User tier:",
+      user?.selected_tier,
+      "Normalized:",
+      user?.selected_tier?.replace(/\(.*?\)/g, "").trim() || "Free Member"
+    );
+  }, [filters, user]);
 
   // Early returns
   if (userLoading && LoadingComponent) return LoadingComponent;
@@ -134,7 +170,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
               : `${84 + (isSidebarOpen ? 120 : 0) + sidebarState.offset}px`,
           }}
         >
-          <div className="max-w-7xl mx-auto space-y-8">
+          <div className="max-w-7xl mx-auto space-y-8 pb-20">
             <WelcomeCard
               mode={mode}
               user={user}
@@ -183,9 +219,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
               <QuickStatsCard
                 title="Available Offers"
                 value={offers
-                  .filter((item) =>
-                    canAccessTier(item.tier_restriction, user.selected_tier)
-                  )
+                  .filter((item) => item.isAccessible)
                   .length.toString()}
                 change={0}
                 icon="mdi:gift"
@@ -296,7 +330,6 @@ export default function Dashboard({ mode = "light", toggleMode }) {
           <SimpleFooter mode={mode} isSidebarOpen={isSidebarOpen} />
         </div>
       </div>
-      <Toaster />
     </div>
   );
 }

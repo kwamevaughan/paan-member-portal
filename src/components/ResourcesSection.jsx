@@ -1,4 +1,3 @@
-// components/ResourcesSection.jsx
 import React from "react";
 import SectionCard from "./SectionCard";
 import ResourceItem from "./ResourceItem";
@@ -38,9 +37,29 @@ const ResourcesSection = ({
         </div>
       );
     }
+
+    console.log("[ResourcesSection] user selected tier:", user.selected_tier);
+    console.log("[ResourcesSection] resources and their access:");
+
+    resources.forEach((resource) => {
+      const canAccess = canAccessTier(
+        resource.tier_restriction,
+        user.selected_tier
+      );
+      console.log(
+        ` - Resource "${resource.title}" requires "${resource.tier_restriction}", access: ${canAccess}`
+      );
+    });
+
+    const sortedResources = [...resources].sort((a, b) => {
+      const aAccessible = canAccessTier(a.tier_restriction, user.selected_tier);
+      const bAccessible = canAccessTier(b.tier_restriction, user.selected_tier);
+      return aAccessible === bAccessible ? 0 : aAccessible ? -1 : 1;
+    });
+
     return (
       <>
-        {resources.map((resource) => (
+        {sortedResources.map((resource) => (
           <ResourceItem
             key={resource.id}
             resource={resource}
@@ -58,6 +77,7 @@ const ResourcesSection = ({
       </>
     );
   };
+
 
   return (
     <SectionCard

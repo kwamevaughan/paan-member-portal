@@ -1,7 +1,10 @@
 import { Icon } from "@iconify/react";
 import Link from "next/link";
+import { useLatestUpdate } from "@/hooks/useLatestUpdate";
 
 export default function WelcomeCard({ user, mode, TierBadge }) {
+  const { latestItem, loading, error } = useLatestUpdate(user?.selected_tier);
+
   return (
     <div className="relative mt-6 mb-10 group">
       {/* Glass morphism backdrop */}
@@ -68,7 +71,7 @@ export default function WelcomeCard({ user, mode, TierBadge }) {
                   mode === "dark" ? "text-slate-300" : "text-slate-600"
                 }`}
               >
-                Here&apos;s your dashboard overview at a glance.
+                Here's your dashboard overview at a glance.
               </p>
 
               {/* Stats section */}
@@ -87,10 +90,22 @@ export default function WelcomeCard({ user, mode, TierBadge }) {
                         : "bg-orange-50 border border-orange-200"
                     }`}
                   >
-                    Latest:
+                    Recently Added:
                   </span>
-                  Global Brand Partnership ||{" "}
-                  <span className="">Posted under Business Opportunities</span>
+                  {loading ? (
+                    <span className="text-gray-500">Loading...</span>
+                  ) : error ? (
+                    <span className="text-red-500">Error fetching update</span>
+                  ) : latestItem ? (
+                    <>
+                      {latestItem.title} ||{" "}
+                      <span className="">
+                        Posted under {latestItem.section}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-gray-500">No recent updates</span>
+                  )}
                 </div>
               </div>
             </div>

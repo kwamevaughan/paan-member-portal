@@ -62,7 +62,6 @@ export const useLatestUpdate = (userTier = "Free Member") => {
         const validItems = results.filter((item) => item !== null);
 
         if (validItems.length === 0) {
-          console.log("[useLatestUpdate] No accessible items found");
           setLatestItem(null);
           setLoading(false);
           return;
@@ -75,7 +74,6 @@ export const useLatestUpdate = (userTier = "Free Member") => {
           return currentTime > latestTime ? current : latest;
         });
 
-        console.log("[useLatestUpdate] Latest item:", latest);
         setLatestItem(latest);
       } catch (err) {
         console.error("[useLatestUpdate] Unexpected error:", err);

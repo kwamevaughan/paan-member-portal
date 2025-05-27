@@ -1,9 +1,9 @@
-// components/OpportunitiesSection.jsx
 import React from "react";
 import SectionCard from "./SectionCard";
 import OpportunityCard from "./OpportunityCard";
 import FilterDropdown from "./FilterDropdown";
 import { canAccessTier } from "@/utils/tierUtils";
+import { normalizeTier } from "@/components/Badge";
 
 const OpportunitiesSection = ({
   opportunities,
@@ -42,6 +42,21 @@ const OpportunitiesSection = ({
         </div>
       );
     }
+
+    // Log input opportunities and current filters
+    console.log(
+      "[OpportunitiesSection] Input opportunities:",
+      opportunities.map((o) => ({
+        id: o.id,
+        title: o.title,
+        tier: o.tier_restriction,
+        country: o.location,
+        isAccessible: canAccessTier(o.tier_restriction, user.selected_tier),
+      }))
+    );
+    console.log("[OpportunitiesSection] Current filters:", opportunityFilters);
+
+    // Sorting is now handled in useBusinessOpportunities, but verify
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {opportunities.map((opportunity) => (
@@ -72,33 +87,43 @@ const OpportunitiesSection = ({
         <div className="flex space-x-2">
           <FilterDropdown
             value={opportunityFilters.country || ""}
-            onChange={(value) =>
-              handleOpportunityFilterChange("country", value)
-            }
+            onChange={(value) => {
+              console.log(
+                `[OpportunitiesSection] Country filter changed to: ${value}`
+              );
+              handleOpportunityFilterChange("country", value);
+            }}
             options={[
               { value: "", label: "All Countries" },
-              ...opportunityFilterOptions.countries.map((c) => ({
-                value: c,
-                label: c,
-              })),
+              ...opportunityFilterOptions.countries
+                .filter((c) => c !== "all")
+                .map((c) => ({
+                  value: c,
+                  label: c,
+                })),
             ]}
             mode={mode}
             ariaLabel="Filter opportunities by country"
           />
           <FilterDropdown
             value={opportunityFilters.tier_restriction || ""}
-            onChange={(value) =>
-              handleOpportunityFilterChange("tier_restriction", value)
-            }
+            onChange={(value) => {
+              console.log(
+                `[OpportunitiesSection] Tier filter changed to: ${value}`
+              );
+              handleOpportunityFilterChange("tier_restriction", value);
+            }}
             options={[
               { value: "", label: "All Tiers" },
-              ...opportunityFilterOptions.tiers.map((tier) => ({
-                value: tier,
-                label: canAccessTier(tier, user.selected_tier)
-                  ? tier
-                  : `${tier} (Restricted)`,
-                disabled: !canAccessTier(tier, user.selected_tier),
-              })),
+              ...opportunityFilterOptions.tiers
+                .filter((t) => t !== "all")
+                .map((tier) => ({
+                  value: tier,
+                  label: canAccessTier(tier, user.selected_tier)
+                    ? tier
+                    : `${tier} (Restricted)`,
+                  disabled: !canAccessTier(tier, user.selected_tier),
+                })),
             ]}
             mode={mode}
             ariaLabel="Filter opportunities by membership tier"

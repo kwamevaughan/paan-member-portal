@@ -11,6 +11,8 @@ import useSidebar from "@/hooks/useSidebar";
 import toast, { Toaster } from "react-hot-toast";
 import { TierBadge } from "@/components/Badge";
 
+
+
 export default function BusinessOpportunities({ mode = "light", toggleMode }) {
   const { isSidebarOpen, toggleSidebar, sidebarState, updateDragOffset } =
     useSidebar();
@@ -64,12 +66,12 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
 
   const canAccessOpportunity = (opportunityTier) => {
     const tiers = [
-      "Associate Member (Tier 1)",
-      "Full Member (Tier 2)",
-      "Gold Member (Tier 3)",
-      "Free Member (Tier 4)",
+      "Associate Member",
+      "Full Member",
+      "Gold Member",
+      "Free Member",
     ];
-    const userTier = user?.selected_tier || "Free Member (Tier 4)";
+    const userTier = user?.selected_tier || "Free Member";
     const userTierIndex = tiers.indexOf(userTier);
     const oppTierIndex = tiers.indexOf(opportunityTier);
     return userTierIndex >= oppTierIndex;

@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
+import { canAccessTier } from "@/utils/tierUtils";
 
 const useEvents = (
   filters = { eventType: "", tier: "" },
-  userTier = "Associate"
+  userTier = "Free Member"
 ) => {
   const [events, setEvents] = useState([]);
   const [registeredEvents, setRegisteredEvents] = useState([]);
@@ -34,6 +35,13 @@ const useEvents = (
       const { data: eventsData, error: eventsError } = await query;
       if (eventsError) throw eventsError;
 
+      // Transform events to include isAccessible
+      const transformedEvents = (eventsData || []).map((event) => ({
+        ...event,
+        tier_restriction: event.tier_restriction || "Free Member",
+        isAccessible: canAccessTier(event.tier_restriction, userTier),
+      }));
+
       // Fetch filter options
       const { data: allEvents, error: allEventsError } = await supabase
         .from("events")
@@ -44,10 +52,22 @@ const useEvents = (
         ...new Set(allEvents.map((e) => e.event_type)),
       ].sort();
       const tiers = [
-        ...new Set(allEvents.map((e) => e.tier_restriction)),
+        ...new Set(allEvents.map((e) => e.tier_restriction || "Free Member")),
       ].sort();
 
-      setEvents(eventsData || []);
+      console.log(
+        "[useEvents] User tier:",
+        userTier,
+        "Fetched events:",
+        transformedEvents.map((e) => ({
+          id: e.id,
+          title: e.title,
+          tier: e.tier_restriction,
+          isAccessible: e.isAccessible,
+        }))
+      );
+
+      setEvents(transformedEvents);
       setFilterOptions({ eventTypes, tiers });
     } catch (err) {
       console.error("[useEvents] Error fetching events:", err);
@@ -68,11 +88,9 @@ const useEvents = (
         console.warn(
           "[useEvents] No authenticated user, skipping registered events"
         );
-        console.log("[useEvents] Auth error:", authError);
         setRegisteredEvents([]);
         return;
       }
-      console.log("[useEvents] Authenticated user:", user.id);
 
       const { data: candidate, error: candidateError } = await supabase
         .from("candidates")
@@ -82,10 +100,8 @@ const useEvents = (
 
       if (candidateError || !candidate) {
         console.error("[useEvents] Candidate not found for user:", user.id);
-        console.log("[useEvents] Candidate error:", candidateError);
         throw new Error("Candidate not found for this user");
       }
-      console.log("[useEvents] Candidate ID:", candidate.id);
 
       const { data: registrations, error: regError } = await supabase
         .from("event_registrations")
@@ -115,19 +131,15 @@ const useEvents = (
         console.error("[useEvents] Registration fetch error:", regError);
         throw regError;
       }
-      console.log("[useEvents] Raw registrations:", registrations);
 
       const registeredEventsData = registrations.map((reg) => ({
         ...reg.events,
         registration_id: reg.id,
         status: reg.status,
         registered_at: reg.registered_at,
+        tier_restriction: reg.events.tier_restriction || "Free Member",
       }));
 
-      console.log(
-        "[useEvents] Processed registeredEvents:",
-        registeredEventsData
-      );
       setRegisteredEvents(registeredEventsData || []);
     } catch (err) {
       console.error("[useEvents] Error fetching registered events:", err);
@@ -145,7 +157,6 @@ const useEvents = (
       if (authError || !user) {
         throw new Error("User not authenticated");
       }
-      console.log("[useEvents] Registration auth user:", user.id);
 
       const { data: candidate, error: candidateError } = await supabase
         .from("candidates")
@@ -156,7 +167,6 @@ const useEvents = (
       if (candidateError || !candidate) {
         throw new Error("Candidate not found for this user");
       }
-      console.log("[useEvents] Registration candidate ID:", candidate.id);
 
       const candidateId = candidate.id;
 
@@ -168,7 +178,6 @@ const useEvents = (
         .single();
 
       if (checkError && !checkError.message.includes("0 rows")) {
-        console.error("[useEvents] Check registration error:", checkError);
         throw checkError;
       }
 
@@ -187,14 +196,12 @@ const useEvents = (
         });
 
       if (insertError) {
-        console.error("[useEvents] Insert error:", insertError);
         throw insertError;
       }
 
       const event = events.find((e) => e.id === eventId);
       toast.success(`Registered for ${event?.title || "event"}!`);
 
-      // Refresh registered events
       await fetchRegisteredEvents();
     } catch (error) {
       console.error("[useEvents] Error registering for event:", error);
@@ -205,7 +212,7 @@ const useEvents = (
   useEffect(() => {
     fetchEvents();
     fetchRegisteredEvents();
-  }, [filters.eventType, filters.tier]);
+  }, [filters.eventType, filters.tier, userTier]);
 
   return {
     events,

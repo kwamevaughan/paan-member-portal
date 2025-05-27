@@ -181,12 +181,14 @@ export default function MarketIntel({ mode = "light", toggleMode }) {
                       </div>
                       <div
                         className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg ${
-                          tierBadgeStyles[normalizeTier(user?.selected_tier)]
+                          tierBadgeStyles[normalizeTier(user?.selected_tier)] ||
+                          tierBadgeStyles["default"] ||
+                          "bg-gray-100 text-gray-800 border-gray-200"
                         }`}
                       >
                         <Icon icon="mdi:crown" className="w-5 h-5" />
                         <span className="font-semibold">
-                          {normalizeTier(user?.selected_tier)}
+                          {normalizeTier(user?.selected_tier) || "Free Member"}
                         </span>
                       </div>
                     </div>

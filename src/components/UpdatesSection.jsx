@@ -37,23 +37,128 @@ const UpdatesSection = ({
         </div>
       );
     }
+
+    // Log input updates
+    console.log(
+      "[UpdatesSection] Input updates:",
+      updates.map((u) => ({
+        id: u.id,
+        title: u.title,
+        tier: u.tier_restriction,
+        created_at: u.created_at,
+        isAccessible: u.isAccessible,
+      }))
+    );
+
+    // Normalize tier for comparison
+    const normalizeTier = (tier) => {
+      if (!tier) return "free member";
+      const tierMap = {
+        "gold member (tier 3)": "gold member",
+        "full member (tier 2)": "full member",
+        "associate member (tier 1)": "associate member",
+        "free member (tier 4)": "free member",
+        "associate agency (tier 1)": "associate member",
+        "gold member": "gold member",
+        "full member": "full member",
+        "associate member": "associate member",
+        "free member": "free member",
+      };
+      const cleanTier = tier
+        .replace(/\(.*?\)/g, "")
+        .trim()
+        .toLowerCase();
+      return tierMap[cleanTier] || cleanTier;
+    };
+
+    const userTier = normalizeTier(user.selected_tier);
+    const tierHierarchy = [
+      "gold member",
+      "full member",
+      "associate member",
+      "free member",
+    ];
+
+    // Sort updates: exact tier match first, then other accessible, then restricted
+    const sortedUpdates = [...updates].sort((a, b) => {
+      const aTier = normalizeTier(a.tier_restriction);
+      const bTier = normalizeTier(b.tier_restriction);
+      const aIndex = tierHierarchy.indexOf(aTier);
+      const bIndex = tierHierarchy.indexOf(bTier);
+      const userIndex = tierHierarchy.indexOf(userTier);
+
+      // Determine sorting based on tier proximity
+      if (a.isAccessible && b.isAccessible) {
+        // Both accessible: prioritize exact tier match
+        const aIsExact = aIndex === userIndex;
+        const bIsExact = bIndex === userIndex;
+        if (aIsExact !== bIsExact) {
+          console.log(
+            `[UpdatesSection] Comparing ${a.title} (exact: ${aIsExact}) vs ${
+              b.title
+            } (exact: ${bIsExact}) -> ${aIsExact ? "a first" : "b first"}`
+          );
+          return aIsExact ? -1 : 1;
+        }
+        // Both same precedence (exact or not), maintain order
+        console.log(
+          `[UpdatesSection] Both accessible, same precedence: ${a.title} vs ${b.title}, maintaining order`
+        );
+        return 0;
+      }
+
+      // One accessible, one not
+      if (a.isAccessible !== b.isAccessible) {
+        console.log(
+          `[UpdatesSection] Comparing ${a.title} (access: ${
+            a.isAccessible
+          }) vs ${b.title} (access: ${b.isAccessible}) -> ${
+            a.isAccessible ? "a first" : "b first"
+          }`
+        );
+        return a.isAccessible ? -1 : 1;
+      }
+
+      // Both restricted, maintain order
+      console.log(
+        `[UpdatesSection] Both restricted: ${a.title} vs ${b.title}, maintaining order`
+      );
+      return 0;
+    });
+
+    // Log sorted updates
+    console.log(
+      "[UpdatesSection] Sorted updates:",
+      sortedUpdates.map((u) => ({
+        id: u.id,
+        title: u.title,
+        tier: u.tier_restriction,
+        created_at: u.created_at,
+        isAccessible: u.isAccessible,
+      }))
+    );
+
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {updates.map((update) => (
-          <UpdateCard
-            key={update.id}
-            update={update}
-            mode={mode}
-            isRestricted={
-              !canAccessTier(update.tier_restriction, user.selected_tier)
-            }
-            onRestrictedClick={() =>
-              handleRestrictedClick(
-                `Access restricted: ${update.tier_restriction} tier required for "${update.title}"`
-              )
-            }
-          />
-        ))}
+        {sortedUpdates.map((update) => {
+          const isRestricted = !update.isAccessible;
+          console.log(
+            `[UpdatesSection] Rendering: ${update.title}, isRestricted: ${isRestricted}, User Tier: ${user.selected_tier}`
+          );
+          return (
+            <UpdateCard
+              key={update.id}
+              update={update}
+              mode={mode}
+              isRestricted={isRestricted}
+              onRestrictedClick={() =>
+                handleRestrictedClick(
+                  `Access restricted: ${update.tier_restriction} tier required for "${update.title}"`
+                )
+              }
+            />
+          );
+        })}
       </div>
     );
   };

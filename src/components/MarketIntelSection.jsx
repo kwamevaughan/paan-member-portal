@@ -1,4 +1,3 @@
-// components/MarketIntelSection.jsx
 import React from "react";
 import SectionCard from "./SectionCard";
 import MarketIntelItem from "./MarketIntelItem";
@@ -37,6 +36,21 @@ const MarketIntelSection = ({
         </div>
       );
     }
+
+    // Log input market intel and current filters
+    console.log(
+      "[MarketIntelSection] Input market intel:",
+      marketIntel.map((i) => ({
+        id: i.id,
+        title: i.title,
+        tier: i.tier_restriction,
+        region: i.region,
+        type: i.type,
+        isAccessible: i.isAccessible,
+      }))
+    );
+    console.log("[MarketIntelSection] Current filters:", marketIntelFilters);
+
     return (
       <>
         {marketIntel.map((intel) => (
@@ -65,29 +79,63 @@ const MarketIntelSection = ({
         <div className="flex space-x-2">
           <FilterDropdown
             value={marketIntelFilters.region || ""}
-            onChange={(value) => handleMarketIntelFilterChange("region", value)}
+            onChange={(value) => {
+              console.log(
+                `[MarketIntelSection] Region filter changed to: ${value}`
+              );
+              handleMarketIntelFilterChange("region", value);
+            }}
             options={[
               { value: "", label: "All Regions" },
-              ...marketIntelFilterOptions.regions.map((r) => ({
-                value: r,
-                label: r,
-              })),
+              ...marketIntelFilterOptions.regions
+                .filter((r) => r !== "all")
+                .map((r) => ({
+                  value: r,
+                  label: r,
+                })),
             ]}
             mode={mode}
             ariaLabel="Filter market intelligence by region"
           />
           <FilterDropdown
             value={marketIntelFilters.type || ""}
-            onChange={(value) => handleMarketIntelFilterChange("type", value)}
+            onChange={(value) => {
+              console.log(
+                `[MarketIntelSection] Type filter changed to: ${value}`
+              );
+              handleMarketIntelFilterChange("type", value);
+            }}
             options={[
               { value: "", label: "All Types" },
-              ...marketIntelFilterOptions.types.map((t) => ({
-                value: t,
-                label: t,
-              })),
+              ...marketIntelFilterOptions.types
+                .filter((t) => t !== "all")
+                .map((t) => ({
+                  value: t,
+                  label: t,
+                })),
             ]}
             mode={mode}
             ariaLabel="Filter market intelligence by type"
+          />
+          <FilterDropdown
+            value={marketIntelFilters.tier_restriction || ""}
+            onChange={(value) => {
+              console.log(
+                `[MarketIntelSection] Tier filter changed to: ${value}`
+              );
+              handleMarketIntelFilterChange("tier_restriction", value);
+            }}
+            options={[
+              { value: "", label: "All Tiers" },
+              ...marketIntelFilterOptions.tier_restrictions
+                .filter((t) => t !== "all")
+                .map((t) => ({
+                  value: t,
+                  label: t,
+                })),
+            ]}
+            mode={mode}
+            ariaLabel="Filter market intelligence by membership tier"
           />
         </div>
       }

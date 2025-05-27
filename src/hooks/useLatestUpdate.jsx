@@ -4,12 +4,12 @@ import { canAccessTier } from "@/utils/tierUtils";
 import { normalizeTier } from "@/components/Badge";
 
 export const useLatestUpdate = (userTier = "Free Member") => {
-  const [latestItem, setLatestItem] = useState(null);
+  const [latestItems, setLatestItems] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchLatestUpdate = async () => {
+    const fetchLatestUpdates = async () => {
       setLoading(true);
       setError(null);
       try {
@@ -39,7 +39,7 @@ export const useLatestUpdate = (userTier = "Free Member") => {
               `[useLatestUpdate] Error fetching from ${name}:`,
               error
             );
-            return null;
+            return { section, item: null };
           }
 
           if (data && data.length > 0) {
@@ -49,42 +49,38 @@ export const useLatestUpdate = (userTier = "Free Member") => {
             const isAccessible = canAccessTier(itemTier, userTierNormalized);
             if (isAccessible) {
               return {
-                title: item.title,
                 section,
-                timestamp: item.updated_at || item.created_at,
+                item: {
+                  title: item.title,
+                  timestamp: item.updated_at || item.created_at,
+                },
               };
             }
           }
-          return null;
+          return { section, item: null };
         });
 
         const results = await Promise.all(promises);
-        const validItems = results.filter((item) => item !== null);
 
-        if (validItems.length === 0) {
-          setLatestItem(null);
-          setLoading(false);
-          return;
-        }
+        // Create an object mapping sections to their latest items
+        const latestItemsMap = results.reduce((acc, { section, item }) => {
+          acc[section] = item; // Store the full item (title and timestamp)
+          return acc;
+        }, {});
 
-        // Find the most recent item
-        const latest = validItems.reduce((latest, current) => {
-          const latestTime = new Date(latest.timestamp);
-          const currentTime = new Date(current.timestamp);
-          return currentTime > latestTime ? current : latest;
-        });
+        console.log("[useLatestUpdate] Latest items map:", latestItemsMap);
 
-        setLatestItem(latest);
+        setLatestItems(latestItemsMap);
       } catch (err) {
         console.error("[useLatestUpdate] Unexpected error:", err);
-        setError("Failed to fetch latest update.");
+        setError("Failed to fetch latest updates.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchLatestUpdate();
+    fetchLatestUpdates();
   }, [userTier]);
 
-  return { latestItem, loading, error };
+  return { latestItems, loading, error };
 };

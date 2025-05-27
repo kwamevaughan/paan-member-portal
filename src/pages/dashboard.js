@@ -1,3 +1,4 @@
+// pages/Dashboard.js
 import { React, useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useUser } from "@/hooks/useUser";
@@ -9,7 +10,8 @@ import useUpdates from "@/hooks/useUpdates";
 import useMarketIntel from "@/hooks/useMarketIntel";
 import useOffers from "@/hooks/useOffers";
 import useFilters from "@/hooks/useFilters";
-import { TierBadge } from "@/components/Badge";
+import { useLatestUpdate } from "@/hooks/useLatestUpdate";
+import { TierBadge, JobTypeBadge } from "@/components/Badge";
 import HrHeader from "@/layouts/hrHeader";
 import HrSidebar from "@/layouts/hrSidebar";
 import SimpleFooter from "@/layouts/simpleFooter";
@@ -26,6 +28,12 @@ import MarketIntelSection from "@/components/MarketIntelSection";
 import OffersSection from "@/components/OffersSection";
 import UpdatesSection from "@/components/UpdatesSection";
 import { canAccessTier } from "@/utils/tierUtils";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Pagination, Autoplay } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import Link from "next/link";
 
 export default function Dashboard({ mode = "light", toggleMode }) {
   const { isSidebarOpen, toggleSidebar, sidebarState, updateDragOffset } =
@@ -35,6 +43,13 @@ export default function Dashboard({ mode = "light", toggleMode }) {
   const { handleLogout } = useLogout();
   const [activeTab, setActiveTab] = useState("opportunities");
   const { filters, handleFilterChange } = useFilters();
+  const {
+    latestItems,
+    loading: latestUpdateLoading,
+    error: latestUpdateError,
+  } = useLatestUpdate(
+    user?.selected_tier?.replace(/\(.*?\)/g, "").trim() || "Free Member"
+  );
 
   // Fetch data
   const {
@@ -46,8 +61,6 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     filters.opportunities,
     user?.selected_tier?.replace(/\(.*?\)/g, "").trim() || "Free Member"
   );
-
-  
 
   const {
     events,
@@ -105,6 +118,20 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     toast.error(message, { duration: 3000 });
   };
 
+  // Map card titles to section names for lastUpdated
+  const getLastUpdatedForSection = (sectionTitle) => {
+    if (latestUpdateLoading || latestUpdateError) return null;
+    const sectionMap = {
+      "Active Opportunities": "Business Opportunities",
+      "Upcoming Events": "Events",
+      "New Resources": "Resources",
+      "Available Offers": "Offers",
+      "Market Intel": "Market Intel",
+      Updates: "Updates",
+    };
+    const section = sectionMap[sectionTitle];
+    return latestItems[section]?.timestamp || null;
+  };
 
   // Early returns
   if (userLoading && LoadingComponent) return LoadingComponent;
@@ -118,6 +145,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
           : "bg-gradient-to-br from-blue-50 via-white to-purple-50"
       }`}
     >
+      <Toaster />
       <HrHeader
         toggleSidebar={toggleSidebar}
         isSidebarOpen={isSidebarOpen}
@@ -150,61 +178,137 @@ export default function Dashboard({ mode = "light", toggleMode }) {
           }}
         >
           <div className="max-w-7xl mx-auto space-y-8 pb-20">
-            <WelcomeCard
-              mode={mode}
-              user={user}
-              agencyName={user.agencyName}
-              jobType={user.job_type}
-              selectedTier={user.selected_tier}
-              TierBadge={TierBadge}
-            />
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <QuickStatsCard
-                title="Active Opportunities"
-                value={opportunities
-                  .filter((item) =>
-                    canAccessTier(item.tier_restriction, user.selected_tier)
-                  )
-                  .length.toString()}
-                change={8}
-                icon="mdi:briefcase"
-                color="bg-gradient-to-r from-blue-500 to-blue-600"
-                mode={mode}
-              />
-              <QuickStatsCard
-                title="Upcoming Events"
-                value={events
-                  .filter((item) =>
-                    canAccessTier(item.tier_restriction, user.selected_tier)
-                  )
-                  .length.toString()}
-                change={-2}
-                icon="mdi:calendar-check"
-                color="bg-gradient-to-r from-green-500 to-green-600"
-                mode={mode}
-              />
-              <QuickStatsCard
-                title="New Resources"
-                value={resources
-                  .filter((item) =>
-                    canAccessTier(item.tier_restriction, user.selected_tier)
-                  )
-                  .length.toString()}
-                change={15}
-                icon="mdi:file-document-multiple"
-                color="bg-gradient-to-r from-purple-500 to-purple-600"
-                mode={mode}
-              />
-              <QuickStatsCard
-                title="Available Offers"
-                value={offers
-                  .filter((item) => item.isAccessible)
-                  .length.toString()}
-                change={0}
-                icon="mdi:gift"
-                color="bg-gradient-to-r from-orange-500 to-orange-600"
-                mode={mode}
-              />
+            <WelcomeCard mode={mode} user={user} />
+            <div className="">
+              <Swiper
+                modules={[Navigation, Pagination, Autoplay]}
+                spaceBetween={24}
+                slidesPerView={1}
+                navigation
+                pagination={{ clickable: true }}
+                loop={true}
+                autoplay={{
+                  delay: 5000,
+                  disableOnInteraction: false,
+                }}
+                breakpoints={{
+                  640: { slidesPerView: 2 },
+                  1024: { slidesPerView: 4 },
+                }}
+                className="!pb-12"
+              >
+                <SwiperSlide>
+                  <Link href="/opportunities">
+                    <QuickStatsCard
+                      title="Active Opportunities"
+                      value={opportunities
+                        .filter((item) =>
+                          canAccessTier(
+                            item.tier_restriction,
+                            user.selected_tier
+                          )
+                        )
+                        .length.toString()}
+                      icon="mdi:briefcase"
+                      color="bg-gradient-to-r from-blue-500 to-blue-600"
+                      mode={mode}
+                      lastUpdated={getLastUpdatedForSection(
+                        "Active Opportunities"
+                      )}
+                    />
+                  </Link>
+                </SwiperSlide>
+                <SwiperSlide>
+                  <Link href="/events">
+                    <QuickStatsCard
+                      title="Upcoming Events"
+                      value={events
+                        .filter((item) =>
+                          canAccessTier(
+                            item.tier_restriction,
+                            user.selected_tier
+                          )
+                        )
+                        .length.toString()}
+                      icon="mdi:calendar-check"
+                      color="bg-gradient-to-r from-green-500 to-green-600"
+                      mode={mode}
+                      lastUpdated={getLastUpdatedForSection("Upcoming Events")}
+                    />
+                  </Link>
+                </SwiperSlide>
+                <SwiperSlide>
+                  <Link href="/resources">
+                    <QuickStatsCard
+                      title="New Resources"
+                      value={resources
+                        .filter((item) =>
+                          canAccessTier(
+                            item.tier_restriction,
+                            user.selected_tier
+                          )
+                        )
+                        .length.toString()}
+                      icon="mdi:file-document-multiple"
+                      color="bg-gradient-to-r from-purple-500 to-purple-600"
+                      mode={mode}
+                      lastUpdated={getLastUpdatedForSection("New Resources")}
+                    />
+                  </Link>
+                </SwiperSlide>
+                <SwiperSlide>
+                  <Link href="/offers">
+                    <QuickStatsCard
+                      title="Available Offers"
+                      value={offers
+                        .filter((item) => item.isAccessible)
+                        .length.toString()}
+                      icon="mdi:gift"
+                      color="bg-gradient-to-r from-orange-500 to-orange-600"
+                      mode={mode}
+                      lastUpdated={getLastUpdatedForSection("Available Offers")}
+                    />
+                  </Link>
+                </SwiperSlide>
+                <SwiperSlide>
+                  <Link href="/market-intel">
+                    <QuickStatsCard
+                      title="Market Intel"
+                      value={marketIntel
+                        .filter((item) =>
+                          canAccessTier(
+                            item.tier_restriction,
+                            user.selected_tier
+                          )
+                        )
+                        .length.toString()}
+                      icon="mdi:chart-line"
+                      color="bg-gradient-to-r from-amber-500 to-amber-600"
+                      mode={mode}
+                      lastUpdated={getLastUpdatedForSection("Market Intel")}
+                    />
+                  </Link>
+                </SwiperSlide>
+                <SwiperSlide>
+                  <Link href="/updates">
+                    <QuickStatsCard
+                      title="Updates"
+                      value={updates
+                        .filter((item) =>
+                          canAccessTier(
+                            item.tier_restriction,
+                            user.selected_tier
+                          )
+                        )
+                        .length.toString()}
+                      icon="mdi:bell"
+                      color="bg-gradient-to-r from-pink-500 to-pink-600"
+                      mode={mode}
+                      lastUpdated={getLastUpdatedForSection("Updates")}
+                    />
+                  </Link>
+                </SwiperSlide>
+              </Swiper>
             </div>
             <DashboardTabs
               activeTab={activeTab}

@@ -213,13 +213,13 @@ export default function Dashboard({ mode = "light", toggleMode }) {
               />
               <YouTubeVideo mode={mode} Link={Link} />
             </div>
-            <DashboardTabs
+
+            <TabContentTransition
               activeTab={activeTab}
               setActiveTab={setActiveTab}
               mode={mode}
               Icon={Icon}
-            />
-            <TabContentTransition activeTab={activeTab}>
+            >
               {activeTab === "opportunities" && (
                 <OpportunitiesSection
                   opportunities={opportunities}

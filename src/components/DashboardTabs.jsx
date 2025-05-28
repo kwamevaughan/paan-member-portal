@@ -21,7 +21,7 @@ const DashboardTabs = ({ activeTab, setActiveTab, mode, Icon }) => {
           mode === "dark"
             ? "bg-gray-900/80 border-gray-700/30"
             : "bg-white/80 border-white/20"
-        } border rounded-2xl p-2 shadow-lg`}
+        } border rounded-2xl p-2 shadow-lg mb-4`}
       >
         <div className="flex w-full overflow-x-auto scrollbar-hide">
           <div className="flex min-w-full gap-1">

@@ -1,4 +1,3 @@
-// pages/Dashboard.js
 import { React, useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useUser } from "@/hooks/useUser";
@@ -114,6 +113,15 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     user?.selected_tier?.replace(/\(.*?\)/g, "").trim() || "Free Member"
   );
 
+  // Debug offers
+  useEffect(() => {
+    console.log("Offers:", offers);
+    console.log("Offers Loading:", offersLoading);
+    console.log("Offers Error:", offersError);
+    console.log("Offer Filters:", filters.offers);
+    console.log("Offer Filter Options:", offerFilterOptions);
+  }, [offers, offersLoading, offersError, filters.offers, offerFilterOptions]);
+
   // Handle restricted access
   const handleRestrictedClick = (message) => {
     toast.error(message, { duration: 3000 });
@@ -134,7 +142,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     return latestItems[section]?.timestamp || null;
   };
 
-  // Early returns
+  // Empty state
   if (userLoading && LoadingComponent) return LoadingComponent;
   if (!user) return null;
 
@@ -142,8 +150,8 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     <div
       className={`min-h-screen flex flex-col ${
         mode === "dark"
-          ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900"
-          : "bg-gradient-to-br from-blue-50 via-white to-purple-50"
+          ? "bg-gradient-to-brick from-gray-900 via-gray-800 to-gray-900"
+          : "bg-gradient-to-brick from-blue-50 via-white to-gray-100"
       }`}
     >
       <Toaster />
@@ -163,10 +171,10 @@ export default function Dashboard({ mode = "light", toggleMode }) {
         <HrSidebar
           isOpen={isSidebarOpen}
           mode={mode}
-          toggleMode={toggleMode}
-          onLogout={handleLogout}
           toggleSidebar={toggleSidebar}
+          onLogout={handleLogout}
           setDragOffset={updateDragOffset}
+          toggleMode={toggleMode}
         />
         <div
           className={`content-container flex-1 p-4 md:p-6 lg:p-8 transition-all duration-300 overflow-hidden ${
@@ -180,7 +188,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
         >
           <div className="max-w-7xl mx-auto space-y-12 pb-20">
             <WelcomeCard mode={mode} user={user} />
-            <div className="pb-2">
+            <div className="pb-12">
               <Swiper
                 modules={[Navigation, Pagination, Autoplay]}
                 spaceBetween={24}
@@ -196,7 +204,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
                   640: { slidesPerView: 2 },
                   1024: { slidesPerView: 4 },
                 }}
-                className="!pb-12"
+                className="pb-12"
               >
                 <SwiperSlide>
                   <Link href="/opportunities">
@@ -210,7 +218,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
                           )
                         )
                         .length.toString()}
-                      icon="mdi:briefcase"
+                      icon="mdi:home"
                       color="bg-gradient-to-r from-blue-500 to-blue-600"
                       mode={mode}
                       lastUpdated={getLastUpdatedForSection(
@@ -250,7 +258,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
                           )
                         )
                         .length.toString()}
-                      icon="mdi:file-document-multiple"
+                      icon="mdi:folder"
                       color="bg-gradient-to-r from-purple-500 to-purple-600"
                       mode={mode}
                       lastUpdated={getLastUpdatedForSection("New Resources")}
@@ -262,7 +270,12 @@ export default function Dashboard({ mode = "light", toggleMode }) {
                     <QuickStatsCard
                       title="Available Offers"
                       value={offers
-                        .filter((item) => item.isAccessible)
+                        .filter((item) =>
+                          canAccessTier(
+                            item.tier_restriction,
+                            user.selected_tier
+                          )
+                        )
                         .length.toString()}
                       icon="mdi:gift"
                       color="bg-gradient-to-r from-orange-500 to-orange-600"
@@ -365,6 +378,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
                   user={user}
                   handleRestrictedClick={handleRestrictedClick}
                   mode={mode}
+                  Icon={Icon}
                 />
               )}
               {activeTab === "marketIntel" && (
@@ -396,6 +410,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
                   user={user}
                   handleRestrictedClick={handleRestrictedClick}
                   mode={mode}
+                  Icon={Icon}
                 />
               )}
               {activeTab === "updates" && (
@@ -411,6 +426,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
                   user={user}
                   handleRestrictedClick={handleRestrictedClick}
                   mode={mode}
+                  Icon={Icon}
                 />
               )}
             </TabContentTransition>

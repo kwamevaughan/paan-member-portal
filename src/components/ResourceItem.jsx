@@ -1,8 +1,7 @@
 import React from "react";
 import { TierBadge } from "./Badge";
-import { Icon } from "@iconify/react";
 
-const ResourceItem = ({ resource, mode, isRestricted, onRestrictedClick }) => {
+const ResourceItem = ({ resource, mode, isRestricted, onRestrictedClick, Icon }) => {
   const handleClick = () => {
     if (isRestricted) {
       onRestrictedClick();
@@ -184,7 +183,7 @@ const ResourceItem = ({ resource, mode, isRestricted, onRestrictedClick }) => {
                   : "bg-gray-100 text-gray-600 group-hover:bg-blue-100 group-hover:text-blue-600"
               } ${!isRestricted ? "group-hover:scale-110" : ""}`}
             >
-              <iconify-icon
+              <Icon
                 icon={isRestricted ? "mdi:lock-outline" : "mdi:arrow-top-right"}
                 className="text-lg"
               />

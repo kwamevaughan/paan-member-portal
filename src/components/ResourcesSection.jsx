@@ -14,6 +14,7 @@ const ResourcesSection = ({
   user,
   handleRestrictedClick,
   mode,
+  Icon,
 }) => {
   const [statsFilter, setStatsFilter] = useState("total"); // Track selected stat filter
   const [selectedCategory, setSelectedCategory] = useState(""); // Track selected category for "Categories" filter
@@ -396,6 +397,7 @@ const ResourcesSection = ({
               <ResourceItem
                 resource={resource}
                 mode={mode}
+                Icon={Icon}
                 isRestricted={
                   !canAccessTier(resource.tier_restriction, user.selected_tier)
                 }

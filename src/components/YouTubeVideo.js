@@ -1,4 +1,4 @@
-const YouTubeVideo = ({ mode }) => {
+const YouTubeVideo = ({ mode, Link }) => {
   return (
     <div
       className={`p-6 rounded-2xl border shadow-lg ${
@@ -7,13 +7,15 @@ const YouTubeVideo = ({ mode }) => {
           : "bg-white border-gray-200"
       }`}
     >
+      <Link href="https://www.paan.africa/membership" target="_blank">
       <h2
         className={`text-xl font-semibold mb-4 ${
           mode === "dark" ? "text-white" : "text-gray-800"
         }`}
       >
         Become a Certified PAAN Member
-      </h2>
+        </h2>
+      </Link>
       <div
         className="relative w-full"
         style={{ paddingBottom: "56.25%" /* 16:9 aspect ratio */ }}

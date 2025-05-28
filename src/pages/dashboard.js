@@ -187,7 +187,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
               : `${84 + (isSidebarOpen ? 120 : 0) + sidebarState.offset}px`,
           }}
         >
-          <div className="max-w-7xl mx-auto space-y-12 pb-20">
+          <div className="max-w-7xl mx-auto space-y-8 pb-10">
             <WelcomeCard
               mode={mode}
               user={user}
@@ -211,7 +211,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
                 getLastUpdatedForSection={getLastUpdatedForSection}
                 useRouter={useRouter}
               />
-              <YouTubeVideo mode={mode} />
+              <YouTubeVideo mode={mode} Link={Link} />
             </div>
             <DashboardTabs
               activeTab={activeTab}

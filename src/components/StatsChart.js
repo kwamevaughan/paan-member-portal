@@ -1,6 +1,4 @@
-import React from "react";
 import Chart from "react-apexcharts";
-import { useRouter } from "next/router";
 import { format } from "date-fns";
 
 const StatsChart = ({
@@ -13,6 +11,7 @@ const StatsChart = ({
   user,
   mode,
   getLastUpdatedForSection,
+  useRouter,
 }) => {
   const router = useRouter();
 

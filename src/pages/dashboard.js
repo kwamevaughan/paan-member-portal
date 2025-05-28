@@ -25,6 +25,7 @@ import ResourcesSection from "@/components/ResourcesSection";
 import MarketIntelSection from "@/components/MarketIntelSection";
 import OffersSection from "@/components/OffersSection";
 import UpdatesSection from "@/components/UpdatesSection";
+import YouTubeVideo from "@/components/YouTubeVideo";
 import { canAccessTier } from "@/utils/tierUtils";
 import { Icon } from "@iconify/react";
 import dynamic from "next/dynamic";
@@ -32,11 +33,6 @@ import Link from "next/link";
 
 // Dynamically import StatsChart with SSR disabled
 const StatsChart = dynamic(() => import("@/components/StatsChart"), {
-  ssr: false,
-});
-
-// Dynamically import YouTubeVideo with SSR disabled
-const YouTubeVideo = dynamic(() => import("@/components/YouTubeVideo"), {
   ssr: false,
 });
 
@@ -213,6 +209,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
                 user={user}
                 mode={mode}
                 getLastUpdatedForSection={getLastUpdatedForSection}
+                useRouter={useRouter}
               />
               <YouTubeVideo mode={mode} />
             </div>

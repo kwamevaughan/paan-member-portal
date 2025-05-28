@@ -1,7 +1,5 @@
-import React from "react";
-import { Icon } from "@iconify/react";
 
-const DashboardTabs = ({ activeTab, setActiveTab, mode }) => {
+const DashboardTabs = ({ activeTab, setActiveTab, mode, Icon }) => {
   const tabs = [
     {
       id: "opportunities",

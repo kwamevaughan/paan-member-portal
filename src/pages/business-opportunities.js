@@ -1,4 +1,3 @@
-// pages/business-opportunities.js
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useUser } from "@/hooks/useUser";
@@ -11,8 +10,6 @@ import useSidebar from "@/hooks/useSidebar";
 import toast, { Toaster } from "react-hot-toast";
 import { TierBadge } from "@/components/Badge";
 
-
-
 export default function BusinessOpportunities({ mode = "light", toggleMode }) {
   const { isSidebarOpen, toggleSidebar, sidebarState, updateDragOffset } =
     useSidebar();
@@ -24,7 +21,7 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
     serviceType: "",
     industry: "",
     projectType: "",
-    tier: "",
+    tier_restriction: "", // Updated to match hook
   });
 
   const [activeTab, setActiveTab] = useState("all");
@@ -35,9 +32,13 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
     filterOptions,
     loading: opportunitiesLoading,
     error,
-  } = useBusinessOpportunities(filters);
+  } = useBusinessOpportunities(filters, user?.selected_tier || "Free Member");
 
-  
+  // Debug opportunities data
+  useEffect(() => {
+    console.log("Opportunities:", opportunities);
+  }, [opportunities]);
+
   // Global error handler
   useEffect(() => {
     const handleError = (event) => {
@@ -60,27 +61,28 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
       serviceType: "",
       industry: "",
       projectType: "",
-      tier: "",
+      tier_restriction: "",
     });
   };
 
   const canAccessOpportunity = (opportunityTier) => {
     const tiers = [
-      "Associate Member",
-      "Full Member",
       "Gold Member",
+      "Full Member",
+      "Associate Member",
       "Free Member",
     ];
     const userTier = user?.selected_tier || "Free Member";
+    const oppTier = opportunityTier || "Free Member";
     const userTierIndex = tiers.indexOf(userTier);
-    const oppTierIndex = tiers.indexOf(opportunityTier);
-    return userTierIndex >= oppTierIndex;
+    const oppTierIndex = tiers.indexOf(oppTier);
+    return userTierIndex <= oppTierIndex; // Higher or equal tier index means access
   };
 
   const handleExpressInterest = (opportunity) => {
-    if (!canAccessOpportunity(opportunity.tier)) {
+    if (!canAccessOpportunity(opportunity.tier_restriction)) {
       toast.error(
-        `This opportunity is available to ${opportunity.tier} Members only. Consider upgrading your membership to unlock this opportunity.`
+        `This opportunity is available to ${opportunity.tier_restriction} Members only. Consider upgrading your membership to unlock this opportunity.`
       );
       return;
     }
@@ -92,10 +94,10 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
     activeTab === "all"
       ? opportunities
       : opportunities.filter((opp) => {
-          if (activeTab === "accessible") return canAccessOpportunity(opp.tier);
+          if (activeTab === "accessible")
+            return canAccessOpportunity(opp.tier_restriction);
           if (activeTab === "trending") return opp.trending;
           if (activeTab === "deadlineSoon") {
-            // Example logic for deadline soon - within the next 7 days
             const deadlineDate = new Date(opp.deadline);
             const today = new Date();
             const diffTime = deadlineDate - today;
@@ -106,7 +108,6 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
         });
 
   if (userLoading || opportunitiesLoading) {
-    
     return LoadingComponent;
   }
 
@@ -123,7 +124,35 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
     );
   }
 
-  
+  // Tier badge styles
+  const getTierBadgeStyles = (tier) => {
+    const normalizedTier = tier || "Free Member";
+    switch (normalizedTier) {
+      case "Associate Member":
+        return "bg-blue-600 text-white";
+      case "Full Member":
+        return "bg-emerald-600 text-white";
+      case "Gold Member":
+        return "bg-amber-600 text-white";
+      default:
+        return "bg-gray-600 text-white";
+    }
+  };
+
+  // Tier badge icon
+  const getTierBadgeIcon = (tier) => {
+    const normalizedTier = tier || "Free Member";
+    switch (normalizedTier) {
+      case "Associate Member":
+        return "mdi:crown";
+      case "Full Member":
+        return "mdi:check-decagram";
+      case "Gold Member":
+        return "mdi:star";
+      default:
+        return "mdi:account";
+    }
+  };
 
   return (
     <div
@@ -211,16 +240,7 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
                       <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
                         Your current tier
                       </div>
-                      <div
-                        className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg ${(
-                          <TierBadge tier={user?.selected_tier} mode={mode} />
-                        )}`}
-                      >
-                        <span className="iconify" data-icon="mdi:crown"></span>
-                        <span className="font-semibold">
-                          {user?.selected_tier || "Free Member (Tier 4)"}
-                        </span>
-                      </div>
+                      <TierBadge tier={user?.selected_tier} mode={mode} />
                     </div>
                   </div>
                 </div>
@@ -339,7 +359,11 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
                         icon: "mdi:folder-outline",
                         label: "Project Type",
                       },
-                      { key: "tier", icon: "mdi:crown-outline", label: "Tier" },
+                      {
+                        key: "tier_restriction",
+                        icon: "mdi:crown-outline",
+                        label: "Tier",
+                      },
                     ].map(({ key, icon, label }) => (
                       <div key={key} className="space-y-1">
                         <label className="text-sm font-medium text-gray-600 dark:text-gray-300 flex items-center gap-1.5">
@@ -405,25 +429,15 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
                     <div className="absolute inset-0 opacity-20 bg-pattern"></div>
                     <div className="absolute top-0 right-0 p-3">
                       <span
-                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
-                          opp.tier.includes("Associate")
-                            ? "bg-blue-600 text-white"
-                            : opp.tier.includes("Full")
-                            ? "bg-emerald-600 text-white"
-                            : "bg-amber-600 text-white"
-                        }`}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${getTierBadgeStyles(
+                          opp.tier_restriction
+                        )}`}
                       >
                         <span
                           className="iconify"
-                          data-icon={
-                            opp.tier.includes("Associate")
-                              ? "mdi:crown"
-                              : opp.tier.includes("Full")
-                              ? "mdi:check-decagram"
-                              : "mdi:star"
-                          }
+                          data-icon={getTierBadgeIcon(opp.tier_restriction)}
                         ></span>
-                        {opp.tier.split("(")[0].trim()}
+                        {opp.tier_restriction || "Free Member"}
                       </span>
                     </div>
 
@@ -486,17 +500,9 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
 
                     <div className="pt-2">
                       <button
-                        onClick={() => {
-                          if (!canAccessOpportunity(opp.tier)) {
-                            toast.error(
-                              `This opportunity is available to ${opp.tier} Members only. Consider upgrading your membership to unlock this opportunity.`
-                            );
-                            return;
-                          }
-                          handleExpressInterest(opp);
-                        }}
+                        onClick={() => handleExpressInterest(opp)}
                         className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
-                          canAccessOpportunity(opp.tier)
+                          canAccessOpportunity(opp.tier_restriction)
                             ? "bg-blue-600 text-white hover:bg-blue-700"
                             : "bg-gray-300 text-gray-500 cursor-not-allowed"
                         }`}

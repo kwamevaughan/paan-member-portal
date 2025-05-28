@@ -256,7 +256,7 @@ const HrSidebar = ({
           </div>
 
           {/* Navigation with collapsible categories */}
-          <div className="flex-grow px-2 overflow-y-auto flex flex-col custom-scrollbar">
+          <div className="flex-grow px-2 overflow-y-auto flex flex-col scrollbar-thin ">
             {sidebarNav.map(({ category, items }, index) => (
               <div key={category} className="w-full mb-1">
                 {index !== 0 && (

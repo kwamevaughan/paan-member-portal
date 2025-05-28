@@ -188,8 +188,8 @@ export default function WelcomeCard({
               <Link href="/profile/">
                 <div className="space-y-3 mb-4">
                   <div
-                    className={`text-xs font-bold uppercase tracking-wide ${
-                      mode === "dark" ? "text-gray-400" : "text-gray-900"
+                    className={`text-sm font-bold tracking-wide ${
+                      mode === "dark" ? "text-gray-400" : "text-gray-600"
                     }`}
                   >
                     Your Membership

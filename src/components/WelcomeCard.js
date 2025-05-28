@@ -1,10 +1,12 @@
-// components/WelcomeCard.js
-import { Icon } from "@iconify/react";
-import { useLatestUpdate } from "@/hooks/useLatestUpdate";
-import { TierBadge, JobTypeBadge } from "@/components/Badge";
-import Link from "next/link";
-
-export default function WelcomeCard({ user, mode }) {
+export default function WelcomeCard({
+  user,
+  mode,
+  Icon,
+  Link,
+  TierBadge,
+  JobTypeBadge,
+  useLatestUpdate,
+}) {
   const { latestItems, loading, error } = useLatestUpdate(user?.selected_tier);
 
   // Find the most recent item across all sections
@@ -31,7 +33,6 @@ export default function WelcomeCard({ user, mode }) {
     return routes[section] || "dashboard"; // fallback if section is missing
   };
 
-
   // Format created_at to a readable date
   const formatJoinDate = (createdAt) => {
     if (!createdAt) return "N/A";
@@ -41,7 +42,6 @@ export default function WelcomeCard({ user, mode }) {
       day: "numeric",
     });
   };
-
 
   return (
     <div className="relative mt-6 mb-10 group">
@@ -147,7 +147,6 @@ export default function WelcomeCard({ user, mode }) {
                     >
                       "{latestItem.title}"
                     </span>{" "}
-                    {" "}
                     <Link
                       href={`/${getSectionRoute(latestItem.section)}`}
                       className={

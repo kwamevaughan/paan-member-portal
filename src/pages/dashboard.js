@@ -28,6 +28,7 @@ import UpdatesSection from "@/components/UpdatesSection";
 import { canAccessTier } from "@/utils/tierUtils";
 import { Icon } from "@iconify/react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 
 // Dynamically import StatsChart with SSR disabled
 const StatsChart = dynamic(() => import("@/components/StatsChart"), {
@@ -191,7 +192,16 @@ export default function Dashboard({ mode = "light", toggleMode }) {
           }}
         >
           <div className="max-w-7xl mx-auto space-y-12 pb-20">
-            <WelcomeCard mode={mode} user={user} />
+            <WelcomeCard
+              mode={mode}
+              user={user}
+              Icon={Icon}
+              Link={Link}
+              TierBadge={TierBadge}
+              JobTypeBadge={JobTypeBadge}
+              useLatestUpdate={useLatestUpdate}
+            />
+
             <div className="pb-12 grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
               <StatsChart
                 opportunities={opportunities}

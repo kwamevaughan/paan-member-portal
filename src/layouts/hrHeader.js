@@ -82,8 +82,12 @@ const HrHeader = ({
               className="bg-white/50"
             >
               <Icon
-                icon={mode === "dark" ? "bi:moon" : "bi:sun"}
-                className="h-5 w-5"
+                icon={
+                  mode === "dark"
+                    ? "line-md:sunny-filled-loop-to-moon-filled-alt-loop-transition"
+                    : "line-md:moon-alt-to-sunny-outline-loop-transition"
+                }
+                className="h-6 w-6"
               />
             </TooltipIconButton>
 
@@ -154,9 +158,7 @@ const HrHeader = ({
                       </div>
                       <div className="flex flex-col">
                         <div className="flex gap-2">
-                          <span className="text-md font-bold">
-                            {fullName}
-                          </span>
+                          <span className="text-md font-bold">{fullName}</span>
                           <span class="rounded-md capitalize bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-green-600/20 ring-inset">
                             {jobTitle}
                           </span>

@@ -8,7 +8,11 @@ import HrSidebar from "@/layouts/hrSidebar";
 import SimpleFooter from "@/layouts/simpleFooter";
 import useSidebar from "@/hooks/useSidebar";
 import toast, { Toaster } from "react-hot-toast";
-import { TierBadge } from "@/components/Badge";
+import TitleCard from "@/components/TitleCard";
+import { Icon } from "@iconify/react";
+import Link from "next/link";
+import { TierBadge, JobTypeBadge } from "@/components/Badge";
+import { useLatestUpdate } from "@/hooks/useLatestUpdate";
 
 export default function BusinessOpportunities({ mode = "light", toggleMode }) {
   const { isSidebarOpen, toggleSidebar, sidebarState, updateDragOffset } =
@@ -16,12 +20,17 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
   const router = useRouter();
   const { user, loading: userLoading, LoadingComponent } = useUser();
   const { handleLogout } = useLogout();
+
+  const title = "Business Opportunities";
+  const description =
+    "Discover and connect with premium business leads tailored to your expertise and membership tier.";
+
   const [filters, setFilters] = useState({
     country: "",
     serviceType: "",
     industry: "",
     projectType: "",
-    tier_restriction: "", // Updated to match hook
+    tier_restriction: "",
   });
 
   const [activeTab, setActiveTab] = useState("all");
@@ -210,42 +219,19 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
         >
           <div className="max-w-7xl mx-auto space-y-6">
             {/* Hero Section */}
-            <div
-              className={`relative overflow-hidden rounded-3xl ${
-                mode === "dark" ? "bg-gray-800" : "bg-white"
-              } shadow-lg`}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 opacity-40"></div>
-              <div className="absolute top-0 right-0 -mt-12 -mr-12 w-40 h-40 bg-blue-500 rounded-full opacity-20 blur-3xl"></div>
-              <div className="absolute bottom-0 left-0 -mb-12 -ml-12 w-40 h-40 bg-purple-500 rounded-full opacity-20 blur-3xl"></div>
-
-              <div className="relative p-8 md:p-10">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                  <div>
-                    <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
-                      Business Opportunities
-                    </h1>
-                    <p className="text-gray-600 dark:text-gray-300 max-w-2xl">
-                      Discover and connect with premium business leads tailored
-                      to your expertise and membership tier.
-                    </p>
-                  </div>
-
-                  <div className="md:self-end">
-                    <div
-                      className={`rounded-xl p-3 backdrop-blur-sm ${
-                        mode === "dark" ? "bg-gray-700/50" : "bg-gray-50/50"
-                      } border border-gray-200 dark:border-gray-700`}
-                    >
-                      <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-                        Your current tier
-                      </div>
-                      <TierBadge tier={user?.selected_tier} mode={mode} />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <TitleCard
+              title={title}
+              description={description}
+              mode={mode}
+              user={user}
+              Icon={Icon}
+              Link={Link}
+              TierBadge={TierBadge}
+              JobTypeBadge={JobTypeBadge}
+              toast={toast}
+              useLatestUpdate={useLatestUpdate}
+              pageTable="business_opportunities" // Pass the table name
+            />
 
             {/* Tabs and Filters */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

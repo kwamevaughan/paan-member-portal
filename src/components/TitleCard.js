@@ -1,5 +1,5 @@
 import React from "react";
-import { TierBadge, JobTypeBadge } from "@/components/Badge"; // Ensure you're importing the TierBadge component
+import { TierBadge, JobTypeBadge } from "@/components/Badge";
 
 const TitleCard = ({
   title,
@@ -10,7 +10,52 @@ const TitleCard = ({
   Link,
   useLatestUpdate,
   toast,
+  pageTable,
 }) => {
+  const { latestItems, loading, error } = useLatestUpdate(user?.selected_tier);
+
+  // Map table names to section names used in latestItems
+  const tableToSectionMap = {
+    business_opportunities: "Business Opportunities",
+    events: "Events",
+    resources: "Resources",
+    market_intel: "Market Intel",
+    offers: "Offers",
+    updates: "Updates",
+  };
+
+  // Get the section name for the current pageTable
+  const section = tableToSectionMap[pageTable] || "Business Opportunities";
+
+  // Format the timestamp to "24th May, 2020"
+  const formatDate = (timestamp) => {
+    if (!timestamp) return "No recent updates";
+    const date = new Date(timestamp);
+    const day = date.getDate();
+    const month = date.toLocaleString("en-US", { month: "long" });
+    const year = date.getFullYear();
+    // Add ordinal suffix (e.g., "st", "nd", "rd", "th")
+    const ordinal = (day) => {
+      if (day > 3 && day < 21) return "th";
+      switch (day % 10) {
+        case 1:
+          return "st";
+        case 2:
+          return "nd";
+        case 3:
+          return "rd";
+        default:
+          return "th";
+      }
+    };
+    return `${day}${ordinal(day)} ${month}, ${year}`;
+  };
+
+  const lastUpdated = latestItems[section]?.timestamp;
+  console.log("[TitleCard] Last updated for", section, ":", lastUpdated);
+
+  const descriptionParts = description.split("<br />");
+
   return (
     <div className="relative mx-2 mb-10 group">
       {/* Glassmorphism background */}
@@ -35,13 +80,52 @@ const TitleCard = ({
             >
               {title}
             </h2>
-            <p
-              className={`text-md leading-relaxed ${
-                mode === "dark" ? "text-slate-300" : "text-slate-600"
-              }`}
-            >
-              {description}
-            </p>
+            {descriptionParts.map((part, index) => (
+              <p key={index}>{part}</p>
+            ))}
+
+            <div className="flex items-center space-x-6 pt-2">
+              <div
+                className={`py-2 rounded-xl pr-4 text-sm ${
+                  mode === "dark"
+                    ? "bg-blue-500/20 border border-blue-400/30"
+                    : "bg-blue-50 border border-blue-200"
+                }`}
+              >
+                <span
+                  className={`px-2 py-2 rounded-xl mr-2 ${
+                    mode === "dark"
+                      ? "bg-orange-500/20 border border-orange-400/30 text-orange-300"
+                      : "bg-orange-50 border border-orange-200 text-gray-700"
+                  }`}
+                >
+                  Last Updated:
+                </span>
+                {loading ? (
+                  <span
+                    className={
+                      mode === "dark" ? "text-gray-400" : "text-gray-500"
+                    }
+                  >
+                    Loading...
+                  </span>
+                ) : error ? (
+                  <span
+                    className={
+                      mode === "dark" ? "text-red-400" : "text-red-500"
+                    }
+                  >
+                    Error fetching update
+                  </span>
+                ) : (
+                  <span
+                    className={mode === "dark" ? "text-white" : "text-gray-900"}
+                  >
+                    {formatDate(lastUpdated)}
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 

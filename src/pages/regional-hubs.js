@@ -9,7 +9,7 @@ import HrSidebar from "@/layouts/hrSidebar";
 import SimpleFooter from "@/layouts/simpleFooter";
 import useSidebar from "@/hooks/useSidebar";
 import toast, { Toaster } from "react-hot-toast";
-import TitleCard from "@/components/TitleCard"; // Import TitleCard
+import TitleCard from "@/components/TitleCard";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
 
@@ -23,15 +23,16 @@ export default function RegionalHub({ mode = "light", toggleMode }) {
     user?.selected_tier?.replace(/\(.*?\)/g, "").trim() || "Free Member"
   );
 
+
   // Empty state
   if (userLoading && LoadingComponent) return LoadingComponent;
   if (!user) return null;
 
-  const title = "Regional Expansion & Hubs"; // Dynamic title
+  const title = "Regional Expansion & Hubs";
   const description =
-    "Access to Regional Hubs offices for bi, co-working or client meetings (Nairobi, Cairo, Johannesburg, Lagos). Local Ops support."; // Dynamic description
-
-  return (
+    "Access to Regional Hubs offices for bi, co-working or client meetings <br /> (Nairobi, Cairo, Johannesburg, Lagos). Local Ops support.";
+  
+    return (
     <div
       className={`min-h-screen flex flex-col ${
         mode === "dark" ? "bg-gray-900 text-white" : "bg-white text-gray-900"
@@ -71,8 +72,8 @@ export default function RegionalHub({ mode = "light", toggleMode }) {
         >
           <div className="max-w-7xl mx-auto pb-10">
             <TitleCard
-              title={title} // Pass title here
-              description={description} // Pass description here
+              title={title}
+              description={description}
               mode={mode}
               user={user}
               Icon={Icon}

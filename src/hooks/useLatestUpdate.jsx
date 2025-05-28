@@ -14,6 +14,10 @@ export const useLatestUpdate = (userTier = "Free Member") => {
       setError(null);
       try {
         const userTierNormalized = normalizeTier(userTier);
+        console.log(
+          "[useLatestUpdate] User tier normalized:",
+          userTierNormalized
+        );
 
         // Define tables and their display names
         const tables = [
@@ -42,20 +46,27 @@ export const useLatestUpdate = (userTier = "Free Member") => {
             return { section, item: null };
           }
 
+          console.log(`[useLatestUpdate] Data from ${name}:`, data);
+
           if (data && data.length > 0) {
             const item = data[0];
             const itemTier =
               normalizeTier(item.tier_restriction) || "Free Member";
-            const isAccessible = canAccessTier(itemTier, userTierNormalized);
-            if (isAccessible) {
-              return {
-                section,
-                item: {
-                  title: item.title,
-                  timestamp: item.updated_at || item.created_at,
-                },
-              };
-            }
+            console.log(
+              `[useLatestUpdate] ${name} item tier normalized:`,
+              itemTier
+            );
+            // const isAccessible = canAccessTier(itemTier, userTierNormalized);
+            // console.log(`[useLatestUpdate] ${name} isAccessible:`, isAccessible);
+            // if (isAccessible) {
+            return {
+              section,
+              item: {
+                title: item.title,
+                timestamp: item.updated_at || item.created_at,
+              },
+            };
+            // }
           }
           return { section, item: null };
         });
@@ -64,7 +75,7 @@ export const useLatestUpdate = (userTier = "Free Member") => {
 
         // Create an object mapping sections to their latest items
         const latestItemsMap = results.reduce((acc, { section, item }) => {
-          acc[section] = item; // Store the full item (title and timestamp)
+          acc[section] = item;
           return acc;
         }, {});
 

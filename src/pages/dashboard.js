@@ -19,7 +19,6 @@ import toast, { Toaster } from "react-hot-toast";
 import WelcomeCard from "@/components/WelcomeCard";
 import DashboardTabs from "@/components/DashboardTabs";
 import TabContentTransition from "@/components/TabContentTransition";
-import QuickStatsCard from "@/components/QuickStatsCard";
 import OpportunitiesSection from "@/components/OpportunitiesSection";
 import EventsSection from "@/components/EventsSection";
 import ResourcesSection from "@/components/ResourcesSection";
@@ -27,13 +26,18 @@ import MarketIntelSection from "@/components/MarketIntelSection";
 import OffersSection from "@/components/OffersSection";
 import UpdatesSection from "@/components/UpdatesSection";
 import { canAccessTier } from "@/utils/tierUtils";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination, Autoplay } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
-import Link from "next/link";
 import { Icon } from "@iconify/react";
+import dynamic from "next/dynamic";
+
+// Dynamically import StatsChart with SSR disabled
+const StatsChart = dynamic(() => import("@/components/StatsChart"), {
+  ssr: false,
+});
+
+// Dynamically import YouTubeVideo with SSR disabled
+const YouTubeVideo = dynamic(() => import("@/components/YouTubeVideo"), {
+  ssr: false,
+});
 
 export default function Dashboard({ mode = "light", toggleMode }) {
   const { isSidebarOpen, toggleSidebar, sidebarState, updateDragOffset } =
@@ -150,8 +154,8 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     <div
       className={`min-h-screen flex flex-col ${
         mode === "dark"
-          ? "bg-gradient-to-brick from-gray-900 via-gray-800 to-gray-900"
-          : "bg-gradient-to-brick from-blue-50 via-white to-gray-100"
+          ? "bg-gray-900 text-white" // Dark mode background
+          : "bg-white text-gray-900" // Light mode background
       }`}
     >
       <Toaster />
@@ -188,141 +192,19 @@ export default function Dashboard({ mode = "light", toggleMode }) {
         >
           <div className="max-w-7xl mx-auto space-y-12 pb-20">
             <WelcomeCard mode={mode} user={user} />
-            <div className="pb-12">
-              <Swiper
-                modules={[Navigation, Pagination, Autoplay]}
-                spaceBetween={24}
-                slidesPerView={1}
-                navigation
-                pagination={{ clickable: true }}
-                loop={true}
-                autoplay={{
-                  delay: 5000,
-                  disableOnInteraction: false,
-                }}
-                breakpoints={{
-                  640: { slidesPerView: 2 },
-                  1024: { slidesPerView: 4 },
-                }}
-                className="pb-12"
-              >
-                <SwiperSlide>
-                  <Link href="/opportunities">
-                    <QuickStatsCard
-                      title="Active Opportunities"
-                      value={opportunities
-                        .filter((item) =>
-                          canAccessTier(
-                            item.tier_restriction,
-                            user.selected_tier
-                          )
-                        )
-                        .length.toString()}
-                      icon="mdi:home"
-                      color="bg-gradient-to-r from-blue-500 to-blue-600"
-                      mode={mode}
-                      lastUpdated={getLastUpdatedForSection(
-                        "Active Opportunities"
-                      )}
-                    />
-                  </Link>
-                </SwiperSlide>
-                <SwiperSlide>
-                  <Link href="/events">
-                    <QuickStatsCard
-                      title="Upcoming Events"
-                      value={events
-                        .filter((item) =>
-                          canAccessTier(
-                            item.tier_restriction,
-                            user.selected_tier
-                          )
-                        )
-                        .length.toString()}
-                      icon="mdi:calendar-check"
-                      color="bg-gradient-to-r from-green-500 to-green-600"
-                      mode={mode}
-                      lastUpdated={getLastUpdatedForSection("Upcoming Events")}
-                    />
-                  </Link>
-                </SwiperSlide>
-                <SwiperSlide>
-                  <Link href="/resources">
-                    <QuickStatsCard
-                      title="New Resources"
-                      value={resources
-                        .filter((item) =>
-                          canAccessTier(
-                            item.tier_restriction,
-                            user.selected_tier
-                          )
-                        )
-                        .length.toString()}
-                      icon="mdi:folder"
-                      color="bg-gradient-to-r from-purple-500 to-purple-600"
-                      mode={mode}
-                      lastUpdated={getLastUpdatedForSection("New Resources")}
-                    />
-                  </Link>
-                </SwiperSlide>
-                <SwiperSlide>
-                  <Link href="/offers">
-                    <QuickStatsCard
-                      title="Available Offers"
-                      value={offers
-                        .filter((item) =>
-                          canAccessTier(
-                            item.tier_restriction,
-                            user.selected_tier
-                          )
-                        )
-                        .length.toString()}
-                      icon="mdi:gift"
-                      color="bg-gradient-to-r from-orange-500 to-orange-600"
-                      mode={mode}
-                      lastUpdated={getLastUpdatedForSection("Available Offers")}
-                    />
-                  </Link>
-                </SwiperSlide>
-                <SwiperSlide>
-                  <Link href="/market-intel">
-                    <QuickStatsCard
-                      title="Market Intel"
-                      value={marketIntel
-                        .filter((item) =>
-                          canAccessTier(
-                            item.tier_restriction,
-                            user.selected_tier
-                          )
-                        )
-                        .length.toString()}
-                      icon="mdi:chart-line"
-                      color="bg-gradient-to-r from-amber-500 to-amber-600"
-                      mode={mode}
-                      lastUpdated={getLastUpdatedForSection("Market Intel")}
-                    />
-                  </Link>
-                </SwiperSlide>
-                <SwiperSlide>
-                  <Link href="/updates">
-                    <QuickStatsCard
-                      title="Updates"
-                      value={updates
-                        .filter((item) =>
-                          canAccessTier(
-                            item.tier_restriction,
-                            user.selected_tier
-                          )
-                        )
-                        .length.toString()}
-                      icon="mdi:bell"
-                      color="bg-gradient-to-r from-pink-500 to-pink-600"
-                      mode={mode}
-                      lastUpdated={getLastUpdatedForSection("Updates")}
-                    />
-                  </Link>
-                </SwiperSlide>
-              </Swiper>
+            <div className="pb-12 grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+              <StatsChart
+                opportunities={opportunities}
+                events={events}
+                resources={resources}
+                offers={offers}
+                marketIntel={marketIntel}
+                updates={updates}
+                user={user}
+                mode={mode}
+                getLastUpdatedForSection={getLastUpdatedForSection}
+              />
+              <YouTubeVideo mode={mode} />
             </div>
             <DashboardTabs
               activeTab={activeTab}

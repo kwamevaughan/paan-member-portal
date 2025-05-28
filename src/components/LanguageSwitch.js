@@ -273,7 +273,7 @@ const LanguageSwitch = ({ mode }) => {
       />
 
       <TooltipIconButton
-        label="Change Language"
+        label={<span className="text-black">Change Language</span>}
         mode={mode}
         onClick={() => setIsOpen(!isOpen)}
         className="bg-white/50"
@@ -283,7 +283,7 @@ const LanguageSwitch = ({ mode }) => {
             languages.find((lang) => lang.name === selectedLanguage)?.flag ||
             languages[0].flag
           }
-          className="h-5 w-5 rounded-lg "
+          className="h-6 w-6 rounded-lg"
         />
       </TooltipIconButton>
 
@@ -305,7 +305,7 @@ const LanguageSwitch = ({ mode }) => {
                   : ""
               }`}
             >
-              <Icon icon={language.flag} className="h-5 w-5 mr-2" />
+              <Icon icon={language.flag} className="h-6 w-6 mr-2" />
               {language.name}
             </button>
           ))}

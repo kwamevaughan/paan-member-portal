@@ -23,7 +23,7 @@ const LoadingSpinner = () => {
         {/* Logo with pulse effect */}
         <div className="animate-pulse absolute inset-0 flex items-center justify-center">
           <Image
-            src="/assets/images/logo.svg"
+            src="/assets/images/paan-logo-icon.svg"
             alt="Logo"
             width={120}
             height={120}

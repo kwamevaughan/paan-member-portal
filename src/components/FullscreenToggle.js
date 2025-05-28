@@ -44,7 +44,7 @@ const FullscreenToggle = ({ mode }) => {
         aria-label={
           isFullscreen ? "Exit fullscreen mode" : "Enter fullscreen mode"
         }
-        className={`focus:outline-none p-4 rounded-full bg-white/50 ${
+        className={`focus:outline-none p-2 rounded-full bg-white/50 ${
           mode === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100"
         }`}
       >
@@ -54,7 +54,7 @@ const FullscreenToggle = ({ mode }) => {
               ? "dashicons:fullscreen-exit-alt"
               : "mingcute:fullscreen-fill"
           }
-          className={`h-5 w-5 ${mode === "dark" ? "text-white" : "text-black"}`}
+          className={`h-6 w-6 ${mode === "dark" ? "text-white" : "text-black"}`}
         />
       </button>
       <div

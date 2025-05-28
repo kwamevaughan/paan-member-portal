@@ -71,11 +71,15 @@ const HrHeader = ({
             </div>
           </div>
 
-          <div className="flex justify-end items-center w-full ">
+          <div className="flex justify-end items-center w-full gap-2 ">
             {/* Dark Mode Toggle */}
             <TooltipIconButton
               label={
-                mode === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"
+                <span className={mode === "dark" ? "text-black" : "text-black"}>
+                  {mode === "dark"
+                    ? "Switch to Light Mode"
+                    : "Switch to Dark Mode"}
+                </span>
               }
               onClick={toggleMode}
               mode={mode}
@@ -87,7 +91,9 @@ const HrHeader = ({
                     ? "line-md:sunny-filled-loop-to-moon-filled-alt-loop-transition"
                     : "line-md:moon-alt-to-sunny-outline-loop-transition"
                 }
-                className="h-6 w-6"
+                className={`h-6 w-6 ${
+                  mode === "dark" ? "text-blue-900" : "text-yellow-500"
+                }`}
               />
             </TooltipIconButton>
 
@@ -99,15 +105,13 @@ const HrHeader = ({
 
             {/* Notifications */}
             <TooltipIconButton
-              label="View Notifications"
+              label={<span className="text-black">View Notifications</span>}
               mode={mode}
-              className=" bg-white/50"
+              className="bg-white/50"
             >
               <Icon
                 icon="mdi-light:bell"
-                width={26}
-                height={26}
-                className="animate-swing-infinite"
+                className="animate-swing-infinite h-6 w-6"
               />
             </TooltipIconButton>
 

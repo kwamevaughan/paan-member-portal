@@ -34,6 +34,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import Link from "next/link";
+import { Icon } from "@iconify/react";
 
 export default function Dashboard({ mode = "light", toggleMode }) {
   const { isSidebarOpen, toggleSidebar, sidebarState, updateDragOffset } =
@@ -314,6 +315,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
               activeTab={activeTab}
               setActiveTab={setActiveTab}
               mode={mode}
+              Icon={Icon}
             />
             <TabContentTransition activeTab={activeTab}>
               {activeTab === "opportunities" && (
@@ -329,6 +331,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
                   user={user}
                   handleRestrictedClick={handleRestrictedClick}
                   mode={mode}
+                  Icon={Icon}
                 />
               )}
               {activeTab === "events" && (
@@ -346,6 +349,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
                   handleEventRegistration={handleEventRegistration}
                   handleRestrictedClick={handleRestrictedClick}
                   mode={mode}
+                  Icon={Icon}
                 />
               )}
               {activeTab === "resources" && (
@@ -376,6 +380,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
                   user={user}
                   handleRestrictedClick={handleRestrictedClick}
                   mode={mode}
+                  Icon={Icon}
                 />
               )}
               {activeTab === "offers" && (
@@ -387,7 +392,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
                   handleOfferFilterChange={(key, value) =>
                     handleFilterChange("offers", key, value)
                   }
-                  offerFilterOptions={offerFilterOptions}
+                  offersFilterOptions={offerFilterOptions}
                   user={user}
                   handleRestrictedClick={handleRestrictedClick}
                   mode={mode}

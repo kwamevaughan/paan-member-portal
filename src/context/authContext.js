@@ -332,13 +332,23 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     console.log("AuthContext: Logging out...");
-    await supabase.auth.signOut();
-    setUser(null);
-    localStorage.removeItem("paan_member_session");
-    localStorage.removeItem("user_email");
-    localStorage.removeItem("paan_remembered_email");
-    localStorage.removeItem("paan_session_expiry");
-    router.push("/");
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("AuthContext: Sign-out error:", error);
+        toast.error("Failed to log out. Please try again.");
+        return;
+      }
+      setUser(null);
+      localStorage.removeItem("paan_member_session");
+      localStorage.removeItem("user_email");
+      localStorage.removeItem("paan_remembered_email");
+      localStorage.removeItem("paan_session_expiry");
+      await router.push("/"); // Use await to ensure navigation completes
+    } catch (err) {
+      console.error("AuthContext: Logout error:", err);
+      toast.error("An error occurred during logout. Please try again.");
+    }
   };
 
   return (

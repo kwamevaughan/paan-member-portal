@@ -75,8 +75,14 @@ function MyApp({ Component, pageProps }) {
       toast.dismiss("route-loading");
     };
 
-    const routeChangeError = () => {
-      toast.error("Failed to load page", { id: "route-loading" });
+    const routeChangeError = (err, url) => {
+      console.log("App: Route change error:", err, "URL:", url);
+      // Avoid showing error toast for logout redirect to "/"
+      if (url === "/") {
+        toast.dismiss("route-loading");
+      } else {
+        toast.error("Failed to load page", { id: "route-loading" });
+      }
     };
 
     router.events.on("routeChangeStart", routeChangeStart);

@@ -10,7 +10,7 @@ import HrHeader from "@/layouts/hrHeader";
 import HrSidebar from "@/layouts/hrSidebar";
 import SimpleFooter from "@/layouts/simpleFooter";
 import useSidebar from "@/hooks/useSidebar";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { hasTierAccess, normalizeTier } from "@/utils/tierUtils";
 import Link from "next/link";
 import { TierBadge, JobTypeBadge } from "@/components/Badge";
@@ -86,21 +86,7 @@ export default function Updates({ mode = "light", toggleMode }) {
       return new Date(b.created_at) - new Date(a.created_at);
     });
 
-  // Debug data
-  useEffect(() => {
-    console.log("[Updates] User:", user);
-    console.log("[Updates] User Tier:", user?.selected_tier);
-    console.log("[Updates] Updates:", updates);
-    console.log("[Updates] Latest Update Date:", latestUpdateDate);
-    console.log("[Updates] Filters:", filters);
-    updates.forEach((update) => {
-      console.log(
-        `[Updates] Update "${update.title}" (Tier: ${
-          update.tier_restriction
-        }): Accessible = ${hasTierAccess(update.tier_restriction, user)}`
-      );
-    });
-  }, [user, updates, filters, latestUpdateDate]);
+  
 
   if (userLoading || updatesLoading) return LoadingComponent;
   if (!user) {

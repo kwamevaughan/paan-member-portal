@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/router";
 import { Icon } from "@iconify/react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useUser } from "@/hooks/useUser";
 import useMarketIntel from "@/hooks/useMarketIntel";
 import useLogout from "@/hooks/useLogout";

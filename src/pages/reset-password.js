@@ -1,4 +1,3 @@
-// pages/reset-password.js
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import toast from "react-hot-toast";
@@ -8,6 +7,7 @@ import Image from "next/image";
 import { Icon } from "@iconify/react";
 
 export default function ResetPassword() {
+  const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [code, setCode] = useState("");
@@ -18,10 +18,13 @@ export default function ResetPassword() {
   const router = useRouter();
 
   useEffect(() => {
-    // Extract token from URL query
-    const { token: urlToken } = router.query;
+    // Extract token and email from URL query
+    const { token: urlToken, email: urlEmail } = router.query;
     if (urlToken) {
       setToken(urlToken);
+    }
+    if (urlEmail) {
+      setEmail(decodeURIComponent(urlEmail));
     }
   }, [router.query]);
 
@@ -35,26 +38,38 @@ export default function ResetPassword() {
     setLoading(true);
     try {
       if (token) {
-        // Update password using token
+        // Token-based reset
+        const { data: session, error: sessionError } =
+          await supabase.auth.getSession();
+        if (sessionError || !session?.session) {
+          throw new Error(
+            "No active session. Please use the code-based reset."
+          );
+        }
         const { error } = await supabase.auth.updateUser({
           password: newPassword,
-          access_token: token,
         });
         if (error) throw error;
-      } else if (code) {
-        // Verify code and update password
-        const { error } = await supabase.auth.verifyOtp({
+      } else if (code && email) {
+        // Code-based reset
+        const { data, error: verifyError } = await supabase.auth.verifyOtp({
+          email,
           token: code,
           type: "recovery",
+        });
+        if (verifyError) throw verifyError;
+
+        // Update password after OTP verification
+        const { error: updateError } = await supabase.auth.updateUser({
           password: newPassword,
         });
-        if (error) throw error;
+        if (updateError) throw updateError;
       } else {
-        throw new Error("No token or code provided");
+        throw new Error("Please provide email and code or use the reset link");
       }
 
       toast.success("Password updated successfully!");
-      router.push("/login");
+      await router.push("/");
     } catch (error) {
       console.error("Reset password error:", error);
       toast.error(error.message || "Failed to reset password");
@@ -98,6 +113,33 @@ export default function ResetPassword() {
 
           {/* Form */}
           <form onSubmit={handleResetPassword} className="space-y-6">
+            {/* Email Field */}
+            <div className="space-y-2">
+              <label
+                className="block text-sm font-semibold text-gray-700"
+                htmlFor="email"
+              >
+                Email Address
+              </label>
+              <div className="relative">
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
+                  placeholder="Enter your email address"
+                  required
+                />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <Icon
+                    icon="mdi:email-outline"
+                    className="w-5 h-5 text-gray-400"
+                  />
+                </div>
+              </div>
+            </div>
+
             {/* New Password Field */}
             <div className="space-y-2">
               <label
@@ -162,15 +204,44 @@ export default function ResetPassword() {
 
             {/* Code Field */}
             <div className="space-y-2">
-              <label
-                className="block text-sm font-semibold text-gray-700"
-                htmlFor="code"
-              >
-                Confirmation Code
-                <span className="text-gray-400 font-normal ml-1">
-                  (Optional)
-                </span>
-              </label>
+              <div className="flex items-center justify-between">
+                <label
+                  className="block text-sm font-semibold text-gray-700"
+                  htmlFor="code"
+                >
+                  Confirmation Code
+                  <span className="text-gray-400 font-normal ml-1">
+                    (Optional if using link)
+                  </span>
+                </label>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (!email) {
+                      toast.error("Please enter your email address");
+                      return;
+                    }
+                    setLoading(true);
+                    try {
+                      const response = await fetch("/api/reset-password", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ email }),
+                      });
+                      if (!response.ok)
+                        throw new Error("Failed to resend email");
+                      toast.success("Reset email resent. Check your inbox.");
+                    } catch (error) {
+                      toast.error("Failed to resend email");
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                  className="text-xs text-orange-600 hover:text-orange-700 font-medium transition-colors"
+                >
+                  Resend Code
+                </button>
+              </div>
               <div className="relative">
                 <input
                   id="code"
@@ -217,7 +288,7 @@ export default function ResetPassword() {
             <p className="text-sm text-gray-600">
               Remember your password?{" "}
               <Link
-                href="/login"
+                href="/"
                 className="font-semibold text-orange-600 hover:text-orange-700 transition-colors"
               >
                 Sign in here

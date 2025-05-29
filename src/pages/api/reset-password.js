@@ -1,4 +1,3 @@
-// pages/api/reset-password.js
 import { createClient } from "@supabase/supabase-js";
 
 export default async function handler(req, res) {
@@ -58,7 +57,9 @@ export default async function handler(req, res) {
       process.env.NODE_ENV === "development"
         ? process.env.NEXT_PUBLIC_BASE_URL_DEV
         : process.env.NEXT_PUBLIC_BASE_URL_PROD;
-    const redirectTo = `${baseUrl}/reset-password`;
+    const redirectTo = `${baseUrl}/reset-password?email=${encodeURIComponent(
+      email
+    )}`;
 
     const { error } = await supabaseAdmin.auth.resetPasswordForEmail(email, {
       redirectTo,

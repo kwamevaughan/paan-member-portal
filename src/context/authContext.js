@@ -227,8 +227,12 @@ export const AuthProvider = ({ children }) => {
         setLoginError("Failed to send reset email. Please try again.");
         throw new Error(error || "Failed to send reset email");
       }
+
+      localStorage.setItem("reset_email", email);
+      toast.success("Password reset email sent. Check your inbox.");
     } catch (error) {
       console.error("AuthContext: Password reset error:", error);
+      setLoginError(error.message || "Failed to send reset email.");
       throw error;
     }
   };

@@ -1,14 +1,16 @@
 import { useState } from "react";
-import { useAuth } from "@/hooks/useAuth"; // Import the custom useAuth hook
+import { useAuth } from "@/hooks/useAuth";
+import toast from "react-hot-toast";
 
 const useLogin = () => {
-  const { login, signInWithSocial } = useAuth(); // Use the provided login and social login methods from useAuth
+  const { login, signInWithSocial, resetPassword } = useAuth(); // Add resetPassword
   const [loginData, setLoginData] = useState({
     email: "",
     password: "",
     rememberMe: false,
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
 
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
@@ -31,6 +33,20 @@ const useLogin = () => {
     await signInWithSocial(provider);
   };
 
+  const handleForgotPassword = async (email) => {
+    const toastId = toast.loading("Sending password reset email...");
+    try {
+      await resetPassword(email);
+      toast.dismiss(toastId);
+      toast.success("Password reset email sent! Please check your inbox.");
+    } catch (error) {
+      toast.dismiss(toastId);
+      toast.error(
+        error.message || "Failed to send reset email. Please try again."
+      );
+    }
+  };
+
   return {
     loginData,
     setLoginData,
@@ -39,6 +55,9 @@ const useLogin = () => {
     handleLogin,
     handleLoginChange,
     handleSocialLogin,
+    showForgotPasswordModal,
+    setShowForgotPasswordModal,
+    handleForgotPassword,
   };
 };
 

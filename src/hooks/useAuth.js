@@ -8,7 +8,7 @@ export const useAuth = () => {
     throw new Error("useAuth must be used within an AuthProvider");
   }
 
-  const { login, logout, signInWithSocial } = context;
+  const { login, logout, signInWithSocial, resetPassword } = context;
 
   const handleLogin = async (email, password, rememberMe) => {
     const toastId = toast.loading("Please wait...");
@@ -34,5 +34,18 @@ export const useAuth = () => {
     }
   };
 
-  return { login: handleLogin, logout, signInWithSocial: handleSocialLogin };
+  const handleResetPassword = async (email) => {
+    try {
+      await resetPassword(email);
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  return {
+    login: handleLogin,
+    logout,
+    signInWithSocial: handleSocialLogin,
+    resetPassword: handleResetPassword,
+  };
 };

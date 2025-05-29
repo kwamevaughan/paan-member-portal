@@ -84,7 +84,6 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password, rememberMe) => {
     try {
-      // Sign in with Supabase auth
       const { data: authData, error: authError } =
         await supabase.auth.signInWithPassword({
           email,
@@ -178,6 +177,24 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const resetPassword = async (email) => {
+    try {
+      const response = await fetch("/api/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) {
+        const { error } = await response.json();
+        throw new Error(error || "Failed to send reset email");
+      }
+    } catch (error) {
+      console.error("AuthContext: Password reset error:", error);
+      throw error;
+    }
+  };
+
   useEffect(() => {
     const handleSocialLoginCallback = async () => {
       if (router.pathname !== "/auth/callback") return;
@@ -210,7 +227,6 @@ export const AuthProvider = ({ children }) => {
             .single();
 
           if (fetchError || !existingUser) {
-            // Create candidate entry for social login
             const { data: newCandidate, error: insertError } = await supabase
               .from("candidates")
               .insert({
@@ -261,7 +277,7 @@ export const AuthProvider = ({ children }) => {
               primaryContactName: existingUser.primaryContactName,
               job_type: existingUser.job_type,
               selected_tier: existingUser.selected_tier,
-              agencyName: existingUser.agencyName,
+              agencyName: newCandidate.agencyName,
               role: "agency_member",
             });
           }
@@ -293,7 +309,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, login, logout, signInWithSocial }}
+      value={{ user, loading, login, logout, signInWithSocial, resetPassword }}
     >
       {children}
       <SessionExpiredModal

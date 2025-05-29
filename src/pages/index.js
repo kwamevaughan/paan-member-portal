@@ -4,8 +4,8 @@ import { Icon } from "@iconify/react";
 import Link from "next/link";
 import Image from "next/image";
 import CustomSlider from "@/components/CustomSlider";
-import { Toaster } from "react-hot-toast";
-import useLogin from "@/hooks/useLogin"; // Import the useLogin hook
+import useLogin from "@/hooks/useLogin";
+import ForgotPasswordModal from "@/components/modals/ForgotPasswordModal";
 
 const LoginPage = () => {
   const router = useRouter();
@@ -17,6 +17,9 @@ const LoginPage = () => {
     handleLogin,
     handleLoginChange,
     handleSocialLogin,
+    showForgotPasswordModal,
+    setShowForgotPasswordModal,
+    handleForgotPassword,
   } = useLogin();
 
   useEffect(() => {
@@ -144,11 +147,13 @@ const LoginPage = () => {
                 </div>
 
                 <span>
-                  <Link href="/forgot-password">
-                    <span className="text-paan-blue font-light text-sm md:text-base hover:underline hover:text-paan-red">
-                      Forgot Password?
-                    </span>
-                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotPasswordModal(true)}
+                    className="text-paan-blue font-light text-sm md:text-base hover:underline hover:text-paan-red"
+                  >
+                    Forgot Password?
+                  </button>
                 </span>
               </div>
 
@@ -195,6 +200,12 @@ const LoginPage = () => {
       <div className="hidden md:block w-full md:w-3/5 bg-login bg-[#172840]">
         <CustomSlider />
       </div>
+
+      <ForgotPasswordModal
+        isOpen={showForgotPasswordModal}
+        onClose={() => setShowForgotPasswordModal(false)}
+        onSubmit={handleForgotPassword}
+      />
     </div>
   );
 };

@@ -34,14 +34,12 @@ export default async function handler(req, res) {
     }
 
     console.log(
-      "API: Redirecting to:",
+      "API: Returning redirect URL:",
       redirectTo || "https://member-portal.paan.africa/"
     );
-    res.setHeader(
-      "Location",
-      redirectTo || "https://member-portal.paan.africa/"
-    );
-    return res.status(302).end();
+    return res
+      .status(200)
+      .json({ redirectTo: redirectTo || "https://member-portal.paan.africa/" });
   } catch (error) {
     console.error("API: Sign-out error:", error);
     return res.status(500).json({ error: error.message });

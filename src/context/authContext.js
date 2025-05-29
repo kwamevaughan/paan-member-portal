@@ -31,6 +31,10 @@ export const AuthProvider = ({ children }) => {
       );
       return;
     }
+    if (router.pathname === "/auth/callback") {
+      console.log("AuthContext: Skipping initializeAuth on /auth/callback");
+      return;
+    }
     setIsAuthenticating(true);
 
     try {
@@ -65,11 +69,9 @@ export const AuthProvider = ({ children }) => {
           localStorage.setItem("user_email", email);
         } else {
           console.error("AuthContext: No candidate found for user:", error);
-          if (router.pathname !== "/auth/callback") {
-            setLoginError(
-              "No account found for this email. Please ensure your account is activated or contact support."
-            );
-          }
+          setLoginError(
+            "No account found for this email. Please ensure your account is activated or contact support."
+          );
         }
       } else {
         localStorage.removeItem("paan_member_session");
@@ -79,11 +81,9 @@ export const AuthProvider = ({ children }) => {
       console.error("AuthContext: Initialization error:", err);
       localStorage.removeItem("paan_member_session");
       localStorage.removeItem("user_email");
-      if (router.pathname !== "/auth/callback") {
-        setLoginError(
-          "An error occurred during authentication. Please try again."
-        );
-      }
+      setLoginError(
+        "An error occurred during authentication. Please try again."
+      );
     } finally {
       setLoading(false);
       setIsAuthenticating(false);
@@ -292,7 +292,13 @@ export const AuthProvider = ({ children }) => {
                 "AuthContext: Sign-out error:",
                 await response.json()
               );
+              window.location.assign("https://membership.paan.africa/");
+              return;
             }
+
+            const { redirectTo } = await response.json();
+            console.log("AuthContext: Redirecting to:", redirectTo);
+            window.location.assign(redirectTo);
             return;
           }
 

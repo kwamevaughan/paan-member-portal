@@ -72,12 +72,12 @@ function MyApp({ Component, pageProps }) {
     };
 
     const routeChangeComplete = () => {
+      console.log("App: Route change complete, dismissing toast");
       toast.dismiss("route-loading");
     };
 
     const routeChangeError = (err, url) => {
       console.log("App: Route change error:", err, "URL:", url);
-      // Avoid showing error toast for logout redirect to "/"
       if (url === "/") {
         toast.dismiss("route-loading");
       } else {
@@ -85,14 +85,23 @@ function MyApp({ Component, pageProps }) {
       }
     };
 
+    // Fallback to dismiss toast after 5 seconds
+    const dismissToastTimeout = setTimeout(() => {
+      console.log("App: Fallback toast dismissal triggered");
+      toast.dismiss("route-loading");
+    }, 5000);
+
     router.events.on("routeChangeStart", routeChangeStart);
     router.events.on("routeChangeComplete", handleRouteChange);
+    router.events.on("routeChangeComplete", routeChangeComplete);
     router.events.on("routeChangeError", routeChangeError);
 
     return () => {
       router.events.off("routeChangeStart", routeChangeStart);
       router.events.off("routeChangeComplete", handleRouteChange);
+      router.events.off("routeChangeComplete", routeChangeComplete);
       router.events.off("routeChangeError", routeChangeError);
+      clearTimeout(dismissToastTimeout);
     };
   }, [router]);
 
@@ -111,7 +120,7 @@ function MyApp({ Component, pageProps }) {
       );
       const label = navItem
         ? navItem.label
-        : segment.charAt(0).toUpperCase() + segment.slice(1);
+        : segment.charAt(0).toUpperCase() + pageSlug.slice(1);
       crumbs.push({ href: currentPath, label });
     });
 

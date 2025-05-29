@@ -10,6 +10,7 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [skipRedirect, setSkipRedirect] = useState(false);
   const router = useRouter();
   const [showExpiredModal, setShowExpiredModal] = useState(false);
   const [showLoginError, setShowLoginError] = useState(false);
@@ -68,13 +69,13 @@ export const AuthProvider = ({ children }) => {
       (event, session) => {
         if (event === "SIGNED_IN" && session?.user?.email) {
           initializeAuth();
-        } else if (event === "SIGNED_OUT") {
+        } else if (event === "SIGNED_OUT" && !skipRedirect) {
           setUser(null);
           localStorage.removeItem("paan_member_session");
           localStorage.removeItem("user_email");
           localStorage.removeItem("paan_remembered_email");
           localStorage.removeItem("paan_session_expiry");
-          router.push("/");
+          router.push("/"); // Fixed to login page
         }
       }
     );
@@ -235,61 +236,46 @@ export const AuthProvider = ({ children }) => {
             .single();
 
           if (fetchError || !existingUser) {
-            console.log("AuthContext: No existing candidate, creating new one");
-            const { data: newCandidate, error: insertError } = await supabase
-              .from("candidates")
-              .insert({
-                primaryContactEmail: email,
-                primaryContactName: name,
-                auth_user_id: authUserId,
-                job_type: "agency",
-                selected_tier: "Free Member (Tier 4)",
-              })
-              .select()
-              .single();
+            console.log(
+              "AuthContext: No existing candidate, redirecting to membership page"
+            );
+            toast.error("No account found. Redirecting to Membership page.");
+            setSkipRedirect(true);
+            const response = await fetch("/api/signout", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                redirectTo: "https://membership.paan.africa/",
+                authUserId, // Pass authUserId to delete
+              }),
+            });
 
-            if (insertError || !newCandidate) {
+            if (!response.ok) {
               console.error(
-                "AuthContext: Failed to create candidate:",
-                insertError
+                "AuthContext: Sign-out error:",
+                await response.json()
               );
-              toast.error(
-                "Failed to create account. Redirecting to Membership page."
-              );
-              await supabase.auth.signOut();
-              console.log(
-                "AuthContext: Redirecting to https://membership.paan.africa/"
-              );
-              window.location.assign("https://membership.paan.africa/");
-              return;
             }
 
-            localStorage.setItem("paan_member_session", "authenticated");
-            localStorage.setItem("user_email", email);
-
-            setUser({
-              id: newCandidate.id,
-              email: newCandidate.primaryContactEmail,
-              primaryContactName: newCandidate.primaryContactName,
-              job_type: newCandidate.job_type,
-              selected_tier: newCandidate.selected_tier,
-              agencyName: newCandidate.agencyName,
-              role: "agency_member",
-            });
-          } else {
-            localStorage.setItem("paan_member_session", "authenticated");
-            localStorage.setItem("user_email", email);
-
-            setUser({
-              id: existingUser.id,
-              email: existingUser.primaryContactEmail,
-              primaryContactName: existingUser.primaryContactName,
-              job_type: existingUser.job_type,
-              selected_tier: existingUser.selected_tier,
-              agencyName: existingUser.agencyName,
-              role: "agency_member",
-            });
+            console.log(
+              "AuthContext: Redirecting to https://membership.paan.africa/"
+            );
+            window.location.assign("https://membership.paan.africa/");
+            return;
           }
+
+          localStorage.setItem("paan_member_session", "authenticated");
+          localStorage.setItem("user_email", email);
+
+          setUser({
+            id: existingUser.id,
+            email: existingUser.primaryContactEmail,
+            primaryContactName: existingUser.primaryContactName,
+            job_type: existingUser.job_type,
+            selected_tier: existingUser.selected_tier,
+            agencyName: existingUser.agencyName,
+            role: "agency_member",
+          });
 
           toast.success("Social login successful! Redirecting...");
           router.push("/dashboard");

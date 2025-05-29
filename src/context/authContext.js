@@ -292,7 +292,6 @@ export const AuthProvider = ({ children }) => {
                 "AuthContext: Sign-out error:",
                 await response.json()
               );
-              window.location.assign("https://membership.paan.africa/");
             }
             return;
           }

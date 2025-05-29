@@ -25,7 +25,7 @@ const useEvents = (
       let query = supabase
         .from("events")
         .select(
-          "id, title, description, date, location, event_type, tier_restriction"
+          "id, title, description, date, location, event_type, tier_restriction, updated_at"
         )
         .gte("date", new Date().toISOString())
         .order("date", { ascending: true });

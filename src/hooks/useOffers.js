@@ -4,18 +4,13 @@ import { supabase } from "@/lib/supabase";
 import { hasTierAccess, normalizeTier } from "@/utils/tierUtils";
 
 const useOffers = (
-  filters = { tier_restriction: "" },
+  filters = { offer_type: "", tier_restriction: "" },
   user = { selected_tier: "Free Member" }
 ) => {
   const [offers, setOffers] = useState([]);
   const [filterOptions, setFilterOptions] = useState({
-    tier_restrictions: [
-      "Free Member",
-      "Associate Member",
-      "Full Member",
-      "Gold Member",
-    ],
-    offer_types: ["Discount", "Service", "Workshop"], // Static types
+    offer_types: [],
+    tier_restrictions: [],
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -28,54 +23,54 @@ const useOffers = (
       let query = supabase
         .from("offers")
         .select(
-          "id, title, description, tier_restriction, url, icon_url, created_at, updated_at"
+          "id, title, description, offer_type, tier_restriction, url, icon_url, created_at, updated_at"
         )
         .order("updated_at", { ascending: false })
         .order("created_at", { ascending: false });
 
-      if (filters.tier_restriction && filters.tier_restriction !== "All") {
-        const normalizedFilter = normalizeTier(filters.tier_restriction);
-        query = query.eq("tier_restriction", normalizedFilter);
+      if (filters.offer_type) {
+        query = query.eq("offer_type", filters.offer_type);
+      }
+      if (filters.tier_restriction && filters.tier_restriction !== "") {
+        query = query.eq(
+          "tier_restriction",
+          normalizeTier(filters.tier_restriction)
+        );
       }
 
       const { data: offersData, error: offersError } = await query;
-
       if (offersError) {
-        console.error("[useOffers] Supabase error:", offersError);
+        console.error("[useOffers] Error fetching offers:", offersError);
         throw new Error(`Failed to fetch offers: ${offersError.message}`);
       }
 
-      // Fetch distinct tier_restrictions
-      const { data: tierData, error: tierError } = await supabase
+      const { data: allOffers, error: allOffersError } = await supabase
         .from("offers")
-        .select("tier_restriction")
-        .neq("tier_restriction", null);
-
-      if (tierError) {
-        console.error("[useOffers] Tier error:", tierError);
-        throw new Error("Failed to fetch tier restrictions");
+        .select("offer_type, tier_restriction");
+      if (allOffersError) {
+        console.error(
+          "[useOffers] Error fetching filter options:",
+          allOffersError
+        );
+        throw new Error("Failed to fetch filter options");
       }
 
+      const offer_types = [...new Set(allOffers.map((o) => o.offer_type))]
+        .filter(Boolean)
+        .sort();
       const tier_restrictions = [
         ...new Set(
-          tierData.map((item) => normalizeTier(item.tier_restriction))
+          allOffers.map((o) =>
+            normalizeTier(o.tier_restriction || "Free Member")
+          )
         ),
-      ].filter(Boolean);
+      ].sort();
 
-      setFilterOptions({
-        tier_restrictions: tier_restrictions.length
-          ? tier_restrictions
-          : ["Free Member", "Associate Member", "Full Member", "Gold Member"],
-        offer_types: ["Discount", "Service", "Workshop"],
-      });
-
-      // Fetch feedback
       const { data: feedbackData, error: feedbackError } = await supabase
         .from("offer_feedback")
         .select("offer_id, rating");
-
       if (feedbackError) {
-        console.error("[useOffers] Feedback error:", feedbackError);
+        console.error("[useOffers] Error fetching feedback:", feedbackError);
         throw new Error(`Failed to fetch feedback: ${feedbackError.message}`);
       }
 
@@ -85,7 +80,6 @@ const useOffers = (
         return acc;
       }, {});
 
-      // Enrich offers
       const enrichedOffers = offersData.map((offer) => {
         const ratings = feedbackByOffer[offer.id] || [];
         const averageRating =
@@ -98,6 +92,7 @@ const useOffers = (
 
         return {
           ...offer,
+          offer_type: offer.offer_type || "General",
           tier_restriction: tierRestriction,
           averageRating,
           feedbackCount: ratings.length,
@@ -106,9 +101,9 @@ const useOffers = (
       });
 
       setOffers(enrichedOffers);
-      console.log("[useOffers] Filter options:", filterOptions);
+      setFilterOptions({ offer_types, tier_restrictions });
     } catch (err) {
-      console.error("[useOffers] Detailed error:", err);
+      console.error("[useOffers] Error:", err);
       setError(err.message);
       toast.error("Failed to load offers");
     } finally {
@@ -118,7 +113,7 @@ const useOffers = (
 
   useEffect(() => {
     fetchOffers();
-  }, [filters.tier_restriction, user.selected_tier]);
+  }, [filters.offer_type, filters.tier_restriction, user?.selected_tier]);
 
   return {
     offers,

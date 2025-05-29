@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Icon } from "@iconify/react";
+import { useRouter } from "next/router";
 import { useUser } from "@/hooks/useUser";
 import useEvents from "@/hooks/useEvents";
 import useLogout from "@/hooks/useLogout";
@@ -7,22 +7,29 @@ import HrHeader from "@/layouts/hrHeader";
 import HrSidebar from "@/layouts/hrSidebar";
 import SimpleFooter from "@/layouts/simpleFooter";
 import useSidebar from "@/hooks/useSidebar";
-import toast from "react-hot-toast";
-import { TierBadge, normalizeTier } from "@/components/Badge";
+import toast, { Toaster } from "react-hot-toast";
+import TitleCard from "@/components/TitleCard";
+import { Icon } from "@iconify/react";
+import Link from "next/link";
+import { hasTierAccess, normalizeTier } from "@/utils/tierUtils";
+import { TierBadge, JobTypeBadge } from "@/components/Badge";
 import RegisteredEventsModal from "@/components/RegisteredEventsModal";
-import { useRouter } from "next/router";
 
 export default function Events({ mode = "light", toggleMode }) {
   const { isSidebarOpen, toggleSidebar, sidebarState, updateDragOffset } =
     useSidebar();
+  const router = useRouter();
   const { user, loading: userLoading, LoadingComponent } = useUser();
   const { handleLogout } = useLogout();
-  const router = useRouter();
   const { eventType } = router.query;
+
+  const title = "Events";
+  const description =
+    "Connect with industry leaders and grow your network through our exclusive events tailored for your membership tier.";
 
   const [filters, setFilters] = useState({
     eventType: "",
-    tier: "",
+    tier_restriction: "",
   });
   const [activeTab, setActiveTab] = useState("all");
   const [showFilterPanel, setShowFilterPanel] = useState(false);
@@ -38,63 +45,17 @@ export default function Events({ mode = "light", toggleMode }) {
     handleEventRegistration,
   } = useEvents(filters, user);
 
-  useEffect(() => {
-    if (eventType && typeof eventType === "string") {
-      const capitalizedEventType =
-        eventType.charAt(0).toUpperCase() + eventType.slice(1).toLowerCase();
-      if (
-        filterOptions.eventTypes?.includes(capitalizedEventType) &&
-        filters.eventType !== capitalizedEventType
-      ) {
-        setFilters((prev) => ({ ...prev, eventType: capitalizedEventType }));
-        setShowFilterPanel(true);
-      }
-    } else if (!eventType && filters.eventType) {
-      setFilters((prev) => ({ ...prev, eventType: "" }));
-    }
-  }, [eventType, filterOptions.eventTypes]);
-
-  useEffect(() => {
-    console.log("[Events] registeredEvents:", registeredEvents);
-    console.log("[Events] filterOptions.tiers:", filterOptions.tiers);
-  }, [registeredEvents, filterOptions.tiers]);
-
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target;
-    setFilters((prev) => {
-      const newFilters = { ...prev, [name]: value };
-      if (name === "eventType") {
-        const newUrl = value
-          ? `/events?eventType=${value.toLowerCase()}`
-          : "/events";
-        router.push(newUrl, undefined, { shallow: true });
-      }
-      return newFilters;
-    });
-  };
-
-  const handleResetFilters = () => {
-    setFilters({ eventType: "", tier: "" });
-    setShowFilterPanel(false);
-    router.push("/events", undefined, { shallow: true });
-  };
-
-  const filteredByTab =
-    activeTab === "all"
-      ? events
-      : events.filter((event) => {
-          if (activeTab === "accessible") {
-            return event.isAccessible;
-          }
-          if (activeTab === "upcoming") {
-            const eventDate = new Date(event.date);
-            const today = new Date();
-            const diffTime = eventDate - today;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            return diffDays <= 7 && diffDays >= 0;
-          }
-          return true;
-        });
+  // Get latest event date
+  const latestEventsDate =
+    events.length > 0
+      ? new Date(
+          Math.max(...events.map((event) => new Date(event.updated_at)))
+        ).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })
+      : "No events available";
 
   const formatDate = (dateString) => {
     const options = {
@@ -115,12 +76,110 @@ export default function Events({ mode = "light", toggleMode }) {
     return diffDays;
   };
 
+  useEffect(() => {
+    if (eventType && typeof eventType === "string") {
+      const capitalizedEventType =
+        eventType.charAt(0).toUpperCase() + eventType.slice(1).toLowerCase();
+      if (
+        filterOptions.eventTypes?.includes(capitalizedEventType) &&
+        filters.eventType !== capitalizedEventType
+      ) {
+        setFilters((prev) => ({ ...prev, eventType: capitalizedEventType }));
+        setShowFilterPanel(true);
+      }
+    } else if (!eventType && filters.eventType) {
+      setFilters((prev) => ({ ...prev, eventType: "" }));
+    }
+  }, [eventType, filterOptions.eventTypes]);
+
+  useEffect(() => {
+    console.log("[Events] User:", user);
+    console.log("[Events] Events:", events);
+    console.log("[Events] RegisteredEvents:", registeredEvents);
+    console.log("[Events] Latest Events Date:", latestEventsDate);
+    console.log("[Events] Filters:", filters);
+    console.log("[Events] FilterOptions:", filterOptions);
+  }, [
+    events,
+    registeredEvents,
+    user,
+    latestEventsDate,
+    filters,
+    filterOptions,
+  ]);
+
+  useEffect(() => {
+    const handleError = (event) => {
+      console.error("[Events] Global error:", event.error);
+    };
+    window.addEventListener("error", handleError);
+    return () => window.removeEventListener("error", handleError);
+  }, []);
+
+  const handleFilterChange = (e) => {
+    e.preventDefault();
+    const { name, value } = e.target;
+    setFilters((prev) => {
+      const newFilters = { ...prev, [name]: value };
+      if (name === "eventType") {
+        const newUrl = value
+          ? `/events?eventType=${value.toLowerCase()}`
+          : "/events";
+        router.push(newUrl, undefined, { shallow: true });
+      }
+      return newFilters;
+    });
+  };
+
+  const handleResetFilters = (e) => {
+    e.preventDefault();
+    setFilters({
+      eventType: "",
+      tier_restriction: "",
+    });
+    setShowFilterPanel(false);
+    router.push("/events", undefined, { shallow: true });
+  };
+
+  const handleRegister = (event) => {
+    if (!hasTierAccess(event.tier_restriction, user)) {
+      toast.error(
+        `This event is available to ${normalizeTier(
+          event.tier_restriction
+        )} only. Consider upgrading your membership to register.`
+      );
+      return;
+    }
+    handleEventRegistration(event.id);
+  };
+
+  const filteredByTab =
+    activeTab === "all"
+      ? events
+      : events.filter((event) => {
+          if (activeTab === "accessible") {
+            return hasTierAccess(event.tier_restriction, user);
+          }
+          if (activeTab === "upcoming") {
+            const eventDate = new Date(event.date);
+            const today = new Date();
+            const diffTime = eventDate - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays <= 7 && diffDays >= 0;
+          }
+          if (activeTab === "trending") {
+            return event.trending;
+          }
+          return true;
+        });
+
   if (userLoading || eventsLoading) {
     return LoadingComponent;
   }
 
   if (!user) {
-    console.log("[Events] No user, redirecting to login");
+    console.log("[Events] No user, redirecting to /login");
+    router.push("/login");
     return null;
   }
 
@@ -135,9 +194,12 @@ export default function Events({ mode = "light", toggleMode }) {
   return (
     <div
       className={`min-h-screen flex flex-col ${
-        mode === "dark" ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"
+        mode === "dark"
+          ? "bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 text-white"
+          : "bg-gradient-to-br from-gray-50 via-white to-gray-100 text-gray-900"
       }`}
     >
+      <Toaster />
       <HrHeader
         toggleSidebar={toggleSidebar}
         isSidebarOpen={isSidebarOpen}
@@ -150,8 +212,7 @@ export default function Events({ mode = "light", toggleMode }) {
         toggleMode={toggleMode}
         onLogout={handleLogout}
         pageName="Events"
-        pageDescription="Discover and register for upcoming events."
-        breadcrumbs={[{ label: "Dashboard", href: "/" }, { label: "Events" }]}
+        pageDescription={description}
       />
       <div className="flex flex-1">
         <HrSidebar
@@ -173,103 +234,187 @@ export default function Events({ mode = "light", toggleMode }) {
           }}
         >
           <div className="max-w-7xl mx-auto space-y-6">
-            {/* Hero Section */}
-            <div
-              className={`relative overflow-hidden rounded-3xl ${
-                mode === "dark" ? "bg-gray-800" : "bg-white"
-              } shadow-lg`}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 opacity-40"></div>
-              <div className="absolute top-0 right-0 -mt-12 -mr-12 w-40 h-40 bg-blue-500 rounded-full opacity-20 blur-3xl"></div>
-              <div className="absolute bottom-0 left-0 -mb-12 -ml-12 w-40 h-40 bg-purple-500 rounded-full opacity-20 blur-3xl"></div>
-              <div className="relative p-8 md:p-10">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                  <div>
-                    <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
-                      Events
-                    </h1>
-                    <p className="text-gray-600 dark:text-gray-300 max-w-2xl">
-                      Connect with industry leaders and grow your network
-                      through our exclusive events tailored for your membership
-                      tier.
-                    </p>
-                  </div>
-                  <div className="md:self-end">
-                    <div
-                      className={`rounded-xl p-3 backdrop-blur-sm ${
-                        mode === "dark" ? "bg-gray-700/50" : "bg-gray-50/50"
-                      } border border-gray-200 dark:border-gray-700`}
-                    >
-                      <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-                        Your current tier
-                      </div>
-                      <TierBadge
-                        tier={user?.selected_tier || "Member"}
-                        mode={mode}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <TitleCard
+              title={title}
+              description={description}
+              mode={mode}
+              user={user}
+              Icon={Icon}
+              Link={Link}
+              TierBadge={TierBadge}
+              JobTypeBadge={JobTypeBadge}
+              toast={toast}
+              pageTable="events"
+              lastUpdated={latestEventsDate}
+            />
 
-            {/* Tabs and Filters */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div className="flex flex-wrap space-x-2">
-                <button
-                  onClick={() => setActiveTab("all")}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium ${
-                    activeTab === "all"
-                      ? "bg-indigo-600 text-white"
-                      : "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-                  }`}
-                >
-                  All Events
-                </button>
-                <button
-                  onClick={() => setActiveTab("accessible")}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium ${
-                    activeTab === "accessible"
-                      ? "bg-indigo-600 text-white"
-                      : "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-                  }`}
-                >
-                  Accessible
-                </button>
-                <button
-                  onClick={() => setActiveTab("upcoming")}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium ${
-                    activeTab === "upcoming"
-                      ? "bg-indigo-600 text-white"
-                      : "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-                  }`}
-                >
-                  Upcoming
-                </button>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex overflow-x-auto no-scrollbar gap-2 pb-2">
+                {[
+                  {
+                    id: "all",
+                    label: "All Events",
+                    icon: "mdi:view-grid",
+                  },
+                  {
+                    id: "accessible",
+                    label: "For Your Tier",
+                    icon: "mdi:accessibility",
+                  },
+                  {
+                    id: "trending",
+                    label: "Trending",
+                    icon: "mdi:trending-up",
+                  },
+                  {
+                    id: "upcoming",
+                    label: "Upcoming",
+                    icon: "mdi:clock-fast",
+                  },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`px-4 py-2 rounded-full whitespace-nowrap flex items-center gap-2 transition-all ${
+                      activeTab === tab.id
+                        ? "bg-blue-600 text-white font-medium shadow-md"
+                        : mode === "dark"
+                        ? "bg-gray-800 hover:bg-gray-700"
+                        : "bg-white hover:bg-gray-100"
+                    } shadow-sm`}
+                  >
+                    <Icon icon={tab.icon} />
+                    {tab.label}
+                  </button>
+                ))}
                 <button
                   onClick={() =>
                     !eventsLoading && setShowRegistrationsModal(true)
                   }
-                  className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                  className={`px-4 py-2 rounded-full whitespace-nowrap flex items-center gap-2 transition-all ${
                     eventsLoading
                       ? "bg-gray-400 text-gray-700 cursor-not-allowed"
-                      : "bg-indigo-600 text-white hover:bg-indigo-700"
-                  }`}
+                      : activeTab === "registrations"
+                      ? "bg-blue-600 text-white font-medium shadow-md"
+                      : mode === "dark"
+                      ? "bg-gray-800 hover:bg-gray-700"
+                      : "bg-white hover:bg-gray-100"
+                  } shadow-sm`}
                   disabled={eventsLoading}
                 >
+                  <Icon icon="mdi:calendar-check" />
                   My Registrations
                 </button>
               </div>
+
               <button
                 onClick={() => setShowFilterPanel(!showFilterPanel)}
-                className="inline-flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-200 rounded-lg text-sm font-medium"
+                className={`flex items-center gap-2 px-4 py-2 rounded-full transition ${
+                  mode === "dark"
+                    ? "bg-gray-800 hover:bg-gray-700"
+                    : "bg-white hover:bg-gray-100"
+                } ${showFilterPanel ? "ring-2 ring-blue-500" : ""} shadow-sm`}
               >
-                <Icon icon="heroicons:funnel" className="w-5 h-5 mr-2" />
-                {showFilterPanel ? "Hide Filters" : "Show Filters"}
+                <Icon icon="mdi:filter-variant" />
+                <span>Filters</span>
+                {Object.values(filters).some((val) => val !== "") && (
+                  <span className="flex items-center justify-center w-5 h-5 text-xs font-medium rounded-full bg-blue-600 text-white">
+                    {Object.values(filters).filter((val) => val !== "").length}
+                  </span>
+                )}
               </button>
             </div>
 
-            {/* Registered Events Modal */}
+            {showFilterPanel && (
+              <div
+                className={`rounded-2xl shadow-lg overflow-hidden transition-all ${
+                  mode === "dark"
+                    ? "bg-gray-800 border border-gray-700"
+                    : "bg-white"
+                }`}
+              >
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2 text-lg font-semibold">
+                      <Icon
+                        icon="mdi:filter-variant"
+                        className="text-blue-500"
+                      />
+                      <span>Refine Your Search</span>
+                    </div>
+                    <button
+                      onClick={handleResetFilters}
+                      className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-500 transition"
+                    >
+                      <Icon icon="mdi:restart" />
+                      Reset All
+                    </button>
+                  </div>
+
+                  <form
+                    onSubmit={(e) => e.preventDefault()}
+                    className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                  >
+                    {[
+                      {
+                        key: "eventType",
+                        icon: "mdi:calendar-star",
+                        label: "Event Type",
+                      },
+                      {
+                        key: "tier_restriction",
+                        icon: "mdi:crown-outline",
+                        label: "Tier",
+                      },
+                    ].map(({ key, icon, label }) => (
+                      <div key={key} className="space-y-1">
+                        <label className="text-sm font-medium text-gray-600 dark:text-gray-300 flex items-center gap-1.5">
+                          <Icon icon={icon} />
+                          {label}
+                        </label>
+                        <select
+                          name={key}
+                          value={filters[key]}
+                          onChange={handleFilterChange}
+                          className={`w-full p-2.5 rounded-lg border ${
+                            mode === "dark"
+                              ? "bg-gray-700 border-gray-600 text-white"
+                              : "bg-white border-gray-200 text-gray-800"
+                          } focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all`}
+                        >
+                          <option value="">All {label}s</option>
+                          {(filterOptions[`${key}s`] || []).map((val, idx) => (
+                            <option key={`${val}-${idx}`} value={val}>
+                              {val}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    ))}
+                  </form>
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-between items-center">
+              <div
+                className={`px-4 py-2 rounded-lg ${
+                  mode === "dark" ? "bg-gray-800" : "bg-white"
+                } shadow-sm`}
+              >
+                <span className="font-semibold">{filteredByTab.length}</span>
+                <span className="text-gray-600 dark:text-gray-400">
+                  {" "}
+                  events found
+                </span>
+              </div>
+
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                Showing {Math.min(12, filteredByTab.length)} of{" "}
+                {filteredByTab.length}
+              </div>
+            </div>
+
             <RegisteredEventsModal
               isOpen={showRegistrationsModal}
               onClose={() => setShowRegistrationsModal(false)}
@@ -279,230 +424,166 @@ export default function Events({ mode = "light", toggleMode }) {
               getDaysRemaining={getDaysRemaining}
             />
 
-            {/* Filter Panel */}
-            {showFilterPanel && (
-              <div
-                className={`p-6 rounded-lg ${
-                  mode === "dark" ? "bg-gray-800" : "bg-white"
-                } shadow-md`}
-              >
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label
-                      htmlFor="eventType"
-                      className="block text-sm font-medium mb-1"
-                    >
-                      Event Type
-                    </label>
-                    <select
-                      id="eventType"
-                      name="eventType"
-                      value={filters.eventType}
-                      onChange={handleFilterChange}
-                      className={`w-full px-4 py-2 rounded-lg border ${
-                        mode === "dark"
-                          ? "bg-gray-700 border-gray-600 text-gray-200"
-                          : "bg-white border-gray-300 text-gray-900"
-                      }`}
-                    >
-                      <option value="">All Event Types</option>
-                      {filterOptions.eventTypes?.map((type) => (
-                        <option key={type} value={type}>
-                          {type}
-                        </option>
-                      ))}
-                    </select>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredByTab.map((event) => (
+                <div
+                  key={event.id}
+                  className={`group rounded-2xl overflow-hidden border shadow-sm hover:shadow-xl transition-all duration-300 ${
+                    mode === "dark"
+                      ? "bg-gray-800 border-gray-700 hover:border-gray-600"
+                      : "bg-white border-gray-200 hover:border-gray-300"
+                  } ${
+                    !hasTierAccess(event.tier_restriction, user)
+                      ? "opacity-60"
+                      : ""
+                  }`}
+                >
+                  <div className="relative h-40 bg-gradient-to-r from-indigo-400 to-purple-600 overflow-hidden">
+                    <div className="absolute inset-0 opacity-20 bg-pattern"></div>
+                    <div className="absolute top-0 right-0 p-3">
+                      <TierBadge
+                        tier={event.tier_restriction}
+                        mode={mode}
+                        variant="solid"
+                      />
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+                      <div className="flex items-center gap-2 text-white font-semibold">
+                        <Icon icon="mdi:map-marker" />
+                        {event.location || "Virtual"}
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <label
-                      htmlFor="tier"
-                      className="block text-sm font-medium mb-1"
-                    >
-                      Tier Restriction
-                    </label>
-                    <select
-                      id="tier"
-                      name="tier"
-                      value={filters.tier}
-                      onChange={handleFilterChange}
-                      className={`w-full px-4 py-2 rounded-lg border ${
-                        mode === "dark"
-                          ? "bg-gray-700 border-gray-600 text-gray-200"
-                          : "bg-white border-gray-300 text-gray-900"
-                      }`}
-                    >
-                      <option value="">All Tiers</option>
-                      {filterOptions.tiers?.map((tier) => (
-                        <option key={tier} value={tier}>
-                          {tier}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="mt-4 flex justify-end">
-                  <button
-                    onClick={handleResetFilters}
-                    className="px-4 py-2 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700"
-                  >
-                    Reset Filters
-                  </button>
-                </div>
-              </div>
-            )}
 
-            {/* Events List */}
-            {filteredByTab.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredByTab.map((event) => {
-                  const isAccessible = event.isAccessible;
-                  const displayTier =
-                    normalizeTier(event.tier_restriction) || "unknown";
+                  <div className="p-5 space-y-4">
+                    <div>
+                      <h3 className="text-xl font-bold mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        {event.title}
+                      </h3>
+                      <p
+                        className={`text-sm ${
+                          mode === "dark" ? "text-gray-300" : "text-gray-600"
+                        } line-clamp-3`}
+                      >
+                        {event.description || "No description available."}
+                      </p>
+                    </div>
 
-                  return (
-                    <div
-                      key={event.id}
-                      className={`relative flex flex-col h-full rounded-2xl border-0 ${
-                        mode === "dark" ? "bg-gray-800/60" : "bg-white"
-                      } shadow-lg overflow-hidden hover:shadow-xl transition-all duration-200 group ${
-                        !isAccessible
-                          ? mode === "dark"
-                            ? "opacity-60 bg-gray-900/50"
-                            : "opacity-60 bg-gray-100"
-                          : ""
-                      }`}
-                    >
-                      <div className="px-6 pt-6 pb-4 border-b border-gray-100 dark/70">
-                        <div className="flex justify-between items-start mb-2">
-                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-1">
-                            {event.title}
-                          </h3>
-                          <div className="flex items-center space-x-2">
-                            {!isAccessible && (
-                              <Icon
-                                icon="heroicons:lock-closed"
-                                className="w-4 h-4 text-red-500 dark:text-red-400"
-                                title="Restricted Event"
-                              />
-                            )}
-                            <TierBadge
-                              tier={event.tier_restriction}
-                              mode={mode}
-                            />
-                          </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div
+                        className={`rounded-lg p-3 ${
+                          mode === "dark" ? "bg-gray-700/60" : "bg-gray-50"
+                        }`}
+                      >
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                          Event Type
                         </div>
-                        <div className="flex items-center mt-1.5">
+                        <div className="font-medium truncate">
+                          {event.event_type || "General"}
+                        </div>
+                      </div>
+
+                      <div
+                        className={`rounded-lg p-3 ${
+                          mode === "dark" ? "bg-gray-700/60" : "bg-gray-50"
+                        }`}
+                      >
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                          Date
+                        </div>
+                        <div className="font-medium flex items-center gap-1.5">
                           <Icon
-                            icon="heroicons:map-pin"
-                            className="w-4 h-4 text-gray-500 dark:text-gray-400 mr-1.5 flex-shrink-0"
+                            icon="mdi:calendar-clock"
+                            className="text-red-500"
                           />
-                          <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
-                            {event.location || "Virtual"}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="px-6 py-4 flex-grow">
-                        {event.description && (
-                          <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2 mb-4">
-                            {event.description}
-                          </p>
-                        )}
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          <div className="flex items-center text-xs px-2.5 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300">
-                            <Icon
-                              icon="heroicons:calendar"
-                              className="w-3.5 h-3.5 mr-1.5"
-                            />
-                            <span className="font-medium">
-                              {event.event_type}
-                            </span>
-                          </div>
-                          {event.is_virtual && (
-                            <div className="flex items-center text-xs px-2.5 py-1.5 rounded-lg bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300">
-                              <Icon
-                                icon="heroicons:video-camera"
-                                className="w-3.5 h-3.5 mr-1.5"
-                              />
-                              <span className="font-medium">Virtual</span>
-                            </div>
-                          )}
-                        </div>
-                        {!isAccessible && (
-                          <p className="text-sm text-red-600 dark:text-red-400 italic">
-                            Restricted to {displayTier}. Upgrade your membership
-                            to access.
-                          </p>
-                        )}
-                      </div>
-                      <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 mt-auto bg-gray-50 dark:bg-gray-800/80">
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                              Event Date
-                            </p>
-                            <span className="text-sm text-gray-700 dark:text-gray-300">
-                              {formatDate(event.date)}
-                            </span>
-                          </div>
-                          <button
-                            onClick={() => {
-                              if (isAccessible) {
-                                handleEventRegistration(event.id);
-                              } else {
-                                toast.error(
-                                  `This event is restricted to ${displayTier}. Upgrade your membership to access it.`
-                                );
-                              }
-                            }}
-                            className={`inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg ${
-                              isAccessible &&
-                              !registrationLoading.includes(event.id)
-                                ? "bg-gradient-to-br from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700"
-                                : "bg-gray-700 text-gray-300 dark:text-gray-400 cursor-not-allowed"
-                            }`}
-                            title={
-                              !isAccessible
-                                ? `Restricted to ${displayTier}. Upgrade your membership.`
-                                : "Register for this event"
-                            }
-                          >
-                            {isAccessible ? (
-                              <Icon
-                                icon="heroicons:plus"
-                                className="w-5 h-5 mr-2"
-                              />
-                            ) : (
-                              <Icon
-                                icon="heroicons:lock-closed"
-                                className="w-5 h-5 mr-2"
-                              />
-                            )}
-                            {registrationLoading.includes(event.id)
-                              ? "Registering..."
-                              : "Register"}
-                          </button>
+                          {formatDate(event.date)}
                         </div>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="p-12 text-center">
-                <div className="w-24 h-24 mx-auto bg-indigo-50 dark:bg-indigo-900/20 rounded-full flex items-center justify-center mb-6">
-                  <Icon
-                    icon="heroicons:calendar"
-                    className="h-12 w-12 text-indigo-500 dark:text-indigo-400"
-                  />
+
+                    <div className="pt-2">
+                      <button
+                        onClick={() => handleRegister(event)}
+                        className={`px-4 py-2 rounded-lg font-semibold transition-colors w-full ${
+                          hasTierAccess(event.tier_restriction, user) &&
+                          !registrationLoading.includes(event.id)
+                            ? "bg-blue-600 text-white hover:bg-blue-700"
+                            : "bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400"
+                        }`}
+                        disabled={registrationLoading.includes(event.id)}
+                      >
+                        {registrationLoading.includes(event.id)
+                          ? "Registering..."
+                          : "Register"}
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <h3 className="mt-2 text-xl font-semibold text-gray-900 dark:text-gray-200">
-                  No Events Found
-                </h3>
-                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 max-w-md mx-auto">
-                  {filters.eventType || filters.tier
-                    ? "Try adjusting your filters to find more events."
-                    : "No upcoming events available."}
+              ))}
+            </div>
+
+            {filteredByTab.length === 0 && (
+              <div
+                className={`text-center py-12 rounded-2xl ${
+                  mode === "dark" ? "bg-gray-800" : "bg-white"
+                } shadow-sm border dark:border-gray-700`}
+              >
+                <Icon
+                  icon="mdi:calendar-remove"
+                  className="inline-block text-5xl text-gray-400 mb-4"
+                />
+                <h3 className="text-xl font-semibold mb-2">No Events Found</h3>
+                <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
+                  No events match your current filters. Try adjusting your
+                  search criteria or check back later for new events.
                 </p>
+                <button
+                  onClick={handleResetFilters}
+                  className="mt-6 px-6 py-2 bg-blue-700 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
+                >
+                  Reset Filters
+                </button>
+              </div>
+            )}
+
+            {filteredByTab.length > 12 && (
+              <div className="flex justify-center mt-8">
+                <div className="flex items-center space-x-2">
+                  <button
+                    className={`w-10 h-10 flex items-center justify-center rounded-lg ${
+                      mode === "dark"
+                        ? "bg-gray-800 hover:bg-gray-700"
+                        : "bg-white hover:bg-gray-100"
+                    } border dark:border-gray-700 shadow-sm`}
+                  >
+                    <Icon icon="mdi:chevron-left" />
+                  </button>
+
+                  {[1, 2, 3].map((num) => (
+                    <button
+                      key={num}
+                      className={`w-10 h-10 flex items-center justify-center rounded-lg font-medium ${
+                        num === 1
+                          ? "bg-blue-600 text-white"
+                          : mode === "dark"
+                          ? "bg-gray-800 hover:bg-gray-700"
+                          : "bg-white hover:bg-gray-100"
+                      } border dark:border-gray-700 shadow-sm`}
+                    >
+                      {num}
+                    </button>
+                  ))}
+
+                  <button
+                    className={`w-10 h-10 flex items-center justify-center rounded-lg ${
+                      mode === "dark"
+                        ? "bg-gray-800 hover:bg-gray-700"
+                        : "bg-white hover:bg-gray-100"
+                    } border dark:border-gray-700 shadow-sm`}
+                  >
+                    <Icon icon="mdi:chevron-right" />
+                  </button>
+                </div>
               </div>
             )}
           </div>

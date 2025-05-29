@@ -9,52 +9,88 @@ import HrSidebar from "@/layouts/hrSidebar";
 import SimpleFooter from "@/layouts/simpleFooter";
 import useSidebar from "@/hooks/useSidebar";
 import toast, { Toaster } from "react-hot-toast";
-import { supabase } from "@/lib/supabase";
+import TitleCard from "@/components/TitleCard";
 import VideoModal from "@/components/VideoModal";
-import { tierBadgeStyles } from "@/components/Badge";
+import {
+  getTierBadgeStyles,
+  TierBadge,
+  JobTypeBadge,
+  normalizeTier,
+} from "@/components/Badge";
+import Link from "next/link";
+import { hasTierAccess } from "@/utils/tierUtils";
+import { supabase } from "@/lib/supabase";
 
 export default function Resources({ mode = "light", toggleMode }) {
   const { isSidebarOpen, toggleSidebar, sidebarState, updateDragOffset } =
     useSidebar();
   const router = useRouter();
   const { user, loading: userLoading, LoadingComponent } = useUser();
-  const handleLogout = useLogout();
+  const { handleLogout } = useLogout();
   const [filters, setFilters] = useState({
     resource_type: "",
     tier_restriction: "",
   });
+  const [activeTab, setActiveTab] = useState("all");
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState({
     url: "",
     resourceId: null,
   });
+
   const {
     resources,
     filterOptions,
     loading: resourcesLoading,
     error,
-  } = useResources(filters);
+  } = useResources(filters, user);
 
-  const canAccessResource = (resourceTier) => {
-    if (resourceTier === "All") return true;
-    const tiers = ["Associate", "Full", "Gold", "Free"];
-    const userTier = user?.selected_tier || "Free Member";
-    const userTierIndex = tiers.indexOf(userTier);
-    const resourceTierIndex = tiers.indexOf(resourceTier);
-    return userTierIndex >= resourceTierIndex;
-  };
+  const title = "Resources";
+  const description =
+    "Access valuable tools, templates, and learning materials to grow your agency.";
+
+  // Get latest resource date
+  const latestResourceDate =
+    resources.length > 0
+      ? new Date(
+          Math.max(...resources.map((res) => new Date(res.updated_at)))
+        ).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })
+      : "No resources available";
+
+  useEffect(() => {
+    console.log("[Resources] User:", user);
+    console.log("[Resources] Resources:", resources);
+    console.log("[Resources] Latest Resource Date:", latestResourceDate);
+    console.log("[Resources] Filters:", filters);
+    console.log("[Resources] FilterOptions:", filterOptions);
+  }, [resources, user, latestResourceDate, filters, filterOptions]);
+
+  useEffect(() => {
+    const handleError = (event) => {
+      console.error("[Resources] Global error:", event.error);
+    };
+    window.addEventListener("error", handleError);
+    return () => window.removeEventListener("error", handleError);
+  }, []);
 
   const handleFilterChange = (e) => {
+    e.preventDefault();
     const { name, value } = e.target;
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleResetFilters = () => {
+  const handleResetFilters = (e) => {
+    e.preventDefault();
     setFilters({
       resource_type: "",
       tier_restriction: "",
     });
+    setActiveTab("all");
   };
 
   const getVideoEmbedUrl = (videoUrl) => {
@@ -72,9 +108,11 @@ export default function Resources({ mode = "light", toggleMode }) {
   };
 
   const handleResourceClick = (resource) => {
-    if (!canAccessResource(resource.tier_restriction)) {
+    if (!hasTierAccess(resource.tier_restriction, user)) {
       toast.error(
-        `This resource is available to ${resource.tier_restriction} Members only. Consider upgrading your membership to unlock this resource.`,
+        `This resource is available to ${normalizeTier(
+          resource.tier_restriction
+        )} only. Consider upgrading your membership to unlock this resource.`,
         { duration: 5000 }
       );
       return;
@@ -88,12 +126,17 @@ export default function Resources({ mode = "light", toggleMode }) {
     }
   };
 
+  const filteredResources =
+    activeTab === "all"
+      ? resources
+      : resources.filter((res) => hasTierAccess(res.tier_restriction, user));
 
   if (userLoading || resourcesLoading) {
     return LoadingComponent;
   }
 
   if (!user) {
+    console.log("[Resources] No user, redirecting to /login");
     router.push("/login");
     return null;
   }
@@ -109,35 +152,25 @@ export default function Resources({ mode = "light", toggleMode }) {
   return (
     <div
       className={`min-h-screen flex flex-col ${
-        mode === "dark" ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"
+        mode === "dark"
+          ? "bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 text-white"
+          : "bg-gradient-to-br from-gray-50 via-white to-gray-100 text-gray-900"
       }`}
     >
-      <Toaster
-        position="top-center"
-        toastOptions={{
-          className:
-            "!bg-white !text-gray-800 dark:!bg-gray-800 dark:!text-white font-medium",
-          style: {
-            borderRadius: "10px",
-            padding: "16px",
-            boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-          },
-        }}
-      />
+      <Toaster />
       <HrHeader
         toggleSidebar={toggleSidebar}
         isSidebarOpen={isSidebarOpen}
         sidebarState={sidebarState}
         fullName={user?.name ?? "Member"}
-        jobTitle={user.job_type}
+        jobTitle={user?.job_type}
         selectedTier={user?.selected_tier}
-        agencyName={user.agencyName}
+        agencyName={user?.agencyName}
         mode={mode}
         toggleMode={toggleMode}
         onLogout={handleLogout}
         pageName="Resources"
-        pageDescription="Access valuable tools, templates, and learning materials."
-        breadcrumbs={[{ label: "Home", href: "/" }, { label: "Resources" }]}
+        pageDescription={description}
       />
       <div className="flex flex-1">
         <HrSidebar
@@ -159,52 +192,20 @@ export default function Resources({ mode = "light", toggleMode }) {
           }}
         >
           <div className="max-w-7xl mx-auto space-y-6">
-            {/* Hero Section */}
-            <div
-              className={`relative overflow-hidden rounded-3xl ${
-                mode === "dark" ? "bg-gray-800" : "bg-white"
-              } shadow-lg`}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 opacity-40"></div>
-              <div className="absolute top-0 right-0 -mt-12 -mr-12 w-40 h-40 bg-blue-500 rounded-full opacity-20 blur-3xl"></div>
-              <div className="absolute bottom-0 left-0 -mb-12 -ml-12 w-40 h-40 bg-purple-500 rounded-full opacity-20 blur-3xl"></div>
-              <div className="relative p-8 md:p-10">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                  <div>
-                    <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
-                      Resources
-                    </h1>
-                    <p className="text-gray-600 dark:text-gray-300 max-w-2xl">
-                      Access valuable tools, templates, and learning materials
-                      to grow your agency.
-                    </p>
-                  </div>
-                  <div className="md:self-end">
-                    <div
-                      className={`rounded-xl p-3 backdrop-blur-sm ${
-                        mode === "dark" ? "bg-gray-700/50" : "bg-gray-50/50"
-                      } border border-gray-200 dark:border-gray-700`}
-                    >
-                      <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-                        Your current tier
-                      </div>
-                      <div
-                        className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg ${
-                          tierBadgeStyles[user?.selected_tier || "Free Member"]
-                        }`}
-                      >
-                        <Icon icon="mdi:crown" />
-                        <span className="font-semibold">
-                          {user?.selected_tier || "Free Member"}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <TitleCard
+              title={title}
+              description={description}
+              mode={mode}
+              user={user}
+              Icon={Icon}
+              Link={Link}
+              TierBadge={TierBadge}
+              JobTypeBadge={JobTypeBadge}
+              toast={toast}
+              pageTable="resources"
+              lastUpdated={latestResourceDate}
+            />
 
-            {/* Filters */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex overflow-x-auto no-scrollbar gap-2 pb-2">
                 {[
@@ -212,26 +213,19 @@ export default function Resources({ mode = "light", toggleMode }) {
                   {
                     id: "accessible",
                     label: "For Your Tier",
-                    icon: "mdi:shield-check",
+                    icon: "mdi:accessibility",
                   },
                 ].map((tab) => (
                   <button
                     key={tab.id}
-                    onClick={() =>
-                      setFilters({
-                        ...filters,
-                        tier_restriction:
-                          tab.id === "accessible" ? user?.selected_tier : "",
-                      })
-                    }
+                    onClick={() => setActiveTab(tab.id)}
                     className={`px-4 py-2 rounded-full whitespace-nowrap flex items-center gap-2 transition-all ${
-                      filters.tier_restriction ===
-                      (tab.id === "accessible" ? user?.selected_tier : "")
+                      activeTab === tab.id
                         ? "bg-blue-600 text-white font-medium shadow-md"
                         : mode === "dark"
                         ? "bg-gray-800 hover:bg-gray-700"
-                        : "bg-white hover:bg-gray-100 shadow-sm"
-                    }`}
+                        : "bg-white hover:bg-gray-100"
+                    } shadow-sm`}
                   >
                     <Icon icon={tab.icon} />
                     {tab.label}
@@ -256,7 +250,6 @@ export default function Resources({ mode = "light", toggleMode }) {
               </button>
             </div>
 
-            {/* Filter Panel */}
             {showFilterPanel && (
               <div
                 className={`rounded-2xl shadow-lg overflow-hidden transition-all ${
@@ -282,7 +275,10 @@ export default function Resources({ mode = "light", toggleMode }) {
                       Reset All
                     </button>
                   </div>
-                  <form className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <form
+                    onSubmit={(e) => e.preventDefault()}
+                    className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                  >
                     {[
                       {
                         key: "resource_type",
@@ -311,7 +307,7 @@ export default function Resources({ mode = "light", toggleMode }) {
                           } focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all`}
                         >
                           <option value="">All {label}s</option>
-                          {filterOptions[`${key}s`].map((val) => (
+                          {(filterOptions[`${key}s`] || []).map((val) => (
                             <option key={val} value={val}>
                               {val}
                             </option>
@@ -324,76 +320,115 @@ export default function Resources({ mode = "light", toggleMode }) {
               </div>
             )}
 
-            {/* Resource Count */}
             <div className="flex justify-between items-center">
               <div
                 className={`px-4 py-2 rounded-lg ${
                   mode === "dark" ? "bg-gray-800" : "bg-white"
                 } shadow-sm`}
               >
-                <span className="font-semibold">{resources.length}</span>
+                <span className="font-semibold">
+                  {filteredResources.length}
+                </span>
                 <span className="text-gray-600 dark:text-gray-400">
                   {" "}
                   resources found
                 </span>
               </div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                Showing {Math.min(12, filteredResources.length)} of{" "}
+                {filteredResources.length}
+              </div>
             </div>
 
-            {/* Resources Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {resources.map((resource) => {
+              {filteredResources.map((resource) => {
                 const embedUrl = getVideoEmbedUrl(resource.video_url);
-                const canAccess = canAccessResource(resource.tier_restriction);
+                const canAccess = hasTierAccess(
+                  resource.tier_restriction,
+                  user
+                );
                 return (
                   <div
                     key={resource.id}
                     onClick={() => handleResourceClick(resource)}
-                    className={`relative flex flex-col h-full rounded-2xl border-0 ${
-                      mode === "dark" ? "bg-gray-800/50" : "bg-white"
-                    } shadow-lg overflow-hidden hover:shadow-xl transition-all duration-200 group cursor-pointer ${
-                      !canAccess ? "opacity-75" : ""
-                    }`}
+                    className={`group rounded-2xl overflow-hidden border shadow-sm hover:shadow-xl transition-all duration-300 ${
+                      mode === "dark"
+                        ? "bg-gray-800 border-gray-700 hover:border-gray-600"
+                        : "bg-white border-gray-200 hover:border-gray-300"
+                    } ${!canAccess ? "opacity-60" : ""}`}
                   >
-                    <div className="px-6 pt-6 pb-4 border-b border-gray-100 dark:border-gray-700">
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-1">
-                          {resource.title}
-                        </h3>
-                        <span
-                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${
-                            tierBadgeStyles[resource.tier_restriction]
-                          }`}
-                        >
-                          {resource.tier_restriction === "All"
-                            ? "All Members"
-                            : resource.tier_restriction}
-                        </span>
-                      </div>
-                      <div className="flex items-center mt-1.5">
-                        <Icon
-                          icon={
-                            resource.resource_type === "PDF"
-                              ? "heroicons:document-text"
-                              : resource.resource_type === "Video"
-                              ? "heroicons:video-camera"
-                              : "heroicons:academic-cap"
-                          }
-                          className="w-4 h-4 text-gray-500 dark:text-gray-400 mr-1.5 flex-shrink-0"
+                    <div className="relative h-40 bg-gradient-to-r from-blue-400 to-indigo-600 overflow-hidden">
+                      <div className="absolute inset-0 opacity-20 bg-pattern"></div>
+                      <div className="absolute top-0 right-0 p-3">
+                        <TierBadge
+                          tier={resource.tier_restriction}
+                          mode={mode}
+                          variant="solid"
                         />
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                      </div>
+                      <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+                        <div className="flex items-center gap-2 text-white font-semibold">
+                          <Icon icon="mdi:tag" />
                           {resource.resource_type}
-                        </p>
+                        </div>
                       </div>
                     </div>
-                    <div className="px-6 py-4 flex-grow">
-                      {resource.description && (
-                        <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2 mb-4">
-                          {resource.description}
+
+                    <div className="p-5 space-y-4">
+                      <div>
+                        <h3 className="text-xl font-bold mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                          {resource.title}
+                        </h3>
+                        <p
+                          className={`text-sm ${
+                            mode === "dark" ? "text-gray-300" : "text-gray-600"
+                          } line-clamp-3`}
+                        >
+                          {resource.description || "No description available."}
                         </p>
-                      )}
-                      {canAccess ? (
-                        <>
-                          {resource.file_path ? (
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div
+                          className={`rounded-lg p-3 ${
+                            mode === "dark" ? "bg-gray-700/60" : "bg-gray-50"
+                          }`}
+                        >
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                            Type
+                          </div>
+                          <div className="font-medium truncate">
+                            {resource.resource_type}
+                          </div>
+                        </div>
+                        <div
+                          className={`rounded-lg p-3 ${
+                            mode === "dark" ? "bg-gray-700/60" : "bg-gray-50"
+                          }`}
+                        >
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                            Added
+                          </div>
+                          <div className="font-medium flex items-center gap-1.5">
+                            <Icon
+                              icon="mdi:calendar"
+                              className="text-blue-500"
+                            />
+                            {new Date(resource.created_at).toLocaleDateString(
+                              "en-US",
+                              {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              }
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="pt-2">
+                        {canAccess ? (
+                          resource.file_path ? (
                             <a
                               href={
                                 supabase.storage
@@ -403,82 +438,48 @@ export default function Resources({ mode = "light", toggleMode }) {
                               }
                               download
                               onClick={(e) => e.stopPropagation()}
-                              className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center"
+                              className="block w-full px-4 py-2 rounded-lg font-semibold text-center bg-blue-600 text-white hover:bg-blue-700 transition-colors"
                             >
-                              <Icon
-                                icon="heroicons:download"
-                                className="w-4 h-4 mr-1"
-                              />
-                              Download Resource
+                              Download
                             </a>
                           ) : resource.video_url && embedUrl ? (
-                            <div
-                              className="relative"
-                              style={{ paddingBottom: "56.25%" }}
-                            >
-                              <iframe
-                                src={embedUrl}
-                                className="absolute top-0 left-0 w-full h-full rounded-lg"
-                                frameBorder="0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowFullScreen
-                              ></iframe>
-                            </div>
+                            <button className="block w-full px-4 py-2 rounded-lg font-semibold text-center bg-blue-600 text-white hover:bg-blue-700 transition-colors">
+                              Watch Video
+                            </button>
                           ) : resource.url ? (
                             <a
                               href={resource.url}
                               target="_blank"
                               rel="noopener noreferrer"
                               onClick={(e) => e.stopPropagation()}
-                              className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
+                              className="block w-full px-4 py-2 rounded-lg font-semibold text-center bg-blue-600 text-white hover:bg-blue-700 transition-colors"
                             >
                               Access Resource
                             </a>
                           ) : (
-                            <p className="text-sm text-gray-500">
-                              No resource link available
-                            </p>
-                          )}
-                        </>
-                      ) : (
-                        <div className="mt-4 p-3 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center">
-                          <Icon
-                            icon="heroicons:lock-closed"
-                            className="w-4 h-4 text-gray-500 dark:text-gray-400 mr-2"
-                          />
-                          <p className="text-xs text-gray-600 dark:text-gray-400">
-                            Locked for {resource.tier_restriction} members and
-                            above.{" "}
-                            <a
-                              href="/membership"
-                              className="text-indigo-600 dark:text-indigo-400 hover:underline"
+                            <button
+                              disabled
+                              className="block w-full px-4 py-2 rounded-lg font-semibold text-center bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400"
                             >
-                              Upgrade to {resource.tier_restriction} Membership
-                            </a>
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                    <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 mt-auto bg-gray-50 dark:bg-gray-800/80">
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Added on{" "}
-                        {new Date(resource.created_at).toLocaleDateString(
-                          "en-US",
-                          {
-                            month: "numeric",
-                            day: "numeric",
-                            year: "numeric",
-                          }
+                              No Resource Available
+                            </button>
+                          )
+                        ) : (
+                          <button
+                            disabled
+                            className="block w-full px-4 py-2 rounded-lg font-semibold text-center bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400"
+                          >
+                            Locked
+                          </button>
                         )}
-                      </p>
+                      </div>
                     </div>
                   </div>
                 );
               })}
             </div>
 
-            {/* No Resources */}
-            {resources.length === 0 && (
+            {filteredResources.length === 0 && (
               <div
                 className={`text-center py-12 rounded-2xl ${
                   mode === "dark" ? "bg-gray-800" : "bg-white"
@@ -493,7 +494,7 @@ export default function Resources({ mode = "light", toggleMode }) {
                 </h3>
                 <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
                   No resources match your current filters. Try adjusting your
-                  search criteria or check back later.
+                  search criteria or check back later for new resources.
                 </p>
                 <button
                   onClick={handleResetFilters}
@@ -504,7 +505,45 @@ export default function Resources({ mode = "light", toggleMode }) {
               </div>
             )}
 
-            {/* Video Modal */}
+            {filteredResources.length > 12 && (
+              <div className="flex justify-center mt-8">
+                <div className="flex items-center space-x-2">
+                  <button
+                    className={`w-10 h-10 flex items-center justify-center rounded-lg ${
+                      mode === "dark"
+                        ? "bg-gray-800 hover:bg-gray-700"
+                        : "bg-white hover:bg-gray-100"
+                    } border dark:border-gray-700 shadow-sm`}
+                  >
+                    <Icon icon="mdi:chevron-left" />
+                  </button>
+                  {[1, 2, 3].map((num) => (
+                    <button
+                      key={num}
+                      className={`w-10 h-10 flex items-center justify-center rounded-lg font-medium ${
+                        num === 1
+                          ? "bg-blue-600 text-white"
+                          : mode === "dark"
+                          ? "bg-gray-800 hover:bg-gray-700"
+                          : "bg-white hover:bg-gray-100"
+                      } border dark:border-gray-700 shadow-sm`}
+                    >
+                      {num}
+                    </button>
+                  ))}
+                  <button
+                    className={`w-10 h-10 flex items-center justify-center rounded-lg ${
+                      mode === "dark"
+                        ? "bg-gray-800 hover:bg-gray-700"
+                        : "bg-white hover:bg-gray-100"
+                    } border dark:border-gray-700 shadow-sm`}
+                  >
+                    <Icon icon="mdi:chevron-right" />
+                  </button>
+                </div>
+              </div>
+            )}
+
             <VideoModal
               isOpen={isModalOpen}
               onClose={() => setIsModalOpen(false)}

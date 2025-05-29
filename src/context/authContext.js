@@ -171,8 +171,12 @@ export const AuthProvider = ({ children }) => {
       };
 
       setUser(user);
-      console.log("AuthContext: User authenticated:", user);
-      router.push("/dashboard");
+      console.log(
+        "AuthContext: User authenticated, navigating to /dashboard:",
+        user
+      );
+      await router.push("/dashboard");
+      toast.dismiss("route-loading"); // Explicitly dismiss toast
     } catch (error) {
       console.error("AuthContext: Login error:", error);
       throw error;
@@ -316,7 +320,11 @@ export const AuthProvider = ({ children }) => {
           });
 
           toast.success("Social login successful! Redirecting...");
-          router.push("/dashboard");
+          console.log(
+            "AuthContext: Social login successful, navigating to /dashboard"
+          );
+          await router.push("/dashboard");
+          toast.dismiss("route-loading"); // Explicitly dismiss toast
         } else {
           console.log("AuthContext: No session user, redirecting to login");
           router.push("/");

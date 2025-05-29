@@ -9,13 +9,13 @@ const YouTubeVideo = ({ mode }) => {
           : "bg-white border-gray-200"
       }`}
     >
-      <Link href="https://www.paan.africa/membership" target="_blank">
-      <h2
-        className={`text-xl font-semibold mb-4 ${
-          mode === "dark" ? "text-white" : "text-gray-800"
-        }`}
-      >
-        Become a Certified PAAN Member
+      <Link href="https://www.paan.africa/" target="_blank">
+        <h2
+          className={`text-xl font-semibold mb-4 ${
+            mode === "dark" ? "text-white" : "text-gray-800"
+          }`}
+        >
+          Pan African Agency Network - (PAAN)
         </h2>
       </Link>
       <div
@@ -25,7 +25,7 @@ const YouTubeVideo = ({ mode }) => {
         <iframe
           className="absolute top-0 left-0 w-full h-full rounded-lg"
           style={{ pointerEvents: "none" }}
-          src="https://www.youtube.com/embed/ugWBSicTqFA?autoplay=1&loop=1&playlist=ugWBSicTqFA&controls=0&mute=1&rel=0&modestbranding=1&disablekb=1&showinfo=0"
+          src="https://www.youtube.com/embed/xx0KDvM4_ZE?autoplay=1&loop=1&playlist=xx0KDvM4_ZE&controls=0&mute=1&rel=0&modestbranding=1&disablekb=1&showinfo=0"
           title="Pan African Agency Network Video"
           frameBorder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

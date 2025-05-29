@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import SectionCard from "./SectionCard";
 import OpportunityCard from "./OpportunityCard";
 import FilterDropdown from "./FilterDropdown";
-import { canAccessTier } from "@/utils/tierUtils";
+import { hasTierAccess } from "@/utils/tierUtils";
 import { TierBadge } from "./Badge";
 
 const OpportunitiesSection = ({
@@ -93,7 +93,7 @@ const OpportunitiesSection = ({
         <Icon icon="mdi:alert-circle-outline" className="text-2xl" />
       </div>
       <h3
-        className={`text-lg font-semibold mb-2 ${
+        className={`text-lg font-medium ${
           mode === "dark" ? "text-red-400" : "text-red-600"
         }`}
       >
@@ -127,7 +127,7 @@ const OpportunitiesSection = ({
         <Icon icon="mdi:briefcase-outline" className="text-3xl" />
       </div>
       <h3
-        className={`text-xl font-semibold mb-2 ${
+        className={`text-xl font-medium ${
           mode === "dark" ? "text-gray-300" : "text-gray-700"
         }`}
       >
@@ -146,11 +146,17 @@ const OpportunitiesSection = ({
   const renderOpportunities = () => {
     // Calculate access statistics
     const accessibleOpportunities = opportunities.filter((opportunity) =>
-      canAccessTier(opportunity.tier_restriction, user.selected_tier)
+      hasTierAccess(
+        opportunity.tier_restriction,
+        user || { selected_tier: "Free Member" }
+      )
     );
     const restrictedOpportunities = opportunities.filter(
       (opportunity) =>
-        !canAccessTier(opportunity.tier_restriction, user.selected_tier)
+        !hasTierAccess(
+          opportunity.tier_restriction,
+          user || { selected_tier: "Free Member" }
+        )
     );
 
     // Group opportunities by type for categories
@@ -173,8 +179,14 @@ const OpportunitiesSection = ({
 
     // Sort filtered opportunities: accessible ones first, then by title
     const sortedOpportunities = filteredOpportunities.sort((a, b) => {
-      const aAccessible = canAccessTier(a.tier_restriction, user.selected_tier);
-      const bAccessible = canAccessTier(b.tier_restriction, user.selected_tier);
+      const aAccessible = hasTierAccess(
+        a.tier_restriction,
+        user || { selected_tier: "Free Member" }
+      );
+      const bAccessible = hasTierAccess(
+        b.tier_restriction,
+        user || { selected_tier: "Free Member" }
+      );
 
       if (aAccessible === bAccessible) {
         return a.title.localeCompare(b.title);
@@ -386,9 +398,9 @@ const OpportunitiesSection = ({
                 mode={mode}
                 TierBadge={TierBadge}
                 isRestricted={
-                  !canAccessTier(
+                  !hasTierAccess(
                     opportunity.tier_restriction,
-                    user.selected_tier
+                    user || { selected_tier: "Free Member" }
                   )
                 }
                 onRestrictedClick={() =>

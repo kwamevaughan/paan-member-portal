@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { Icon } from "@iconify/react";
+import TitleCard from "@/components/TitleCard";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUser } from "@/hooks/useUser";
 import useUpdates from "@/hooks/useUpdates";
@@ -10,53 +11,43 @@ import HrSidebar from "@/layouts/hrSidebar";
 import SimpleFooter from "@/layouts/simpleFooter";
 import useSidebar from "@/hooks/useSidebar";
 import toast, { Toaster } from "react-hot-toast";
+import { hasTierAccess, normalizeTier } from "@/utils/tierUtils";
+import Link from "next/link";
+import { TierBadge, JobTypeBadge } from "@/components/Badge";
 
 export default function Updates({ mode = "light", toggleMode }) {
   const { isSidebarOpen, toggleSidebar, sidebarState, updateDragOffset } =
     useSidebar();
   const router = useRouter();
   const { user, loading: userLoading, LoadingComponent } = useUser();
-  const handleLogout = useLogout();
+  const { handleLogout } = useLogout();
   const [filters, setFilters] = useState({ tags: "All" });
   const [filterTerm, setFilterTerm] = useState("");
-  const [viewMode, setViewMode] = useState("grid"); // grid or list
+  const [viewMode, setViewMode] = useState("grid");
   const {
     updates,
     filterOptions,
     loading: updatesLoading,
     error,
-  } = useUpdates(filters, user);
+  } = useUpdates(filters, user || { selected_tier: "Free Member" });
 
-  // Normalize tier for comparison
-  const normalizeTier = (tier) => {
-    if (!tier) return "Associate Member";
-    if (tier.includes("Associate")) return "Associate Member";
-    if (tier.includes("Full")) return "Full Member";
-    if (tier.includes("Gold")) return "Gold Member";
-    if (tier.includes("Free")) return "Free Member";
-    return tier;
-  };
+  const title = "Updates Hub";
+  const description =
+    "Stay informed with the latest opportunities, announcements, and events curated for you.";
 
-  // Tier hierarchy for access checking
-  const tierHierarchy = {
-    "Associate Member": 1,
-    "Full Member": 2,
-    "Gold Member": 3,
-    "Free Member": 4,
-    All: 0,
-  };
+  // Get latest update date
+  const latestUpdateDate =
+    updates.length > 0
+      ? new Date(
+          Math.max(...updates.map((update) => new Date(update.updated_at)))
+        ).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })
+      : "No updates available";
 
-  // Check if update is accessible based on user's tier
-  const isUpdateAccessible = (updateTier, userTier) => {
-    const normalizedUpdateTier = normalizeTier(updateTier);
-    const normalizedUserTier = normalizeTier(userTier);
-    return (
-      tierHierarchy[normalizedUpdateTier] <=
-        tierHierarchy[normalizedUserTier] || normalizedUpdateTier === "All"
-    );
-  };
-
-  // Handle click on disabled card
+  // Handle click on restricted update
   const handleDisabledClick = (requiredTier) => {
     toast.error(
       `Upgrade to ${normalizeTier(requiredTier)} to access this update`,
@@ -77,48 +68,39 @@ export default function Updates({ mode = "light", toggleMode }) {
     );
   };
 
-  // Filter and sort updates: accessible first, then disabled, maintaining created_at order
+  // Filter and sort updates
   const filteredUpdates = updates
-    .filter(
-      (update) =>
-        update.title.toLowerCase().includes(filterTerm.toLowerCase()) ||
-        update.description?.toLowerCase().includes(filterTerm.toLowerCase())
-    )
+    .filter((update) => {
+      if (!update.title) return false;
+      const searchTerm = filterTerm.toLowerCase();
+      return (
+        update.title.toLowerCase().includes(searchTerm) ||
+        update.description?.toLowerCase().includes(searchTerm)
+      );
+    })
     .sort((a, b) => {
-      const aAccessible = isUpdateAccessible(
-        a.tier_restriction,
-        user?.selected_tier
-      );
-      const bAccessible = isUpdateAccessible(
-        b.tier_restriction,
-        user?.selected_tier
-      );
-      if (aAccessible && !bAccessible) return -1; // Accessible first
-      if (!aAccessible && bAccessible) return 1; // Disabled last
-      return new Date(b.created_at) - new Date(a.created_at); // Maintain created_at order within groups
+      const aAccessible = hasTierAccess(a.tier_restriction, user);
+      const bAccessible = hasTierAccess(b.tier_restriction, user);
+      if (aAccessible && !bAccessible) return -1;
+      if (!aAccessible && bAccessible) return 1;
+      return new Date(b.created_at) - new Date(a.created_at);
     });
 
-  // Get the latest updated_at date
-  const latestUpdateDate =
-    updates.length > 0
-      ? new Date(
-          Math.max(...updates.map((update) => new Date(update.updated_at)))
-        ).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        })
-      : "No updates available";
-
-  // Debug router changes
+  // Debug data
   useEffect(() => {
-    console.log("[Updates] Router pathname:", router.pathname);
-  }, [router.pathname]);
-
-  // Debug user state
-  useEffect(() => {
-    console.log("[Updates] User state:", user);
-  }, [user]);
+    console.log("[Updates] User:", user);
+    console.log("[Updates] User Tier:", user?.selected_tier);
+    console.log("[Updates] Updates:", updates);
+    console.log("[Updates] Latest Update Date:", latestUpdateDate);
+    console.log("[Updates] Filters:", filters);
+    updates.forEach((update) => {
+      console.log(
+        `[Updates] Update "${update.title}" (Tier: ${
+          update.tier_restriction
+        }): Accessible = ${hasTierAccess(update.tier_restriction, user)}`
+      );
+    });
+  }, [user, updates, filters, latestUpdateDate]);
 
   if (userLoading || updatesLoading) return LoadingComponent;
   if (!user) {
@@ -128,7 +110,7 @@ export default function Updates({ mode = "light", toggleMode }) {
   }
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen text-red-500">
+      <div className="flex items-center justify-center min-h-screen text-red-600">
         Error: {error}
       </div>
     );
@@ -150,25 +132,7 @@ export default function Updates({ mode = "light", toggleMode }) {
           : "bg-gradient-to-br from-slate-50 to-blue-50"
       }`}
     >
-      <Toaster
-        position="top-center"
-        toastOptions={{
-          className: `!${
-            mode === "dark"
-              ? "bg-gray-800 text-white border border-gray-700"
-              : "bg-white text-gray-800 border border-gray-200"
-          } font-medium`,
-          style: {
-            borderRadius: "12px",
-            padding: "16px",
-            boxShadow:
-              mode === "dark"
-                ? "0 20px 25px -5px rgba(0, 0, 0, 0.5)"
-                : "0 20px 25px -5px rgba(0, 0, 0, 0.1)",
-          },
-        }}
-      />
-
+      <Toaster />
       <HrHeader
         toggleSidebar={toggleSidebar}
         isSidebarOpen={isSidebarOpen}
@@ -204,94 +168,19 @@ export default function Updates({ mode = "light", toggleMode }) {
         >
           <div className="max-w-7xl mx-auto space-y-8">
             {/* Header Section */}
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="relative"
-            >
-              <div
-                className={`relative overflow-hidden rounded-3xl ${
-                  mode === "dark"
-                    ? "bg-gradient-to-r from-gray-800/80 to-gray-900/80 border border-gray-700/50"
-                    : "bg-gradient-to-r from-white/80 to-blue-50/80 border border-blue-100"
-                } backdrop-blur-xl shadow-2xl`}
-              >
-                <div className="absolute inset-0 opacity-5">
-                  <div
-                    className="absolute inset-0"
-                    style={{
-                      backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-                    }}
-                  />
-                </div>
-
-                <div className="relative p-8 md:p-12">
-                  <div className="flex flex-col gap-8">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div
-                          className={`p-3 rounded-2xl ${
-                            mode === "dark"
-                              ? "bg-blue-500/20 text-blue-400"
-                              : "bg-blue-500/10 text-blue-600"
-                          }`}
-                        >
-                          <Icon
-                            icon="mdi:newspaper-variant"
-                            className="w-8 h-8"
-                          />
-                        </div>
-                        <h1
-                          className={`text-3xl md:text-4xl font-bold ${
-                            mode === "dark" ? "text-white" : "text-gray-900"
-                          }`}
-                        >
-                          Updates Hub
-                        </h1>
-                      </div>
-                      <p
-                        className={`text-lg leading-relaxed ${
-                          mode === "dark" ? "text-gray-300" : "text-gray-600"
-                        } max-w-2xl`}
-                      >
-                        Stay informed with the latest opportunities,
-                        announcements, and events curated for you.
-                      </p>
-
-                      <div className="flex flex-wrap gap-6 mt-6">
-                        <div
-                          className={`flex items-center gap-2 ${
-                            mode === "dark" ? "text-gray-300" : "text-gray-600"
-                          }`}
-                        >
-                          <Icon
-                            icon="mdi:update"
-                            className="w-5 h-5 text-blue-500"
-                          />
-                          <span className="text-sm font-medium">
-                            {filteredUpdates.length} Updates Available
-                          </span>
-                        </div>
-                        <div
-                          className={`flex items-center gap-2 ${
-                            mode === "dark" ? "text-gray-300" : "text-gray-600"
-                          }`}
-                        >
-                          <Icon
-                            icon="mdi:clock"
-                            className="w-5 h-5 text-green-500"
-                          />
-                          <span className="text-sm font-medium">
-                            Last updated {latestUpdateDate}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
+            <TitleCard
+              title={title}
+              description={description}
+              mode={mode}
+              user={user}
+              Icon={Icon}
+              Link={Link}
+              TierBadge={TierBadge}
+              JobTypeBadge={JobTypeBadge}
+              toast={toast}
+              pageTable="updates"
+              lastUpdated={latestUpdateDate}
+            />
 
             {/* Controls Section */}
             <motion.div
@@ -441,9 +330,9 @@ export default function Updates({ mode = "light", toggleMode }) {
                   }
                 >
                   {filteredUpdates.map((update, index) => {
-                    const isAccessible = isUpdateAccessible(
+                    const isAccessible = hasTierAccess(
                       update.tier_restriction,
-                      user?.selected_tier
+                      user
                     );
                     return (
                       <motion.div
@@ -503,7 +392,7 @@ export default function Updates({ mode = "light", toggleMode }) {
                                     : "bg-indigo-100 text-indigo-800"
                                 }`}
                               >
-                                {update.category}
+                                {update.category || "General"}
                               </span>
                               <span
                                 className={`text-xs px-2 py-1 rounded-full ${

@@ -7,7 +7,7 @@ export default function WelcomeCard({
   JobTypeBadge,
   useLatestUpdate,
 }) {
-  const { latestItems, loading, error } = useLatestUpdate(user?.selected_tier);
+  const { latestItems, loading, error } = useLatestUpdate(user);
 
   // Find the most recent item across all sections
   const latestItem = Object.entries(latestItems).reduce(

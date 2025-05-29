@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import toast from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
-import { normalizeTier } from "@/components/Badge";
+import { normalizeTier } from "@/utils/tierUtils"; // Use tierUtils
 
 const useMarketIntel = (
   filters = { tier_restriction: "", region: "", type: "" },
@@ -12,6 +12,7 @@ const useMarketIntel = (
   const [marketIntel, setMarketIntel] = useState(initialMarketIntel);
   const [filterOptions, setFilterOptions] = useState({
     tier_restrictions: [
+      "",
       "Associate Member",
       "Full Member",
       "Gold Member",
@@ -45,18 +46,16 @@ const useMarketIntel = (
       setError(null);
 
       const accessibleTiers = getAccessibleTiers(userTier);
-      
 
       let query = supabase
         .from("market_intel")
         .select(
-          "id, title, description, tier_restriction, url, icon_url, region, type, downloadable, created_at, chart_data"
+          "id, title, description, tier_restriction, url, icon_url, region, type, downloadable, created_at, updated_at, chart_data"
         )
-        .order("created_at", { ascending: false });
+        .order("updated_at", { ascending: false }); // Order by updated_at
 
       if (filters.tier_restriction && filters.tier_restriction !== "") {
         const normalizedFilter = normalizeTier(filters.tier_restriction);
-        
         query = query.eq("tier_restriction", normalizedFilter);
       }
       if (filters.region && filters.region !== "") {
@@ -69,13 +68,11 @@ const useMarketIntel = (
         query = query.ilike("title", `%${searchTerm}%`);
       }
 
-
       const { data: intelData, error: intelError } = await query;
       if (intelError) {
         console.error("[useMarketIntel] Supabase error:", intelError);
         throw new Error(intelError.message);
       }
-
 
       const { data: feedbackData, error: feedbackError } = await supabase
         .from("market_intel_feedback")
@@ -84,7 +81,6 @@ const useMarketIntel = (
         console.error("[useMarketIntel] Feedback error:", feedbackError);
         throw new Error(feedbackError.message);
       }
-
 
       const feedbackByIntel = feedbackData.reduce((acc, fb) => {
         acc[fb.market_intel_id] = acc[fb.market_intel_id] || [];
@@ -102,7 +98,6 @@ const useMarketIntel = (
         const tierRestriction =
           normalizeTier(intel.tier_restriction) || "Free Member";
         const isAccessible = accessibleTiers.includes(tierRestriction);
-        
         return {
           ...intel,
           tier_restriction: tierRestriction,
@@ -113,54 +108,17 @@ const useMarketIntel = (
         };
       });
 
-      // Sort: exact tier match first, then other accessible, then restricted
-      const userTierNormalized = normalizeTier(userTier);
-      const tierHierarchy = [
-        "Gold Member",
-        "Full Member",
-        "Associate Member",
-        "Free Member",
-      ];
-      const sortedIntel = enrichedIntel.sort((a, b) => {
-        const aTier = normalizeTier(a.tier_restriction);
-        const bTier = normalizeTier(b.tier_restriction);
-        const aIndex = tierHierarchy.indexOf(aTier);
-        const bIndex = tierHierarchy.indexOf(bTier);
-        const userIndex = tierHierarchy.indexOf(userTierNormalized);
-
-        if (a.isAccessible && b.isAccessible) {
-          const aIsExact = aIndex === userIndex;
-          const bIsExact = bIndex === userIndex;
-          if (aIsExact !== bIsExact) {
-            
-            return aIsExact ? -1 : 1;
-          }
-          // Both same precedence, sort by created_at
-          
-          return new Date(b.created_at) - new Date(a.created_at);
-        }
-
-        if (a.isAccessible !== b.isAccessible) {
-          
-          return a.isAccessible ? -1 : 1;
-        }
-
-        // Both restricted, sort by created_at
-        
-        return new Date(b.created_at) - new Date(a.created_at);
-      });
-
-      
-      setMarketIntel(sortedIntel);
+      setMarketIntel(enrichedIntel);
 
       const regions = [
-        ...new Set(sortedIntel.map((item) => item.region)),
+        ...new Set(enrichedIntel.map((item) => item.region)),
       ].filter((r) => r);
-      const types = [...new Set(sortedIntel.map((item) => item.type))].filter(
+      const types = [...new Set(enrichedIntel.map((item) => item.type))].filter(
         (t) => t
       );
       setFilterOptions({
         tier_restrictions: [
+          "",
           "Associate Member",
           "Full Member",
           "Gold Member",
@@ -179,7 +137,6 @@ const useMarketIntel = (
   };
 
   useEffect(() => {
-    
     fetchMarketIntel();
   }, [
     filters.tier_restriction,

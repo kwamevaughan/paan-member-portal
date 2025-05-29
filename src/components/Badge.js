@@ -6,47 +6,26 @@ import PropTypes from "prop-types";
 const badgeCache = {
   tier: {},
   status: {},
+  jobType: {},
 };
 
-// Add a mapping of tiers to icons
+// Tier icons (updated to match BusinessOpportunities for consistency)
 const tierIcons = {
-  "Associate Member": "mdi:account-group",
-  "Full Member": "mdi:account-check-outline",
-  "Gold Member": "tabler:medal",
-  "Free Member": "mdi:account-off",
-  default: "mdi:account-question",
+  "Associate Member": "mdi:crown",
+  "Full Member": "mdi:check-decagram",
+  "Gold Member": "mdi:star",
+  "Free Member": "mdi:account",
+  default: "mdi:account",
 };
 
-// Helper function to get badge colors from a given color map
-const getBadgeColor = (type, mode, colorMap) => {
-  if (badgeCache[type] && badgeCache[type][mode]) {
-    return badgeCache[type][mode];
-  }
-
-  const colors = colorMap[type] || colorMap["default"];
-  const result = {
-    bg: mode === "dark" ? colors.bgDark : colors.bgLight,
-    text: mode === "dark" ? colors.textDark : colors.textLight,
-    border: mode === "dark" ? colors.borderDark : colors.borderLight,
-  };
-
-  if (!badgeCache[type]) {
-    badgeCache[type] = {};
-  }
-  badgeCache[type][mode] = result;
-
-  return result;
-};
-
-// Add job type icons
+// Job type icons
 const jobTypeIcons = {
-  freelancer: "mdi:account-star", 
+  freelancer: "mdi:account-star",
   agency: "mdi:domain",
-  default: "solar:question-circle-linear", 
+  default: "solar:question-circle-linear",
 };
 
-
-// Simplified color maps for tier and status
+// Simplified color maps for tier, jobType, status, and registrationStatus
 const colorMaps = {
   tier: {
     "Associate Member": {
@@ -56,6 +35,8 @@ const colorMaps = {
       textLight: "text-blue-800",
       borderDark: "border-blue-800",
       borderLight: "border-blue-200",
+      solidDark: "bg-blue-600 text-white border-blue-600",
+      solidLight: "bg-blue-600 text-white border-blue-600",
     },
     "Full Member": {
       bgDark: "bg-green-900/30",
@@ -64,6 +45,8 @@ const colorMaps = {
       textLight: "text-green-800",
       borderDark: "border-green-800",
       borderLight: "border-green-200",
+      solidDark: "bg-emerald-600 text-white border-emerald-600",
+      solidLight: "bg-emerald-600 text-white border-emerald-600",
     },
     "Gold Member": {
       bgDark: "bg-amber-900/30",
@@ -72,6 +55,8 @@ const colorMaps = {
       textLight: "text-amber-800",
       borderDark: "border-amber-800",
       borderLight: "border-amber-200",
+      solidDark: "bg-amber-600 text-white border-amber-600",
+      solidLight: "bg-amber-600 text-white border-amber-600",
     },
     "Free Member": {
       bgDark: "bg-red-900/30",
@@ -80,6 +65,8 @@ const colorMaps = {
       textLight: "text-red-800",
       borderDark: "border-red-800",
       borderLight: "border-red-200",
+      solidDark: "bg-gray-600 text-white border-gray-600",
+      solidLight: "bg-gray-600 text-white border-gray-600",
     },
     default: {
       bgDark: "bg-gray-700/30",
@@ -88,6 +75,8 @@ const colorMaps = {
       textLight: "text-gray-800",
       borderDark: "border-gray-600",
       borderLight: "border-gray-200",
+      solidDark: "bg-gray-600 text-white border-gray-600",
+      solidLight: "bg-gray-600 text-white border-gray-600",
     },
   },
   jobType: {
@@ -202,13 +191,45 @@ const colorMaps = {
   },
 };
 
-// Define tierBadgeStyles for export, simplified for market-intel.js
-const tierBadgeStyles = {
-  "Associate Member": "bg-blue-50 text-blue-800 border border-blue-200",
-  "Full Member": "bg-green-50 text-green-800 border border-green-200",
-  "Gold Member": "bg-amber-50 text-amber-800 border border-amber-200",
-  "Free Member": "bg-red-50 text-red-800 border border-red-200",
-  default: "bg-gray-100 text-gray-800 border border-gray-200",
+// Helper function to get badge colors from a given color map
+const getBadgeColor = (type, mode, colorMap) => {
+  if (badgeCache[type] && badgeCache[type][mode]) {
+    return badgeCache[type][mode];
+  }
+
+  const colors = colorMap[type] || colorMap["default"];
+  const result = {
+    bg: mode === "dark" ? colors.bgDark : colors.bgLight,
+    text: mode === "dark" ? colors.textDark : colors.textLight,
+    border: mode === "dark" ? colors.borderDark : colors.borderLight,
+  };
+
+  if (!badgeCache[type]) {
+    badgeCache[type] = {};
+  }
+  badgeCache[type][mode] = result;
+
+  return result;
+};
+
+// Get tier badge styles (supports solid or semi-transparent styles)
+const getTierBadgeStyles = (tier, mode, variant = "semi-transparent") => {
+  const normalizedTier = normalizeTier(tier) || "Free Member";
+  const colors = colorMaps.tier[normalizedTier] || colorMaps.tier["default"];
+
+  if (variant === "solid") {
+    return mode === "dark" ? colors.solidDark : colors.solidLight;
+  }
+
+  return `${mode === "dark" ? colors.bgDark : colors.bgLight} ${
+    mode === "dark" ? colors.textDark : colors.textLight
+  } ${mode === "dark" ? colors.borderDark : colors.borderLight}`;
+};
+
+// Get tier badge icon
+const getTierBadgeIcon = (tier) => {
+  const normalizedTier = normalizeTier(tier) || "Free Member";
+  return tierIcons[normalizedTier] || tierIcons["default"];
 };
 
 // Tier mapping for normalization
@@ -226,12 +247,12 @@ const tierMap = {
 
 // Normalize the tier name for consistency
 const normalizeTier = (tier) => {
-  if (!tier) return "Free Member";
+  if (!tier || typeof tier !== "string") return "Free Member";
   const cleanTier = tier
     .replace(/\(.*?\)/g, "")
     .trim()
     .toLowerCase();
-  return tierMap[cleanTier] || tier;
+  return tierMap[cleanTier] || cleanTier;
 };
 
 // Get the database tier value for queries
@@ -246,14 +267,14 @@ const getDatabaseTier = (normalizedTier) => {
 };
 
 // Tier Badge Component
-const TierBadge = ({ tier, mode }) => {
+const TierBadge = ({ tier, mode, variant = "semi-transparent" }) => {
   const normalizedTier = normalizeTier(tier);
-  const colors = getBadgeColor(normalizedTier, mode, colorMaps.tier);
-  const icon = tierIcons[normalizedTier] || tierIcons["default"];
+  const styles = getTierBadgeStyles(normalizedTier, mode, variant);
+  const icon = getTierBadgeIcon(normalizedTier);
 
   return (
     <span
-      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${colors.bg} ${colors.text} ${colors.border}`}
+      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${styles}`}
     >
       <Icon icon={icon} className="mr-1 w-6 h-6" />
       {normalizedTier}
@@ -291,7 +312,7 @@ const RegistrationStatusBadge = ({ status, mode }) => {
 
 // Job Type Badge Component
 const JobTypeBadge = ({ jobType, mode }) => {
-  const normalizedJobType = jobType || "Freelancer"; // Default to Freelancer if not provided
+  const normalizedJobType = jobType || "Freelancer";
   const colors = getBadgeColor(normalizedJobType, mode, colorMaps.jobType);
   const icon = jobTypeIcons[normalizedJobType] || jobTypeIcons["default"];
 
@@ -305,16 +326,11 @@ const JobTypeBadge = ({ jobType, mode }) => {
   );
 };
 
-// Add PropTypes for JobTypeBadge
-JobTypeBadge.propTypes = {
-  jobType: PropTypes.string.isRequired,
-  mode: PropTypes.oneOf(["light", "dark"]).isRequired,
-};
-
 // Prop Types for validation
 TierBadge.propTypes = {
-  tier: PropTypes.string.isRequired,
+  tier: PropTypes.any, // Allow any type, as normalizeTier handles it
   mode: PropTypes.oneOf(["light", "dark"]).isRequired,
+  variant: PropTypes.oneOf(["semi-transparent", "solid"]),
 };
 
 StatusBadge.propTypes = {
@@ -327,6 +343,11 @@ RegistrationStatusBadge.propTypes = {
   mode: PropTypes.oneOf(["light", "dark"]).isRequired,
 };
 
+JobTypeBadge.propTypes = {
+  jobType: PropTypes.string.isRequired,
+  mode: PropTypes.oneOf(["light", "dark"]).isRequired,
+};
+
 export {
   TierBadge,
   StatusBadge,
@@ -334,6 +355,7 @@ export {
   JobTypeBadge,
   normalizeTier,
   getDatabaseTier,
-  tierBadgeStyles,
+  getTierBadgeStyles,
+  getTierBadgeIcon,
   tierMap,
 };

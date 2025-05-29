@@ -1,4 +1,4 @@
-import { React, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useUser } from "@/hooks/useUser";
 import useLogout from "@/hooks/useLogout";
@@ -26,7 +26,6 @@ import MarketIntelSection from "@/components/MarketIntelSection";
 import OffersSection from "@/components/OffersSection";
 import UpdatesSection from "@/components/UpdatesSection";
 import YouTubeVideo from "@/components/YouTubeVideo";
-import { canAccessTier } from "@/utils/tierUtils";
 import { Icon } from "@iconify/react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -48,9 +47,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     latestItems,
     loading: latestUpdateLoading,
     error: latestUpdateError,
-  } = useLatestUpdate(
-    user?.selected_tier?.replace(/\(.*?\)/g, "").trim() || "Free Member"
-  );
+  } = useLatestUpdate(user || { selected_tier: "Free Member" });
 
   // Fetch data
   const {
@@ -60,7 +57,9 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     error: opportunitiesError,
   } = useBusinessOpportunities(
     filters.opportunities,
-    user?.selected_tier?.replace(/\(.*?\)/g, "").trim() || "Free Member"
+    user || {
+      selected_tier: "Free Member",
+    }
   );
 
   const {
@@ -70,27 +69,21 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     loading: eventsLoading,
     error: eventsError,
     handleEventRegistration,
-  } = useEvents(
-    filters.events,
-    user?.selected_tier?.replace(/\(.*?\)/g, "").trim() || "Free Member"
-  );
+  } = useEvents(filters.events, user || { selected_tier: "Free Member" });
 
   const {
     resources,
     filterOptions: resourceFilterOptions,
     loading: resourcesLoading,
     error: resourcesError,
-  } = useResources(filters.resources);
+  } = useResources(filters.resources, user || { selected_tier: "Free Member" });
 
   const {
     updates,
     filterOptions: updateFilterOptions,
     loading: updatesLoading,
     error: updatesError,
-  } = useUpdates(
-    filters.updates,
-    user?.selected_tier?.replace(/\(.*?\)/g, "").trim() || "Free Member"
-  );
+  } = useUpdates(filters.updates, user || { selected_tier: "Free Member" });
 
   const {
     marketIntel,
@@ -101,7 +94,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     filters.marketIntel,
     "",
     [],
-    user?.selected_tier?.replace(/\(.*?\)/g, "").trim() || "Free Member"
+    user || { selected_tier: "Free Member" }
   );
 
   const {
@@ -110,18 +103,27 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     loading: offersLoading,
     error: offersError,
   } = useOffers(
-    filters.offers,
-    user?.selected_tier?.replace(/\(.*?\)/g, "").trim() || "Free Member"
+    { tier_restriction: filters.offers?.tier_restriction || "" },
+    user || { selected_tier: "Free Member" }
   );
 
-  // Debug offers
+  // Debug user and offers
   useEffect(() => {
+    console.log("User:", user);
+    console.log("User tier:", user?.selected_tier);
     console.log("Offers:", offers);
     console.log("Offers Loading:", offersLoading);
     console.log("Offers Error:", offersError);
     console.log("Offer Filters:", filters.offers);
     console.log("Offer Filter Options:", offerFilterOptions);
-  }, [offers, offersLoading, offersError, filters.offers, offerFilterOptions]);
+  }, [
+    user,
+    offers,
+    offersLoading,
+    offersError,
+    filters.offers,
+    offerFilterOptions,
+  ]);
 
   // Handle restricted access
   const handleRestrictedClick = (message) => {
@@ -150,9 +152,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
   return (
     <div
       className={`min-h-screen flex flex-col ${
-        mode === "dark"
-          ? "bg-gray-900 text-white" // Dark mode background
-          : "bg-white text-gray-900" // Light mode background
+        mode === "dark" ? "bg-gray-900 text-white" : "bg-white text-gray-900"
       }`}
     >
       <Toaster />
@@ -211,7 +211,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
                 getLastUpdatedForSection={getLastUpdatedForSection}
                 useRouter={useRouter}
               />
-              <YouTubeVideo mode={mode} Link={Link} />
+              <YouTubeVideo mode={mode} />
             </div>
 
             <TabContentTransition
@@ -292,7 +292,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
                   offersLoading={offersLoading}
                   offersError={offersError}
                   offerFilters={filters.offers}
-                  handleOfferFilterChange={(key, value) =>
+                  handleOfferFilter={(key, value) =>
                     handleFilterChange("offers", key, value)
                   }
                   offersFilterOptions={offerFilterOptions}

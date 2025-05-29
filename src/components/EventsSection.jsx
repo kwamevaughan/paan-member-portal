@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import SectionCard from "./SectionCard";
 import EventCard from "./EventCard";
 import FilterDropdown from "./FilterDropdown";
-import { canAccessTier } from "@/utils/tierUtils";
+import { hasTierAccess } from "@/utils/tierUtils";
 
 const EventsSection = ({
   events,
@@ -150,11 +150,11 @@ const EventsSection = ({
     let filteredEvents = [...events];
     if (statsFilter === "available") {
       filteredEvents = events.filter((e) =>
-        canAccessTier(e.tier_restriction, user.selected_tier)
+        hasTierAccess(e.tier_restriction, user)
       );
     } else if (statsFilter === "restricted") {
       filteredEvents = events.filter(
-        (e) => !canAccessTier(e.tier_restriction, user.selected_tier)
+        (e) => !hasTierAccess(e.tier_restriction, user)
       );
     } else if (statsFilter === "registered") {
       filteredEvents = events.filter((e) =>
@@ -164,8 +164,8 @@ const EventsSection = ({
 
     // Sort events: accessible ones first, then by date
     const sortedEvents = filteredEvents.sort((a, b) => {
-      const aAccess = canAccessTier(a.tier_restriction, user.selected_tier);
-      const bAccess = canAccessTier(b.tier_restriction, user.selected_tier);
+      const aAccess = hasTierAccess(a.tier_restriction, user);
+      const bAccess = hasTierAccess(b.tier_restriction, user);
 
       if (aAccess === bAccess) {
         return new Date(a.date) - new Date(b.date);
@@ -250,9 +250,8 @@ const EventsSection = ({
               }`}
             >
               {
-                events.filter((e) =>
-                  canAccessTier(e.tier_restriction, user.selected_tier)
-                ).length
+                events.filter((e) => hasTierAccess(e.tier_restriction, user))
+                  .length
               }
             </div>
             <div
@@ -330,9 +329,8 @@ const EventsSection = ({
               }`}
             >
               {
-                events.filter(
-                  (e) => !canAccessTier(e.tier_restriction, user.selected_tier)
-                ).length
+                events.filter((e) => !hasTierAccess(e.tier_restriction, user))
+                  .length
               }
             </div>
             <div
@@ -364,9 +362,7 @@ const EventsSection = ({
                 isRegistered={registeredEvents.some(
                   (reg) => reg.id === event.id
                 )}
-                isRestricted={
-                  !canAccessTier(event.tier_restriction, user.selected_tier)
-                }
+                isRestricted={!hasTierAccess(event.tier_restriction, user)}
                 onRestrictedClick={() =>
                   handleRestrictedClick(
                     `Access restricted: ${event.tier_restriction} tier required for "${event.title}"`

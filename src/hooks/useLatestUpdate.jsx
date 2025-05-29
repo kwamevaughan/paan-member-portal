@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import { canAccessTier } from "@/utils/tierUtils";
-import { normalizeTier } from "@/components/Badge";
+import { normalizeTier } from "@/utils/tierUtils";
 
-export const useLatestUpdate = (userTier = "Free Member") => {
+export const useLatestUpdate = (user = { selected_tier: "Free Member" }) => {
   const [latestItems, setLatestItems] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -13,7 +12,7 @@ export const useLatestUpdate = (userTier = "Free Member") => {
       setLoading(true);
       setError(null);
       try {
-        const userTierNormalized = normalizeTier(userTier);
+        const userTierNormalized = normalizeTier(user?.selected_tier);
         console.log(
           "[useLatestUpdate] User tier normalized:",
           userTierNormalized
@@ -50,15 +49,13 @@ export const useLatestUpdate = (userTier = "Free Member") => {
 
           if (data && data.length > 0) {
             const item = data[0];
-            const itemTier =
-              normalizeTier(item.tier_restriction) || "Free Member";
+            const itemTier = normalizeTier(
+              item.tier_restriction || "Free Member"
+            );
             console.log(
               `[useLatestUpdate] ${name} item tier normalized:`,
               itemTier
             );
-            // const isAccessible = canAccessTier(itemTier, userTierNormalized);
-            // console.log(`[useLatestUpdate] ${name} isAccessible:`, isAccessible);
-            // if (isAccessible) {
             return {
               section,
               item: {
@@ -66,7 +63,6 @@ export const useLatestUpdate = (userTier = "Free Member") => {
                 timestamp: item.updated_at || item.created_at,
               },
             };
-            // }
           }
           return { section, item: null };
         });
@@ -91,7 +87,7 @@ export const useLatestUpdate = (userTier = "Free Member") => {
     };
 
     fetchLatestUpdates();
-  }, [userTier]);
+  }, [user?.selected_tier]);
 
   return { latestItems, loading, error };
 };

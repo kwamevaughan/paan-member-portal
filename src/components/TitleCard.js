@@ -8,36 +8,45 @@ const TitleCard = ({
   user,
   Icon,
   Link,
-  useLatestUpdate,
   toast,
   pageTable,
+  lastUpdated, // Use this prop for the date
 }) => {
-  const { latestItems, loading, error } = useLatestUpdate(user?.selected_tier);
-
-  // Map table names to section names used in latestItems
-  const tableToSectionMap = {
-    business_opportunities: "Business Opportunities",
-    events: "Events",
-    resources: "Resources",
-    market_intel: "Market Intel",
-    offers: "Offers",
-    updates: "Updates",
-  };
-
-  // Get the section name for the current pageTable
-  const section = tableToSectionMap[pageTable] || "Business Opportunities";
-
-  // Format the timestamp to "24th May, 2020"
+  // Format the timestamp to "26th May, 2025"
   const formatDate = (timestamp) => {
     if (!timestamp) return "No recent updates";
+    // Handle pre-formatted string (e.g., "May 26, 2025")
+    if (typeof timestamp === "string" && !timestamp.includes("T")) {
+      // Convert "May 26, 2025" to "26th May, 2025"
+      const match = timestamp.match(/^(\w+)\s(\d+),\s(\d+)$/);
+      if (match) {
+        const [, month, day, year] = match;
+        const ordinal = (d) => {
+          const n = parseInt(d, 10);
+          if (n > 3 && n < 21) return "th";
+          switch (n % 10) {
+            case 1:
+              return "st";
+            case 2:
+              return "nd";
+            case 3:
+              return "rd";
+            default:
+              return "th";
+          }
+        };
+        return `${day}${ordinal(day)} ${month}, ${year}`;
+      }
+    }
+    // Handle ISO timestamp
     const date = new Date(timestamp);
+    if (isNaN(date.getTime())) return "Invalid date";
     const day = date.getDate();
     const month = date.toLocaleString("en-US", { month: "long" });
     const year = date.getFullYear();
-    // Add ordinal suffix (e.g., "st", "nd", "rd", "th")
-    const ordinal = (day) => {
-      if (day > 3 && day < 21) return "th";
-      switch (day % 10) {
+    const ordinal = (d) => {
+      if (d > 3 && d < 21) return "th";
+      switch (d % 10) {
         case 1:
           return "st";
         case 2:
@@ -51,8 +60,8 @@ const TitleCard = ({
     return `${day}${ordinal(day)} ${month}, ${year}`;
   };
 
-  const lastUpdated = latestItems[section]?.timestamp;
-  console.log("[TitleCard] Last updated for", section, ":", lastUpdated);
+  console.log("[TitleCard] Page table:", pageTable);
+  console.log("[TitleCard] Last updated:", lastUpdated);
 
   const descriptionParts = description.split("<br />");
 
@@ -81,7 +90,12 @@ const TitleCard = ({
               {title}
             </h2>
             {descriptionParts.map((part, index) => (
-              <p key={index}>{part}</p>
+              <p
+                key={index}
+                className={mode === "dark" ? "text-gray-300" : "text-gray-600"}
+              >
+                {part}
+              </p>
             ))}
 
             <div className="flex items-center space-x-6 pt-2">
@@ -101,29 +115,11 @@ const TitleCard = ({
                 >
                   Last Updated:
                 </span>
-                {loading ? (
-                  <span
-                    className={
-                      mode === "dark" ? "text-gray-400" : "text-gray-500"
-                    }
-                  >
-                    Loading...
-                  </span>
-                ) : error ? (
-                  <span
-                    className={
-                      mode === "dark" ? "text-red-400" : "text-red-500"
-                    }
-                  >
-                    Error fetching update
-                  </span>
-                ) : (
-                  <span
-                    className={mode === "dark" ? "text-white" : "text-gray-900"}
-                  >
-                    {formatDate(lastUpdated)}
-                  </span>
-                )}
+                <span
+                  className={mode === "dark" ? "text-white" : "text-gray-900"}
+                >
+                  {formatDate(lastUpdated)}
+                </span>
               </div>
             </div>
           </div>
@@ -140,49 +136,46 @@ const TitleCard = ({
                 mode === "dark" ? "border-blue-400/30" : "border-blue-200"
               }`}
             >
-              <Link href="/profile/">
-                <div className="space-y-3">
+              <Link href="/profile">
+                <div className="space-y-1">
                   <div
-                    className={`text-sm font-bold tracking-wide ${
+                    className={`text-sm font-semibold tracking-wide ${
                       mode === "dark" ? "text-gray-400" : "text-gray-600"
                     }`}
                   >
                     Your Membership
                   </div>
                   <div className="flex flex-wrap gap-2 capitalize">
-                    <TierBadge tier={user?.selected_tier} mode={mode} />
-                    <JobTypeBadge jobType={user?.job_type} mode={mode} />
+                    <TierBadge
+                      tier={user?.selected_tier || "Free Member"}
+                      mode={mode}
+                    />
+                    <JobTypeBadge
+                      jobType={user?.job_type || "N/A"}
+                      mode={mode}
+                    />
                   </div>
                 </div>
               </Link>
             </div>
-          </div>
 
-          {/* Floating Gradient Circle */}
-          <div className="absolute top-2 right-2 w-16 h-16 opacity-10">
-            <div
-              className={`w-full h-full rounded-full bg-gradient-to-br ${
-                mode === "dark"
-                  ? "from-violet-500 to-purple-600"
-                  : "from-violet-400 to-purple-500"
-              }`}
-            ></div>
+            <div className="absolute top-0 right-0 w-16 h-16 rounded-full bg-gradient-to-br from-blue-500/30 to-purple-500/30 opacity-10"></div>
           </div>
         </div>
       </div>
 
       {/* Bottom gradient accent */}
       <div
-        className={`absolute bottom-0 left-0 right-0 h-1 ${
+        className={`absolute bottom-0 left-0 right-0 h-1 rounded-b-3xl ${
           mode === "dark"
-            ? "bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500"
-            : "bg-gradient-to-r from-[#3c82f6] to-[#dbe9fe]"
+            ? "bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800"
+            : "bg-gradient-to-r from-blue-200 to-purple-400"
         }`}
-      ></div>
+      />
 
-      {/* Floating elements */}
-      <div className="absolute -top-2 -right-2 w-4 h-4 bg-[#85c2da] rounded-full opacity-60"></div>
-      <div className="absolute -bottom-1 -left-1 w-3 h-3 bg-[#f3584a] rounded-full opacity-40 animate-pulse delay-1000"></div>
+      {/* Floating decorative elements */}
+      <div className="absolute -top-2 -right-2 w-4 h-4 bg-blue-200 rounded-full opacity-60"></div>
+      <div className="absolute -bottom-2 -left-2 w-3 h-3 bg-purple-300 rounded-full opacity-40 animate-pulse"></div>
     </div>
   );
 };

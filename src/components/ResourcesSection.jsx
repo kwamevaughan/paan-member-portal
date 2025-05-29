@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import SectionCard from "./SectionCard";
 import ResourceItem from "./ResourceItem";
 import FilterDropdown from "./FilterDropdown";
-import { canAccessTier } from "@/utils/tierUtils";
+import { hasTierAccess } from "@/utils/tierUtils";
 
 const ResourcesSection = ({
   resources,
@@ -161,11 +161,10 @@ const ResourcesSection = ({
 
     // Calculate access statistics
     const accessibleResources = resources.filter((resource) =>
-      canAccessTier(resource.tier_restriction, user.selected_tier)
+      hasTierAccess(resource.tier_restriction, user)
     );
     const restrictedResources = resources.filter(
-      (resource) =>
-        !canAccessTier(resource.tier_restriction, user.selected_tier)
+      (resource) => !hasTierAccess(resource.tier_restriction, user)
     );
 
     // Group resources by type for categories
@@ -188,8 +187,8 @@ const ResourcesSection = ({
 
     // Sort resources: accessible ones first, then by type and title
     const sortedResources = filteredResources.sort((a, b) => {
-      const aAccessible = canAccessTier(a.tier_restriction, user.selected_tier);
-      const bAccessible = canAccessTier(b.tier_restriction, user.selected_tier);
+      const aAccessible = hasTierAccess(a.tier_restriction, user);
+      const bAccessible = hasTierAccess(b.tier_restriction, user);
 
       if (aAccessible === bAccessible) {
         if (a.resource_type === b.resource_type) {
@@ -399,7 +398,7 @@ const ResourcesSection = ({
                 mode={mode}
                 Icon={Icon}
                 isRestricted={
-                  !canAccessTier(resource.tier_restriction, user.selected_tier)
+                  !hasTierAccess(resource.tier_restriction, user)
                 }
                 onRestrictedClick={() =>
                   handleRestrictedClick(

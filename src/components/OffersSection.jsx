@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import SectionCard from "./SectionCard";
 import OfferItem from "@/components/OfferItem";
 import FilterDropdown from "@/components/FilterDropdown";
-import { canAccessTier } from "@/utils/tierUtils";
+import { hasTierAccess } from "@/utils/tierUtils";
 
 const OffersSection = ({
   offers,
@@ -173,10 +173,10 @@ const OffersSection = ({
 
     // Calculate access statistics
     const accessibleOffers = offers.filter((offer) =>
-      canAccessTier(offer.tier_restriction, user.selected_tier)
+      hasTierAccess(offer.tier_restriction, user)
     );
     const restrictedOffers = offers.filter(
-      (offer) => !canAccessTier(offer.tier_restriction, user.selected_tier)
+      (offer) => !hasTierAccess(offer.tier_restriction, user)
     );
 
     // Group offers by type
@@ -199,8 +199,8 @@ const OffersSection = ({
 
     // Sort offers: accessible first, then by created_at descending
     const sortedOffers = filteredOffers.sort((a, b) => {
-      const aAccessible = canAccessTier(a.tier_restriction, user.selected_tier);
-      const bAccessible = canAccessTier(b.tier_restriction, user.selected_tier);
+      const aAccessible = hasTierAccess(a.tier_restriction, user);
+      const bAccessible = hasTierAccess(b.tier_restriction, user);
       if (aAccessible === bAccessible) {
         return new Date(b.created_at) - new Date(a.created_at);
       }
@@ -398,7 +398,7 @@ const OffersSection = ({
                 offer={offer}
                 mode={mode}
                 isRestricted={
-                  !canAccessTier(offer.tier_restriction, user.selected_tier)
+                  !hasTierAccess(offer.tier_restriction, user)
                 }
                 onRestrictedClick={() =>
                   handleRestrictedClick?.(

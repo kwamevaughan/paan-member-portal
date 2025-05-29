@@ -11,8 +11,8 @@ import toast, { Toaster } from "react-hot-toast";
 import TitleCard from "@/components/TitleCard";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
+import { hasTierAccess, normalizeTier } from "@/utils/tierUtils";
 import { TierBadge, JobTypeBadge } from "@/components/Badge";
-import { useLatestUpdate } from "@/hooks/useLatestUpdate";
 
 export default function BusinessOpportunities({ mode = "light", toggleMode }) {
   const { isSidebarOpen, toggleSidebar, sidebarState, updateDragOffset } =
@@ -41,17 +41,33 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
     filterOptions,
     loading: opportunitiesLoading,
     error,
-  } = useBusinessOpportunities(filters, user?.selected_tier || "Free Member");
+  } = useBusinessOpportunities(filters, user);
 
-  // Debug opportunities data
+  // Get latest opportunity date
+  const latestOpportunityDate =
+    opportunities.length > 0
+      ? new Date(
+          Math.max(...opportunities.map((opp) => new Date(opp.updated_at)))
+        ).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })
+      : "No opportunities available";
+
   useEffect(() => {
-    console.log("Opportunities:", opportunities);
-  }, [opportunities]);
+    console.log("[BusinessOpportunities] User:", user);
+    console.log("[BusinessOpportunities] Opportunities:", opportunities);
+    console.log(
+      "[BusinessOpportunities] Latest Opportunity Date:",
+      latestOpportunityDate
+    );
+    console.log("[BusinessOpportunities] Filters:", filters);
+  }, [opportunities, user, latestOpportunityDate, filters]);
 
-  // Global error handler
   useEffect(() => {
     const handleError = (event) => {
-      console.error("Global error:", event.error);
+      console.error("[BusinessOpportunities] Global error:", event.error);
     };
     window.addEventListener("error", handleError);
     return () => window.removeEventListener("error", handleError);
@@ -74,29 +90,16 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
     });
   };
 
-  const canAccessOpportunity = (opportunityTier) => {
-    const tiers = [
-      "Gold Member",
-      "Full Member",
-      "Associate Member",
-      "Free Member",
-    ];
-    const userTier = user?.selected_tier || "Free Member";
-    const oppTier = opportunityTier || "Free Member";
-    const userTierIndex = tiers.indexOf(userTier);
-    const oppTierIndex = tiers.indexOf(oppTier);
-    return userTierIndex <= oppTierIndex; // Higher or equal tier index means access
-  };
-
   const handleExpressInterest = (opportunity) => {
-    if (!canAccessOpportunity(opportunity.tier_restriction)) {
+    if (!hasTierAccess(opportunity.tier_restriction, user)) {
       toast.error(
-        `This opportunity is available to ${opportunity.tier_restriction} Members only. Consider upgrading your membership to unlock this opportunity.`
+        `This opportunity is available to ${normalizeTier(
+          opportunity.tier_restriction
+        )} only. Consider upgrading your membership to unlock this opportunity.`
       );
       return;
     }
     toast.success(`Interest expressed for ${opportunity.title}!`);
-    // Implement application logic here
   };
 
   const filteredByTab =
@@ -104,7 +107,7 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
       ? opportunities
       : opportunities.filter((opp) => {
           if (activeTab === "accessible")
-            return canAccessOpportunity(opp.tier_restriction);
+            return hasTierAccess(opp.tier_restriction, user);
           if (activeTab === "trending") return opp.trending;
           if (activeTab === "deadlineSoon") {
             const deadlineDate = new Date(opp.deadline);
@@ -121,7 +124,8 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
   }
 
   if (!user) {
-    console.log("No user, returning null");
+    console.log("[BusinessOpportunities] No user, redirecting to /login");
+    router.push("/login");
     return null;
   }
 
@@ -133,36 +137,6 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
     );
   }
 
-  // Tier badge styles
-  const getTierBadgeStyles = (tier) => {
-    const normalizedTier = tier || "Free Member";
-    switch (normalizedTier) {
-      case "Associate Member":
-        return "bg-blue-600 text-white";
-      case "Full Member":
-        return "bg-emerald-600 text-white";
-      case "Gold Member":
-        return "bg-amber-600 text-white";
-      default:
-        return "bg-gray-600 text-white";
-    }
-  };
-
-  // Tier badge icon
-  const getTierBadgeIcon = (tier) => {
-    const normalizedTier = tier || "Free Member";
-    switch (normalizedTier) {
-      case "Associate Member":
-        return "mdi:crown";
-      case "Full Member":
-        return "mdi:check-decagram";
-      case "Gold Member":
-        return "mdi:star";
-      default:
-        return "mdi:account";
-    }
-  };
-
   return (
     <div
       className={`min-h-screen flex flex-col ${
@@ -171,19 +145,7 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
           : "bg-gradient-to-br from-gray-50 via-white to-gray-100 text-gray-900"
       }`}
     >
-      <Toaster
-        position="top-center"
-        toastOptions={{
-          className:
-            "!bg-white !text-gray-800 dark:!bg-gray-800 dark:!text-white font-medium",
-          style: {
-            borderRadius: "10px",
-            padding: "16px",
-            boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-          },
-        }}
-      />
-
+      <Toaster />
       <HrHeader
         toggleSidebar={toggleSidebar}
         isSidebarOpen={isSidebarOpen}
@@ -191,10 +153,12 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
         fullName={user?.name ?? "Member"}
         jobTitle={user.job_type}
         selectedTier={user?.selected_tier}
-        agencyName={user.agencyName}
+        agencyName={user?.agencyName}
         mode={mode}
         toggleMode={toggleMode}
         onLogout={handleLogout}
+        pageName="Business Opportunities"
+        pageDescription={description}
       />
 
       <div className="flex flex-1">
@@ -218,7 +182,6 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
           }}
         >
           <div className="max-w-7xl mx-auto space-y-6">
-            {/* Hero Section */}
             <TitleCard
               title={title}
               description={description}
@@ -229,13 +192,11 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
               TierBadge={TierBadge}
               JobTypeBadge={JobTypeBadge}
               toast={toast}
-              useLatestUpdate={useLatestUpdate}
-              pageTable="business_opportunities" // Pass the table name
+              pageTable="business_opportunities"
+              lastUpdated={latestOpportunityDate}
             />
 
-            {/* Tabs and Filters */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              {/* Category Tabs */}
               <div className="flex overflow-x-auto no-scrollbar gap-2 pb-2">
                 {[
                   {
@@ -246,7 +207,7 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
                   {
                     id: "accessible",
                     label: "For Your Tier",
-                    icon: "mdi:shield-check",
+                    icon: "mdi:accessibility",
                   },
                   {
                     id: "trending",
@@ -265,20 +226,17 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
                     className={`px-4 py-2 rounded-full whitespace-nowrap flex items-center gap-2 transition-all ${
                       activeTab === tab.id
                         ? "bg-blue-600 text-white font-medium shadow-md"
-                        : `${
-                            mode === "dark"
-                              ? "bg-gray-800 hover:bg-gray-700"
-                              : "bg-white hover:bg-gray-100"
-                          } shadow-sm`
-                    }`}
+                        : mode === "dark"
+                        ? "bg-gray-800 hover:bg-gray-700"
+                        : "bg-white hover:bg-gray-100"
+                    } shadow-sm`}
                   >
-                    <span className="iconify" data-icon={tab.icon}></span>
+                    <Icon icon={tab.icon} />
                     {tab.label}
                   </button>
                 ))}
               </div>
 
-              {/* Filter Button */}
               <button
                 onClick={() => setShowFilterPanel(!showFilterPanel)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-full transition ${
@@ -287,7 +245,7 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
                     : "bg-white hover:bg-gray-100"
                 } ${showFilterPanel ? "ring-2 ring-blue-500" : ""} shadow-sm`}
               >
-                <span className="iconify" data-icon="mdi:filter-variant"></span>
+                <Icon icon="mdi:filter-variant" />
                 <span>Filters</span>
                 {Object.values(filters).some((val) => val !== "") && (
                   <span className="flex items-center justify-center w-5 h-5 text-xs font-medium rounded-full bg-blue-600 text-white">
@@ -297,7 +255,6 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
               </button>
             </div>
 
-            {/* Filters Panel */}
             {showFilterPanel && (
               <div
                 className={`rounded-2xl shadow-lg overflow-hidden transition-all ${
@@ -309,17 +266,17 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2 text-lg font-semibold">
-                      <span
-                        className="iconify text-blue-500"
-                        data-icon="mdi:filter-variant"
-                      ></span>
+                      <Icon
+                        icon="mdi:filter-variant"
+                        className="text-blue-500"
+                      />
                       <span>Refine Your Search</span>
                     </div>
                     <button
                       onClick={handleResetFilters}
                       className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-500 transition"
                     >
-                      <span className="iconify" data-icon="mdi:restart"></span>
+                      <Icon icon="mdi:restart" />
                       Reset All
                     </button>
                   </div>
@@ -353,7 +310,7 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
                     ].map(({ key, icon, label }) => (
                       <div key={key} className="space-y-1">
                         <label className="text-sm font-medium text-gray-600 dark:text-gray-300 flex items-center gap-1.5">
-                          <span className="iconify" data-icon={icon}></span>
+                          <Icon icon={icon} />
                           {label}
                         </label>
                         <select
@@ -380,7 +337,6 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
               </div>
             )}
 
-            {/* Opportunity Count */}
             <div className="flex justify-between items-center">
               <div
                 className={`px-4 py-2 rounded-lg ${
@@ -400,7 +356,6 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
               </div>
             </div>
 
-            {/* Opportunities Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredByTab.map((opp) => (
                 <div
@@ -414,25 +369,16 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
                   <div className="relative h-40 bg-gradient-to-r from-blue-400 to-indigo-600 overflow-hidden">
                     <div className="absolute inset-0 opacity-20 bg-pattern"></div>
                     <div className="absolute top-0 right-0 p-3">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${getTierBadgeStyles(
-                          opp.tier_restriction
-                        )}`}
-                      >
-                        <span
-                          className="iconify"
-                          data-icon={getTierBadgeIcon(opp.tier_restriction)}
-                        ></span>
-                        {opp.tier_restriction || "Free Member"}
-                      </span>
+                      <TierBadge
+                        tier={opp.tier_restriction}
+                        mode={mode}
+                        variant="solid"
+                      />
                     </div>
 
                     <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
                       <div className="flex items-center gap-2 text-white font-semibold">
-                        <span
-                          className="iconify"
-                          data-icon="mdi:map-marker"
-                        ></span>
+                        <Icon icon="mdi:map-marker" />
                         {opp.location}
                       </div>
                     </div>
@@ -475,10 +421,10 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
                           Deadline
                         </div>
                         <div className="font-medium flex items-center gap-1.5">
-                          <span
-                            className="iconify text-red-500"
-                            data-icon="mdi:calendar-clock"
-                          ></span>
+                          <Icon
+                            icon="mdi:calendar-clock"
+                            className="text-red-500"
+                          />
                           {opp.deadline}
                         </div>
                       </div>
@@ -487,10 +433,10 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
                     <div className="pt-2">
                       <button
                         onClick={() => handleExpressInterest(opp)}
-                        className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
-                          canAccessOpportunity(opp.tier_restriction)
+                        className={`px-4 py-2 rounded-lg font-semibold transition-colors w-full ${
+                          hasTierAccess(opp.tier_restriction, user)
                             ? "bg-blue-600 text-white hover:bg-blue-700"
-                            : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                            : "bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400"
                         }`}
                       >
                         Express Interest
@@ -501,17 +447,16 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
               ))}
             </div>
 
-            {/* No Opportunities Found */}
             {filteredByTab.length === 0 && (
               <div
                 className={`text-center py-12 rounded-2xl ${
                   mode === "dark" ? "bg-gray-800" : "bg-white"
                 } shadow-sm border dark:border-gray-700`}
               >
-                <div
-                  className="iconify inline-block text-5xl text-gray-400 mb-4"
-                  data-icon="mdi:magnify"
-                ></div>
+                <Icon
+                  icon="mdi:magnify"
+                  className="inline-block text-5xl text-gray-400 mb-4"
+                />
                 <h3 className="text-xl font-semibold mb-2">
                   No Opportunities Found
                 </h3>
@@ -528,7 +473,6 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
               </div>
             )}
 
-            {/* Pagination */}
             {filteredByTab.length > 12 && (
               <div className="flex justify-center mt-8">
                 <div className="flex items-center space-x-2">
@@ -539,10 +483,7 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
                         : "bg-white hover:bg-gray-100"
                     } border dark:border-gray-700 shadow-sm`}
                   >
-                    <span
-                      className="iconify"
-                      data-icon="mdi:chevron-left"
-                    ></span>
+                    <Icon icon="mdi:chevron-left" />
                   </button>
 
                   {[1, 2, 3].map((num) => (
@@ -551,12 +492,10 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
                       className={`w-10 h-10 flex items-center justify-center rounded-lg font-medium ${
                         num === 1
                           ? "bg-blue-600 text-white"
-                          : `${
-                              mode === "dark"
-                                ? "bg-gray-800 hover:bg-gray-700"
-                                : "bg-white hover:bg-gray-100"
-                            } border dark:border-gray-700`
-                      } shadow-sm`}
+                          : mode === "dark"
+                          ? "bg-gray-800 hover:bg-gray-700"
+                          : "bg-white hover:bg-gray-100"
+                      } border dark:border-gray-700 shadow-sm`}
                     >
                       {num}
                     </button>
@@ -569,10 +508,7 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
                         : "bg-white hover:bg-gray-100"
                     } border dark:border-gray-700 shadow-sm`}
                   >
-                    <span
-                      className="iconify"
-                      data-icon="mdi:chevron-right"
-                    ></span>
+                    <Icon icon="mdi:chevron-right" />
                   </button>
                 </div>
               </div>

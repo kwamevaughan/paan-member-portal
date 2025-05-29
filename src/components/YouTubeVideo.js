@@ -1,4 +1,6 @@
-const YouTubeVideo = ({ mode, Link }) => {
+import Link from "next/link";
+
+const YouTubeVideo = ({ mode }) => {
   return (
     <div
       className={`p-6 rounded-2xl border shadow-lg ${

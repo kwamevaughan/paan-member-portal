@@ -1,50 +1,34 @@
-export const canAccessTier = (requiredTier, userTier) => {
-  const normalize = (tier) => {
-    if (!tier) return "free member";
-    // Map legacy formats and normalize to lowercase
-    const tierMap = {
-      "gold member (tier 3)": "gold member",
-      "full member (tier 2)": "full member",
-      "associate member (tier 1)": "associate member",
-      "free member (tier 4)": "free member",
-      "associate agency (tier 1)": "associate member", // Handle any old formats
-    };
-    const cleanTier = tier
-      .replace(/\(.*?\)/g, "")
-      .trim()
-      .toLowerCase();
-    return tierMap[cleanTier] || cleanTier;
+const normalizeTier = (tier) => {
+  if (!tier) return "Free Member";
+  const tierMap = {
+    "gold member (tier 3)": "Gold Member",
+    "full member (tier 2)": "Full Member",
+    "associate member (tier 1)": "Associate Member",
+    "free member (tier 0)": "Free Member",
+    "associate agency (tier 1)": "Associate Member",
+    "gold member": "Gold Member",
+    "full member": "Full Member",
+    "associate member": "Associate Member",
+    "free member": "Free Member",
   };
-
-  const normalizedRequired = normalize(requiredTier);
-  const normalizedUser = normalize(userTier);
-
-  // Define tier hierarchy (highest to lowest)
-  const tierHierarchy = [
-    "gold member",
-    "full member",
-    "associate member",
-    "free member",
-  ];
-
-  // If no required tier, all users can access
-  if (!normalizedRequired) {
-    return true;
-  }
-
-  // If no user tier, deny access
-  if (!normalizedUser) {
-    return false;
-  }
-
-  const requiredIndex = tierHierarchy.indexOf(normalizedRequired);
-  const userIndex = tierHierarchy.indexOf(normalizedUser);
-
-  // If either tier is not in hierarchy, deny access
-  if (requiredIndex === -1 || userIndex === -1) {
-    return false;
-  }
-
-  // User can access if their tier is equal or higher (lower index)
-  return userIndex <= requiredIndex;
+  const cleanTier = tier.trim().toLowerCase();
+  return tierMap[cleanTier] || "Free Member";
 };
+
+const hasTierAccess = (entityTier, user) => {
+  const tiers = [
+    "Gold Member", // Index 0 (highest tier)
+    "Full Member", // Index 1
+    "Associate Member", // Index 2
+    "Free Member", // Index 3 (lowest tier)
+  ];
+  const userTier = normalizeTier(user?.selected_tier) || "Free Member";
+  const normalizedTier = normalizeTier(entityTier) || "Free Member";
+  const userTierIndex = tiers.indexOf(userTier);
+  const entityTierIndex = tiers.indexOf(normalizedTier);
+  if (userTierIndex === -1 || entityTierIndex === -1) return false;
+  // User can access their tier and lower tiers (higher indices)
+  return userTierIndex <= entityTierIndex;
+};
+
+export { hasTierAccess, normalizeTier };

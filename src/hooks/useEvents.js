@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import { canAccessTier } from "@/utils/tierUtils";
+import { hasTierAccess, normalizeTier } from "@/utils/tierUtils";
 import toast from "react-hot-toast";
 
 const useEvents = (
   filters = { eventType: "", tier: "" },
-  userTier = "Free Member"
+  user = { selected_tier: "Free Member" }
 ) => {
   const [events, setEvents] = useState([]);
   const [registeredEvents, setRegisteredEvents] = useState([]);
@@ -22,11 +22,10 @@ const useEvents = (
       setLoading(true);
       setError(null);
 
-      // Fetch all future events
       let query = supabase
         .from("events")
         .select(
-          "id, title, description, date, location, event_type, is_virtual, tier_restriction"
+          "id, title, description, date, location, event_type, tier_restriction"
         )
         .gte("date", new Date().toISOString())
         .order("date", { ascending: true });
@@ -41,25 +40,21 @@ const useEvents = (
         throw new Error("Failed to fetch events");
       }
 
-      // Apply tier filter if specified
       const filteredEvents = (eventsData || []).filter((event) => {
         if (!filters.tier) return true;
-        // Compare using canAccessTier to ensure tier hierarchy
         const eventTier = event.tier_restriction || "Free Member";
-        return canAccessTier(eventTier, filters.tier);
+        return hasTierAccess(eventTier, { selected_tier: filters.tier });
       });
 
-      // Transform events to include isAccessible
       const transformedEvents = filteredEvents.map((event) => ({
         ...event,
-        tier_restriction: event.tier_restriction || "Free Member",
-        isAccessible: canAccessTier(
+        tier_restriction: normalizeTier(event.tier_restriction) || "Free Member",
+        isAccessible: hasTierAccess(
           event.tier_restriction || "Free Member",
-          userTier
+          user
         ),
       }));
 
-      // Fetch filter options
       const { data: allEvents, error: allEventsError } = await supabase
         .from("events")
         .select("event_type, tier_restriction");
@@ -74,21 +69,13 @@ const useEvents = (
       const eventTypes = [
         ...new Set(allEvents.map((e) => e.event_type)),
       ].sort();
-      // Only include tiers the user can access
       const tiers = [
         ...new Set(
           allEvents
             .filter((e) =>
-              canAccessTier(e.tier_restriction || "Free Member", userTier)
+              hasTierAccess(e.tier_restriction || "Free Member", user)
             )
-            .map((e) => {
-              const tier = e.tier_restriction || "Free Member";
-              // Use normalize from canAccessTier if available
-              const normalized = canAccessTier.normalize
-                ? canAccessTier.normalize(tier)
-                : tier;
-              return normalized;
-            })
+            .map((e) => normalizeTier(e.tier_restriction || "Free Member"))
         ),
       ].sort();
 
@@ -106,10 +93,10 @@ const useEvents = (
   const fetchRegisteredEvents = async () => {
     try {
       const {
-        data: { user },
+        data: { user: authUser },
         error: authError,
       } = await supabase.auth.getUser();
-      if (authError || !user) {
+      if (authError || !authUser) {
         console.warn(
           "[useEvents] No authenticated user, skipping registered events"
         );
@@ -120,11 +107,11 @@ const useEvents = (
       const { data: candidate, error: candidateError } = await supabase
         .from("candidates")
         .select("id")
-        .eq("auth_user_id", user.id)
+        .eq("auth_user_id", authUser.id)
         .single();
 
       if (candidateError || !candidate) {
-        console.error("[useEvents] Candidate not found for user:", user.id);
+        console.error("[useEvents] Candidate not found for user:", authUser.id);
         throw new Error("Candidate not found for this user");
       }
 
@@ -162,7 +149,7 @@ const useEvents = (
         registration_id: reg.id,
         status: reg.status,
         registered_at: reg.registered_at,
-        tier_restriction: reg.events.tier_restriction || "Free Member",
+        tier_restriction: normalizeTier(reg.events.tier_restriction) || "Free Member",
       }));
 
       setRegisteredEvents(registeredEventsData || []);
@@ -177,17 +164,17 @@ const useEvents = (
     try {
       setEventsLoading((prev) => [...prev, eventId]);
       const {
-        data: { user },
+        data: { user: authUser },
         error: authError,
       } = await supabase.auth.getUser();
-      if (authError || !user) {
+      if (authError || !authUser) {
         throw new Error("User not authenticated");
       }
 
       const { data: candidate, error: candidateError } = await supabase
         .from("candidates")
         .select("id")
-        .eq("auth_user_id", user.id)
+        .eq("auth_user_id", authUser.id)
         .single();
 
       if (candidateError || !candidate) {
@@ -240,7 +227,7 @@ const useEvents = (
   useEffect(() => {
     fetchEvents();
     fetchRegisteredEvents();
-  }, [filters.eventType, filters.tier, userTier]);
+  }, [filters.eventType, filters.tier]);
 
   return {
     events,

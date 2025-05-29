@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import debounce from "lodash.debounce";
-import { canAccessTier } from "@/utils/tierUtils";
-import { normalizeTier, getDatabaseTier } from "@/components/Badge";
+import { hasTierAccess, normalizeTier } from "@/utils/tierUtils";
+import { getDatabaseTier } from "@/components/Badge";
 
 export const useBusinessOpportunities = (
   filters = {
@@ -12,7 +12,7 @@ export const useBusinessOpportunities = (
     projectType: "",
     tier_restriction: "",
   },
-  userTier = "Free Member"
+  user = { selected_tier: "Free Member" }
 ) => {
   const [opportunities, setOpportunities] = useState([]);
   const [filterOptions, setFilterOptions] = useState({
@@ -102,7 +102,6 @@ export const useBusinessOpportunities = (
             .slice(0, 10),
         };
 
-        
         setFilterOptions(newFilterOptions);
       } catch (err) {
         console.error(
@@ -127,29 +126,23 @@ export const useBusinessOpportunities = (
         try {
           setError(null);
 
-          
-
           let query = supabase
             .from("business_opportunities")
             .select(
-              "id, title, description, tier_restriction, location, application_link, deadline, created_at, service_type, industry, project_type"
+              "id, title, description, tier_restriction, location, application_link, deadline, created_at, updated_at, service_type, industry, project_type"
             )
             .gte("deadline", new Date().toISOString().split("T")[0]);
 
           if (currentFilters.country) {
-            
             query = query.eq("location", currentFilters.country);
           }
           if (currentFilters.serviceType) {
-            
             query = query.eq("service_type", currentFilters.serviceType);
           }
           if (currentFilters.industry) {
-            
             query = query.eq("industry", currentFilters.industry);
           }
           if (currentFilters.projectType) {
-            
             query = query.eq("project_type", currentFilters.projectType);
           }
           if (
@@ -160,11 +153,8 @@ export const useBusinessOpportunities = (
               currentFilters.tier_restriction
             );
             const dbFilter = getDatabaseTier(normalizedFilter);
-            
             query = query.eq("tier_restriction", dbFilter);
           }
-
-         
 
           const { data, error } = await query;
 
@@ -173,10 +163,7 @@ export const useBusinessOpportunities = (
             throw new Error(`Failed to fetch opportunities: ${error.message}`);
           }
 
-          
-
-          // Transform and sort data
-          const userTierNormalized = normalizeTier(userTier);
+          const userTierNormalized = normalizeTier(user?.selected_tier);
           const tierHierarchy = [
             "Gold Member",
             "Full Member",
@@ -186,8 +173,7 @@ export const useBusinessOpportunities = (
           const transformedData = (data || []).map((opp) => {
             const tierRestriction =
               normalizeTier(opp.tier_restriction) || "Free Member";
-            const isAccessible = canAccessTier(tierRestriction, userTier);
-            
+            const isAccessible = hasTierAccess(tierRestriction, user);
             return {
               ...opp,
               tier_restriction: tierRestriction,
@@ -195,7 +181,6 @@ export const useBusinessOpportunities = (
             };
           });
 
-          // Sort: exact tier match first, then other accessible, then restricted
           const sortedData = transformedData.sort((a, b) => {
             const aTier = normalizeTier(a.tier_restriction);
             const bTier = normalizeTier(b.tier_restriction);
@@ -207,24 +192,17 @@ export const useBusinessOpportunities = (
               const aIsExact = aIndex === userIndex;
               const bIsExact = bIndex === userIndex;
               if (aIsExact !== bIsExact) {
-                
                 return aIsExact ? -1 : 1;
               }
-              // Both same precedence, sort by created_at
-              
               return new Date(b.created_at) - new Date(a.created_at);
             }
 
             if (a.isAccessible !== b.isAccessible) {
-              
               return a.isAccessible ? -1 : 1;
             }
 
-            
             return new Date(b.created_at) - new Date(a.created_at);
           });
-
-          
 
           setOpportunities(sortedData);
         } catch (err) {
@@ -238,11 +216,10 @@ export const useBusinessOpportunities = (
           if (isInitial) setIsInitialFetch(false);
         }
       }, 300),
-    [userTier]
+    [user]
   );
 
   useEffect(() => {
-    
     fetchOpportunities(filters, isInitialFetch);
   }, [
     filters.country,

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import SectionCard from "./SectionCard";
 import MarketIntelItem from "./MarketIntelItem";
 import FilterDropdown from "./FilterDropdown";
-import { canAccessTier } from "@/utils/tierUtils";
+import { hasTierAccess } from "@/utils/tierUtils";
 
 const MarketIntelSection = ({
   marketIntel,
@@ -16,13 +16,13 @@ const MarketIntelSection = ({
   mode,
   Icon,
 }) => {
-  const [statsFilter, setStatsFilter] = useState("total"); // Track selected stat filter
-  const [selectedCategory, setSelectedCategory] = useState(""); // Track selected category for "Categories" filter
+  const [statsFilter, setStatsFilter] = useState("total");
+  const [selectedCategory, setSelectedCategory] = useState("");
 
   const handleStatsFilter = (filter) => {
     setStatsFilter(filter);
     if (filter !== "categories") {
-      setSelectedCategory(""); // Reset category selection unless "categories" is clicked
+      setSelectedCategory("");
     }
   };
 
@@ -132,21 +132,19 @@ const MarketIntelSection = ({
       );
     }
 
-    // Calculate stats using canAccessTier
     const accessibleIntel = marketIntel.filter((intel) =>
-      canAccessTier(intel.tier_restriction, user.selected_tier)
+      hasTierAccess(intel.tier_restriction, user)
     );
     const restrictedIntel = marketIntel.filter(
-      (intel) => !canAccessTier(intel.tier_restriction, user.selected_tier)
+      (intel) => !hasTierAccess(intel.tier_restriction, user)
     );
     const intelByType = marketIntel.reduce((acc, intel) => {
-      const type = intel.type;
-      if (!acc[type]) acc[type] = [];
+      const type = intel.type || "Other";
+      acc[type] = acc[type] || [];
       acc[type].push(intel);
       return acc;
     }, {});
 
-    // Filter based on statsFilter
     let filteredIntel = [...marketIntel];
     if (statsFilter === "available") {
       filteredIntel = accessibleIntel;
@@ -156,23 +154,21 @@ const MarketIntelSection = ({
       filteredIntel = intelByType[selectedCategory] || [];
     }
 
-    // Sort resources: accessible ones first, then by type and title
+    // Sort by accessibility and updated_at
     const sortedIntel = filteredIntel.sort((a, b) => {
-      const aAccessible = canAccessTier(a.tier_restriction, user.selected_tier);
-      const bAccessible = canAccessTier(b.tier_restriction, user.selected_tier);
-
-      if (aAccessible === bAccessible) {
-        if (a.type === b.type) {
-          return a.title.localeCompare(b.title);
-        }
-        return a.type.localeCompare(b.type);
+      const aAccessible = hasTierAccess(a.tier_restriction, user);
+      const bAccessible = hasTierAccess(b.tier_restriction, user);
+      if (aAccessible !== bAccessible) {
+        return aAccessible ? -1 : 1;
       }
-      return aAccessible ? -1 : 1;
+      return (
+        new Date(b.updated_at || b.created_at) -
+        new Date(a.updated_at || a.created_at)
+      );
     });
 
     return (
       <div className="space-y-6">
-        {/* Stats dashboard */}
         <div
           className={`grid grid-cols-2 md:grid-cols-4 gap-4 p-6 rounded-2xl ${
             mode === "dark"
@@ -334,7 +330,6 @@ const MarketIntelSection = ({
           </div>
         </div>
 
-        {/* Category dropdown when "Categories" is selected */}
         {statsFilter === "categories" && (
           <div className="mb-4">
             <FilterDropdown
@@ -353,7 +348,6 @@ const MarketIntelSection = ({
           </div>
         )}
 
-        {/* Market Intelligence grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {sortedIntel.map((intel, index) => (
             <div
@@ -368,9 +362,7 @@ const MarketIntelSection = ({
                 intel={intel}
                 mode={mode}
                 Icon={Icon}
-                isRestricted={
-                  !canAccessTier(intel.tier_restriction, user.selected_tier)
-                }
+                isRestricted={!hasTierAccess(intel.tier_restriction, user)}
                 onRestrictedClick={() =>
                   handleRestrictedClick(
                     `Access restricted: ${intel.tier_restriction} tier required for "${intel.title}"`
@@ -397,11 +389,8 @@ const MarketIntelSection = ({
             options={[
               { value: "", label: "All Regions" },
               ...marketIntelFilterOptions.regions
-                .filter((r) => r !== "all")
-                .map((r) => ({
-                  value: r,
-                  label: r,
-                })),
+                .filter((r) => r)
+                .map((r) => ({ value: r, label: r })),
             ]}
             mode={mode}
             ariaLabel="Filter market intelligence by region"
@@ -412,11 +401,8 @@ const MarketIntelSection = ({
             options={[
               { value: "", label: "All Types" },
               ...marketIntelFilterOptions.types
-                .filter((t) => t !== "all")
-                .map((t) => ({
-                  value: t,
-                  label: t,
-                })),
+                .filter((t) => t)
+                .map((t) => ({ value: t, label: t })),
             ]}
             mode={mode}
             ariaLabel="Filter market intelligence by type"
@@ -429,11 +415,8 @@ const MarketIntelSection = ({
             options={[
               { value: "", label: "All Tiers" },
               ...marketIntelFilterOptions.tier_restrictions
-                .filter((t) => t !== "all")
-                .map((t) => ({
-                  value: t,
-                  label: t,
-                })),
+                .filter((t) => t)
+                .map((t) => ({ value: t, label: t })),
             ]}
             mode={mode}
             ariaLabel="Filter market intelligence by membership tier"

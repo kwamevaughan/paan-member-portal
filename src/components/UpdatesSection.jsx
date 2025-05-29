@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import SectionCard from "./SectionCard";
 import UpdateCard from "./UpdateCard";
 import FilterDropdown from "./FilterDropdown";
-import { canAccessTier } from "@/utils/tierUtils";
+import { hasTierAccess } from "@/utils/tierUtils";
 
 const UpdatesSection = ({
   updates,
@@ -159,12 +159,11 @@ const UpdatesSection = ({
       );
     }
 
-    // Calculate stats using canAccessTier
     const accessibleUpdates = updates.filter((update) =>
-      canAccessTier(update.tier_restriction, user.selected_tier)
+      hasTierAccess(update.tier_restriction, user)
     );
     const restrictedUpdates = updates.filter(
-      (update) => !canAccessTier(update.tier_restriction, user.selected_tier)
+      (update) => !hasTierAccess(update.tier_restriction, user)
     );
     const updatesByTag = updates.reduce((acc, update) => {
       (update.tags || []).forEach((tag) => {
@@ -186,8 +185,8 @@ const UpdatesSection = ({
 
     // Sort updates: accessible first, then by created_at descending
     const sortedUpdates = filteredUpdates.sort((a, b) => {
-      const aAccessible = canAccessTier(a.tier_restriction, user.selected_tier);
-      const bAccessible = canAccessTier(b.tier_restriction, user.selected_tier);
+      const aAccessible = hasTierAccess(a.tier_restriction, user);
+      const bAccessible = hasTierAccess(b.tier_restriction, user);
       if (aAccessible === bAccessible) {
         return new Date(b.created_at) - new Date(a.created_at);
       }
@@ -386,7 +385,7 @@ const UpdatesSection = ({
                 mode={mode}
                 Icon={Icon}
                 isRestricted={
-                  !canAccessTier(update.tier_restriction, user.selected_tier)
+                  !hasTierAccess(update.tier_restriction, user)
                 }
                 onRestrictedClick={() =>
                   handleRestrictedClick(

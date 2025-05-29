@@ -1,21 +1,21 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
-import { normalizeTier } from "@/components/Badge";
-import { canAccessTier } from "@/utils/tierUtils";
+import { hasTierAccess, normalizeTier } from "@/utils/tierUtils";
 
 const useOffers = (
   filters = { tier_restriction: "" },
-  userTier = "Free Member"
+  user = { selected_tier: "Free Member" }
 ) => {
   const [offers, setOffers] = useState([]);
   const [filterOptions, setFilterOptions] = useState({
     tier_restrictions: [
+      "Free Member",
       "Associate Member",
       "Full Member",
       "Gold Member",
-      "Free Member",
     ],
+    offer_types: ["Discount", "Service", "Workshop"], // Static types
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -30,9 +30,10 @@ const useOffers = (
         .select(
           "id, title, description, tier_restriction, url, icon_url, created_at, updated_at"
         )
+        .order("updated_at", { ascending: false })
         .order("created_at", { ascending: false });
 
-      if (filters.tier_restriction && filters.tier_restriction !== "") {
+      if (filters.tier_restriction && filters.tier_restriction !== "All") {
         const normalizedFilter = normalizeTier(filters.tier_restriction);
         query = query.eq("tier_restriction", normalizedFilter);
       }
@@ -44,6 +45,31 @@ const useOffers = (
         throw new Error(`Failed to fetch offers: ${offersError.message}`);
       }
 
+      // Fetch distinct tier_restrictions
+      const { data: tierData, error: tierError } = await supabase
+        .from("offers")
+        .select("tier_restriction")
+        .neq("tier_restriction", null);
+
+      if (tierError) {
+        console.error("[useOffers] Tier error:", tierError);
+        throw new Error("Failed to fetch tier restrictions");
+      }
+
+      const tier_restrictions = [
+        ...new Set(
+          tierData.map((item) => normalizeTier(item.tier_restriction))
+        ),
+      ].filter(Boolean);
+
+      setFilterOptions({
+        tier_restrictions: tier_restrictions.length
+          ? tier_restrictions
+          : ["Free Member", "Associate Member", "Full Member", "Gold Member"],
+        offer_types: ["Discount", "Service", "Workshop"],
+      });
+
+      // Fetch feedback
       const { data: feedbackData, error: feedbackError } = await supabase
         .from("offer_feedback")
         .select("offer_id, rating");
@@ -59,6 +85,7 @@ const useOffers = (
         return acc;
       }, {});
 
+      // Enrich offers
       const enrichedOffers = offersData.map((offer) => {
         const ratings = feedbackByOffer[offer.id] || [];
         const averageRating =
@@ -67,7 +94,7 @@ const useOffers = (
             : 0;
         const tierRestriction =
           normalizeTier(offer.tier_restriction) || "Free Member";
-        const isAccessible = canAccessTier(tierRestriction, userTier);
+        const isAccessible = hasTierAccess(tierRestriction, user);
 
         return {
           ...offer,
@@ -79,6 +106,7 @@ const useOffers = (
       });
 
       setOffers(enrichedOffers);
+      console.log("[useOffers] Filter options:", filterOptions);
     } catch (err) {
       console.error("[useOffers] Detailed error:", err);
       setError(err.message);
@@ -90,7 +118,7 @@ const useOffers = (
 
   useEffect(() => {
     fetchOffers();
-  }, [filters.tier_restriction, userTier]);
+  }, [filters.tier_restriction, user.selected_tier]);
 
   return {
     offers,

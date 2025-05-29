@@ -1,5 +1,6 @@
 import Chart from "react-apexcharts";
 import { format } from "date-fns";
+import { hasTierAccess } from "@/utils/tierUtils"; // Import hasTierAccess
 
 const StatsChart = ({
   opportunities,
@@ -17,24 +18,15 @@ const StatsChart = ({
 
   // Data for the chart
   const series = [
-    opportunities.filter((item) =>
-      canAccessTier(item.tier_restriction, user.selected_tier)
-    ).length,
-    events.filter((item) =>
-      canAccessTier(item.tier_restriction, user.selected_tier)
-    ).length,
-    resources.filter((item) =>
-      canAccessTier(item.tier_restriction, user.selected_tier)
-    ).length,
-    offers.filter((item) =>
-      canAccessTier(item.tier_restriction, user.selected_tier)
-    ).length,
-    marketIntel.filter((item) =>
-      canAccessTier(item.tier_restriction, user.selected_tier)
-    ).length,
-    updates.filter((item) =>
-      canAccessTier(item.tier_restriction, user.selected_tier)
-    ).length,
+    opportunities.filter((item) => hasTierAccess(item.tier_restriction, user))
+      .length,
+    events.filter((item) => hasTierAccess(item.tier_restriction, user)).length,
+    resources.filter((item) => hasTierAccess(item.tier_restriction, user))
+      .length,
+    offers.filter((item) => hasTierAccess(item.tier_restriction, user)).length,
+    marketIntel.filter((item) => hasTierAccess(item.tier_restriction, user))
+      .length,
+    updates.filter((item) => hasTierAccess(item.tier_restriction, user)).length,
   ];
 
   const labels = [
@@ -113,30 +105,31 @@ const StatsChart = ({
         const value = series[seriesIndex];
         const label = labels[seriesIndex];
         return `
-      <div class="apexcharts-tooltip-custom" style="
-        background: ${
-          mode === "dark" ? "rgba(31, 41, 55, 0.6)" : "rgba(255, 255, 255, 0.6)"
-        };
-        backdrop-filter: blur(10px);  /* Apply the blur effect */
-        color: #000000 ${mode === "dark" ? "#4b5563" : "#e5e7eb"};
-        padding: 8px 12px;
-        border-radius: 4px;
-        border: 1px solid ${mode === "dark" ? "#4b5563" : "#e5e7eb"};
-        font-size: 12px;
-        line-height: 1.5;
-      ">
-        <strong>${label}</strong><br>
-        ${value} items<br>
-        Last updated: ${
-          lastUpdated && !isNaN(new Date(lastUpdated))
-            ? format(new Date(lastUpdated), "MMM d, yyyy 'at' h:mm a")
-            : "No recent updates"
-        }
-      </div>
-    `;
+          <div class="apexcharts-tooltip-custom" style="
+            background: ${
+              mode === "dark"
+                ? "rgba(31, 41, 55, 0.6)"
+                : "rgba(255, 255, 255, 0.6)"
+            };
+            backdrop-filter: blur(10px);
+            color: ${mode === "dark" ? "#ffffff" : "#000000"};
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid ${mode === "dark" ? "#4b5563" : "#e5e7eb"};
+            font-size: 12px;
+            line-height: 1.5;
+          ">
+            <strong>${label}</strong><br>
+            ${value} items<br>
+            Last updated: ${
+              lastUpdated && !isNaN(new Date(lastUpdated))
+                ? format(new Date(lastUpdated), "MMM d, yyyy 'at' h:mm a")
+                : "No recent updates"
+            }
+          </div>
+        `;
       },
     },
-
     responsive: [
       {
         breakpoint: 640,
@@ -178,12 +171,6 @@ const StatsChart = ({
       <Chart options={options} series={series} type="polarArea" height={350} />
     </div>
   );
-};
-
-// Assume canAccessTier is available from your utils
-const canAccessTier = (itemTier, userTier) => {
-  // Implement your tier access logic here
-  return true; // Placeholder
 };
 
 export default StatsChart;

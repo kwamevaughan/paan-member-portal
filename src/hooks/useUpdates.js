@@ -1,10 +1,12 @@
 import { useState, useEffect, useMemo } from "react";
 import toast from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
-import { canAccessTier } from "@/utils/tierUtils";
+import { hasTierAccess, normalizeTier } from "@/utils/tierUtils";
 
-const useUpdates = (filters = { tags: "All" }, userTier = "Free Member") => {
-  
+const useUpdates = (
+  filters = { tags: "All" },
+  user = { selected_tier: "Free Member" }
+) => {
   const [updates, setUpdates] = useState([]);
   const [filterOptions] = useState({
     tags: [
@@ -27,7 +29,6 @@ const useUpdates = (filters = { tags: "All" }, userTier = "Free Member") => {
   };
 
   const fetchUpdates = async () => {
-    
     try {
       const {
         data: { session },
@@ -47,7 +48,6 @@ const useUpdates = (filters = { tags: "All" }, userTier = "Free Member") => {
         query = query.contains("tags", [filters.tags]);
       }
 
-
       const { data: updatesData, error: updatesError } = await query;
 
       if (updatesError) {
@@ -59,9 +59,10 @@ const useUpdates = (filters = { tags: "All" }, userTier = "Free Member") => {
       }
 
       const transformedUpdates = (updatesData || []).map((update) => {
-        const tierRestriction = update.tier_restriction || "Free Member";
-        const isAccessible = canAccessTier(tierRestriction, userTier);
-        
+        const tierRestriction =
+          normalizeTier(update.tier_restriction) || "Free Member";
+        const isAccessible = hasTierAccess(tierRestriction, user);
+
         return {
           ...update,
           tier_restriction: tierRestriction,
@@ -69,7 +70,6 @@ const useUpdates = (filters = { tags: "All" }, userTier = "Free Member") => {
         };
       });
 
-      
       setUpdates(transformedUpdates);
     } catch (err) {
       console.error("[useUpdates] Error:", err.message);
@@ -83,11 +83,8 @@ const useUpdates = (filters = { tags: "All" }, userTier = "Free Member") => {
   const debouncedFetchUpdates = debounce(fetchUpdates, 500);
 
   useEffect(() => {
-    
     debouncedFetchUpdates();
-  }, [filters.tags, userTier]);
-
-  
+  }, [filters.tags, user?.selected_tier]);
 
   return useMemo(
     () => ({

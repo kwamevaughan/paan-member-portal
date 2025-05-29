@@ -12,10 +12,7 @@ const HrHeader = ({
   isSidebarOpen,
   onLogout,
   sidebarState,
-  fullName = "Member",
-  selectedTier = "",
-  jobTitle,
-  agencyName,
+  user,
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -104,7 +101,7 @@ const HrHeader = ({
             <LanguageSwitch mode={mode} />
 
             {/* Notifications */}
-            <TooltipIconButton
+            {/* <TooltipIconButton
               label={<span className="text-black">View Notifications</span>}
               mode={mode}
               className="bg-white/50"
@@ -113,7 +110,7 @@ const HrHeader = ({
                 icon="mdi-light:bell"
                 className="animate-swing-infinite h-6 w-6"
               />
-            </TooltipIconButton>
+            </TooltipIconButton> */}
 
             {/* User Dropdown */}
             <div
@@ -162,13 +159,13 @@ const HrHeader = ({
                       </div>
                       <div className="flex flex-col">
                         <div className="flex gap-2">
-                          <span className="text-md font-bold">{fullName}</span>
+                          <span className="text-md font-bold">{user.name}</span>
                           <span class="rounded-md capitalize bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-green-600/20 ring-inset">
-                            {jobTitle}
+                            {user.job_type}
                           </span>
                         </div>
 
-                        <span className="text-sm">{agencyName}</span>
+                        <span className="text-sm">{user.agencyName}</span>
                       </div>
                     </div>
                     <button

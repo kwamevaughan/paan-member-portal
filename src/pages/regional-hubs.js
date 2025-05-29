@@ -43,10 +43,7 @@
               toggleSidebar={toggleSidebar}
               isSidebarOpen={isSidebarOpen}
               sidebarState={sidebarState}
-              fullName={user?.name ?? "Member"}
-              jobTitle={user.job_type}
-              selectedTier={user.selected_tier}
-              agencyName={user.agencyName}
+              user={user}
               mode={mode}
               toggleMode={toggleMode}
               onLogout={handleLogout}
@@ -54,6 +51,7 @@
             <div className="flex flex-1">
               <HrSidebar
                 isOpen={isSidebarOpen}
+                user={user}
                 mode={mode}
                 toggleSidebar={toggleSidebar}
                 onLogout={handleLogout}

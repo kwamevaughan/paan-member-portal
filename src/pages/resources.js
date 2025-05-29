@@ -162,24 +162,20 @@ export default function Resources({ mode = "light", toggleMode }) {
         toggleSidebar={toggleSidebar}
         isSidebarOpen={isSidebarOpen}
         sidebarState={sidebarState}
-        fullName={user?.name ?? "Member"}
-        jobTitle={user?.job_type}
-        selectedTier={user?.selected_tier}
-        agencyName={user?.agencyName}
+        user={user}
         mode={mode}
         toggleMode={toggleMode}
         onLogout={handleLogout}
-        pageName="Resources"
-        pageDescription={description}
       />
       <div className="flex flex-1">
         <HrSidebar
           isOpen={isSidebarOpen}
+          user={user}
           mode={mode}
-          toggleMode={toggleMode}
-          onLogout={handleLogout}
           toggleSidebar={toggleSidebar}
+          onLogout={handleLogout}
           setDragOffset={updateDragOffset}
+          toggleMode={toggleMode}
         />
         <div
           className={`content-container flex-1 p-4 md:p-6 lg:p-8 transition-all duration-300 overflow-hidden ${

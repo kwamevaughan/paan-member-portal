@@ -149,25 +149,20 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
         toggleSidebar={toggleSidebar}
         isSidebarOpen={isSidebarOpen}
         sidebarState={sidebarState}
-        fullName={user?.name ?? "Member"}
-        jobTitle={user.job_type}
-        selectedTier={user?.selected_tier}
-        agencyName={user?.agencyName}
+        user={user}
         mode={mode}
         toggleMode={toggleMode}
         onLogout={handleLogout}
-        pageName="Business Opportunities"
-        pageDescription={description}
       />
-
       <div className="flex flex-1">
         <HrSidebar
           isOpen={isSidebarOpen}
+          user={user}
           mode={mode}
-          toggleMode={toggleMode}
-          onLogout={handleLogout}
           toggleSidebar={toggleSidebar}
+          onLogout={handleLogout}
           setDragOffset={updateDragOffset}
+          toggleMode={toggleMode}
         />
 
         <div

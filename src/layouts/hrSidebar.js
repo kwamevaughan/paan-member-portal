@@ -11,6 +11,7 @@ const HrSidebar = ({
   toggleMode,
   isSidebarOpen,
   onLogout,
+  user,
   toggleSidebar,
   setDragOffset: setParentDragOffset,
 }) => {
@@ -147,8 +148,6 @@ const HrSidebar = ({
       contentContainer?.classList.remove("sidebar-hidden");
     };
   }, [sidebarHidden]);
-
-  const fullName = "PAAN Member";
 
   // Define isActive function
   const isActive = (pathname) =>
@@ -360,7 +359,7 @@ const HrSidebar = ({
                 </div>
                 {shouldAppearExpanded && (
                   <span className="text-xs font-medium text-white">
-                    {fullName}
+                    {user.name}
                   </span>
                 )}
               </div>
@@ -387,8 +386,8 @@ const HrSidebar = ({
                       <Icon
                         icon={
                           mode === "dark"
-                            ? "mdi:weather-night"
-                            : "mdi:weather-sunny"
+                            ? "line-md:sunny-filled-loop-to-moon-filled-alt-loop-transition"
+                            : "line-md:moon-alt-to-sunny-outline-loop-transition"
                         }
                         className={`h-5 w-5 ${
                           mode === "dark" ? "text-blue-400" : "text-yellow-400"

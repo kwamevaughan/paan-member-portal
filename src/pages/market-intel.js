@@ -96,28 +96,24 @@ export default function MarketIntel({ mode = "light", toggleMode }) {
           : "bg-gradient-to-br from-slate-50 to-blue-50"
       }`}
     >
-      
       <HrHeader
         toggleSidebar={toggleSidebar}
         isSidebarOpen={isSidebarOpen}
         sidebarState={sidebarState}
-        fullName={user?.name ?? "Member"}
-        jobTitle={user?.job_type}
-        selectedTier={user?.selected_tier || "Free Member"}
-        agencyName={user?.agencyName}
+        user={user}
         mode={mode}
         toggleMode={toggleMode}
         onLogout={handleLogout}
-        breadcrumbs={[{ label: "Home", href: "/" }, { label: "Market Intel" }]}
       />
       <div className="flex flex-1">
         <HrSidebar
           isOpen={isSidebarOpen}
+          user={user}
           mode={mode}
-          toggleMode={toggleMode}
-          onLogout={handleLogout}
           toggleSidebar={toggleSidebar}
+          onLogout={handleLogout}
           setDragOffset={updateDragOffset}
+          toggleMode={toggleMode}
         />
         <div
           className={`flex-1 p-4 md:p-6 lg:p-8 transition-all duration-300 overflow-auto`}

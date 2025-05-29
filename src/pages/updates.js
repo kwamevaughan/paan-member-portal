@@ -122,25 +122,20 @@ export default function Updates({ mode = "light", toggleMode }) {
         toggleSidebar={toggleSidebar}
         isSidebarOpen={isSidebarOpen}
         sidebarState={sidebarState}
-        fullName={user?.name ?? "Member"}
-        jobTitle={user.job_type}
-        agencyName={user.agencyName}
+        user={user}
         mode={mode}
         toggleMode={toggleMode}
         onLogout={handleLogout}
-        pageName=""
-        pageDescription=""
-        breadcrumbs={[{ label: "Home", href: "/" }, { label: "Updates" }]}
       />
-
       <div className="flex flex-1">
         <HrSidebar
           isOpen={isSidebarOpen}
+          user={user}
           mode={mode}
-          toggleMode={toggleMode}
-          onLogout={handleLogout}
           toggleSidebar={toggleSidebar}
+          onLogout={handleLogout}
           setDragOffset={updateDragOffset}
+          toggleMode={toggleMode}
         />
 
         <div

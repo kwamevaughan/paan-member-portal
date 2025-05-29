@@ -101,42 +101,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
   } = useOffers(
     { tier_restriction: filters.offers?.tier_restriction || "" },
     user?.selected_tier || "Free Member"
-  );
-
-  // Debug user and data
-  useEffect(() => {
-    console.log("[Dashboard] User:", {
-      id: user?.id,
-      tier: user?.selected_tier,
-      fullUser: user,
-    });
-    console.log("[Dashboard] MarketIntel:", {
-      count: marketIntel.length,
-      loading: marketIntelLoading,
-      error: marketIntelError,
-      filters: filters.marketIntel,
-      filterOptions: marketIntelFilterOptions,
-    });
-    console.log("[Dashboard] Offers:", {
-      count: offers.length,
-      loading: offersLoading,
-      error: offersError,
-      filters: filters.offers,
-      filterOptions: offerFilterOptions,
-    });
-  }, [
-    user,
-    marketIntel,
-    marketIntelLoading,
-    marketIntelError,
-    filters.marketIntel,
-    marketIntelFilterOptions,
-    offers,
-    offersLoading,
-    offersError,
-    filters.offers,
-    offerFilterOptions,
-  ]);
+  );  
 
   // Handle restricted access
   const handleRestrictedClick = (message) => {
@@ -209,21 +174,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
               JobTypeBadge={JobTypeBadge}
               useLatestUpdate={useLatestUpdate}
             />
-            <div className="pb-12 grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
-              <StatsChart
-                opportunities={opportunities}
-                events={events}
-                resources={resources}
-                offers={offers}
-                marketIntel={marketIntel}
-                updates={updates}
-                user={user}
-                mode={mode}
-                getLastUpdatedForSection={getLastUpdatedForSection}
-                useRouter={useRouter}
-              />
-              <YouTubeVideo mode={mode} />
-            </div>
+
             <TabContentTransition
               activeTab={activeTab}
               setActiveTab={setActiveTab}
@@ -329,6 +280,22 @@ export default function Dashboard({ mode = "light", toggleMode }) {
                 />
               )}
             </TabContentTransition>
+
+            <div className="pb-12 grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+              <StatsChart
+                opportunities={opportunities}
+                events={events}
+                resources={resources}
+                offers={offers}
+                marketIntel={marketIntel}
+                updates={updates}
+                user={user}
+                mode={mode}
+                getLastUpdatedForSection={getLastUpdatedForSection}
+                useRouter={useRouter}
+              />
+              <YouTubeVideo mode={mode} />
+            </div>
           </div>
           <SimpleFooter mode={mode} isSidebarOpen={isSidebarOpen} />
         </div>

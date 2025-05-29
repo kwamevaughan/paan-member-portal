@@ -120,7 +120,7 @@ function MyApp({ Component, pageProps }) {
       );
       const label = navItem
         ? navItem.label
-        : segment.charAt(0).toUpperCase() + pageSlug.slice(1);
+        : segment.charAt(0).toUpperCase() + segment.slice(1); // Fixed: Use segment instead of pageSlug
       crumbs.push({ href: currentPath, label });
     });
 

@@ -155,7 +155,7 @@ export const AuthProvider = ({ children }) => {
           : process.env.NEXT_PUBLIC_BASE_URL_PROD;
       const redirectTo = `${baseUrl}/auth/callback`;
       console.log(
-        `AuthContext: Redirecting to ${redirectTo} for ${provider} login`
+        `AuthContext: Initiating ${provider} login with redirectTo: ${redirectTo}`
       );
       const { error } = await supabase.auth.signInWithOAuth({
         provider: provider.toLowerCase(),
@@ -199,6 +199,8 @@ export const AuthProvider = ({ children }) => {
     const handleSocialLoginCallback = async () => {
       if (router.pathname !== "/auth/callback") return;
 
+      console.log("AuthContext: Handling social login callback");
+
       try {
         const {
           data: { session },
@@ -218,6 +220,12 @@ export const AuthProvider = ({ children }) => {
           const name =
             user.user_metadata.full_name || user.user_metadata.name || "User";
 
+          console.log("AuthContext: Social login user:", {
+            email,
+            authUserId,
+            name,
+          });
+
           const { data: existingUser, error: fetchError } = await supabase
             .from("candidates")
             .select(
@@ -227,6 +235,7 @@ export const AuthProvider = ({ children }) => {
             .single();
 
           if (fetchError || !existingUser) {
+            console.log("AuthContext: No existing candidate, creating new one");
             const { data: newCandidate, error: insertError } = await supabase
               .from("candidates")
               .insert({
@@ -245,13 +254,13 @@ export const AuthProvider = ({ children }) => {
                 insertError
               );
               toast.error(
-                "Failed to create account. Redirecting to Membership page.",
-                { duration: 3000 }
+                "Failed to create account. Redirecting to Membership page."
               );
               await supabase.auth.signOut();
-              setTimeout(() => {
-                window.location.href = "https://membership.paan.africa/";
-              }, 3000);
+              console.log(
+                "AuthContext: Redirecting to https://membership.paan.africa/"
+              );
+              window.location.assign("https://membership.paan.africa/");
               return;
             }
 
@@ -285,6 +294,7 @@ export const AuthProvider = ({ children }) => {
           toast.success("Social login successful! Redirecting...");
           router.push("/dashboard");
         } else {
+          console.log("AuthContext: No session user, showing login error");
           setShowLoginError(true);
         }
       } catch (error) {

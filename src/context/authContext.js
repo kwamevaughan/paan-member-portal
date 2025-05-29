@@ -277,7 +277,7 @@ export const AuthProvider = ({ children }) => {
               primaryContactName: existingUser.primaryContactName,
               job_type: existingUser.job_type,
               selected_tier: existingUser.selected_tier,
-              agencyName: newCandidate.agencyName,
+              agencyName: existingUser.agencyName,
               role: "agency_member",
             });
           }

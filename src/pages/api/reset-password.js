@@ -1,3 +1,4 @@
+// pages/api/reset-password.js
 import { createClient } from "@supabase/supabase-js";
 
 export default async function handler(req, res) {
@@ -6,12 +7,25 @@ export default async function handler(req, res) {
   }
 
   const { email } = req.body;
-  const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY 
-  );
+  if (!email) {
+    return res.status(400).json({ error: "Email is required" });
+  }
 
   try {
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_KEY
+    );
+
+    if (
+      !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+      !process.env.SUPABASE_SERVICE_KEY
+    ) {
+      throw new Error(
+        "Supabase configuration missing: Ensure NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_KEY are set"
+      );
+    }
+
     let firstName = "User";
     // Query candidates table
     const { data: candidateData, error: candidateError } = await supabaseAdmin
@@ -21,18 +35,24 @@ export default async function handler(req, res) {
       .single();
 
     if (candidateData && !candidateError) {
+      console.log("API: Found candidate:", candidateData);
       firstName = candidateData.primaryContactName?.split(" ")[0] || "User";
     } else {
+      console.log("API: Candidate error:", candidateError?.message);
       // Fallback to auth.users
       const { data: userData, error: userError } =
         await supabaseAdmin.auth.admin.getUserByEmail(email);
-
-      if (userData && !userError) {
-        const metaData = userData.user?.user_metadata || {};
+      if (userData?.user && !userError) {
+        console.log("API: Found auth user:", userData.user.user_metadata);
+        const metaData = userData.user.user_metadata || {};
         firstName = metaData.full_name || metaData.name || "User";
         firstName = firstName.split(" ")[0] || "User";
+      } else {
+        console.log("API: Auth user error:", userError?.message);
       }
     }
+
+    console.log("API: Sending reset email with firstName:", firstName);
 
     const baseUrl =
       process.env.NODE_ENV === "development"
@@ -46,6 +66,7 @@ export default async function handler(req, res) {
     });
 
     if (error) {
+      console.error("API: Password reset error:", error);
       throw new Error(error.message);
     }
 

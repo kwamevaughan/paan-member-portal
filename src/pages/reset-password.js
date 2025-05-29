@@ -1,159 +1,131 @@
-import React, { useState, useEffect } from "react";
+// pages/reset-password.js
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { Icon } from "@iconify/react";
-import { supabase } from "@/lib/supabase";
 import toast from "react-hot-toast";
+import { supabase } from "@/lib/supabase";
+import Link from "next/link";
 
-const ResetPasswordPage = () => {
-  const router = useRouter();
+export default function ResetPassword() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState(null);
+  const [code, setCode] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [token, setToken] = useState("");
+  const router = useRouter();
 
   useEffect(() => {
-    // Ensure the page is only accessible via a valid password reset link
-    const handlePasswordReset = async () => {
-      const { data, error } = await supabase.auth.getSession();
-      if (error || !data.session) {
-        toast.error("Invalid or expired reset link. Please try again.");
-        router.push("/login");
-      }
-    };
-    handlePasswordReset();
-  }, [router]);
+    // Extract token from URL query
+    const { token: urlToken } = router.query;
+    if (urlToken) {
+      setToken(urlToken);
+    }
+  }, [router.query]);
 
-  const handleSubmit = async (e) => {
+  const handleResetPassword = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setError(null);
-
     if (newPassword !== confirmPassword) {
-      setError("Passwords do not match.");
-      setIsSubmitting(false);
+      toast.error("Passwords do not match");
       return;
     }
 
+    setLoading(true);
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword,
-      });
-
-      if (error) {
-        throw new Error(error.message);
+      if (token) {
+        // Update password using token
+        const { error } = await supabase.auth.updateUser({
+          password: newPassword,
+          access_token: token,
+        });
+        if (error) throw error;
+      } else if (code) {
+        // Verify code and update password
+        const { error } = await supabase.auth.verifyOtp({
+          token: code,
+          type: "recovery",
+          password: newPassword,
+        });
+        if (error) throw error;
+      } else {
+        throw new Error("No token or code provided");
       }
 
-      toast.success("Password updated successfully! Redirecting to login...");
-      setTimeout(() => {
-        router.push("/login");
-      }, 2000);
+      toast.success("Password updated successfully!");
+      router.push("/login");
     } catch (error) {
-      setError(error.message || "Failed to update password. Please try again.");
+      console.error("Reset password error:", error);
+      toast.error(error.message || "Failed to reset password");
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword((prev) => !prev);
-  };
-
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-white">
-      <div className="w-full max-w-md p-6">
-        <h1 className="text-3xl text-paan-blue font-bold mb-4">
-          Reset Password
-        </h1>
-        <p className="text-paan-blue font-light mb-6">
-          Enter your new password below.
-        </p>
-
-        {error && <div className="mb-4 text-red-500 text-sm">{error}</div>}
-
-        <form onSubmit={handleSubmit}>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+        <h2 className="text-2xl font-bold mb-6 text-center">
+          Reset Your Password
+        </h2>
+        <form onSubmit={handleResetPassword}>
           <div className="mb-4">
             <label
-              className="block text-gray-300 text-sm md:text-base mb-2"
+              className="block text-sm font-medium mb-2"
               htmlFor="new-password"
             >
               New Password
             </label>
-            <div className="relative">
-              <input
-                id="new-password"
-                type={showPassword ? "text" : "password"}
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Enter new password"
-                className="w-full bg-transparent text-paan-blue font-light border-b-2 border-gray-700 rounded-none py-2.5 px-2 focus:outline-none focus:border-blue-500"
-                required
-              />
-              <span
-                onClick={togglePasswordVisibility}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-paan-blue cursor-pointer"
-              >
-                {showPassword ? (
-                  <Icon icon="heroicons:eye-slash" className="w-5 h-5" />
-                ) : (
-                  <Icon icon="heroicons:eye" className="w-5 h-5" />
-                )}
-              </span>
-            </div>
+            <input
+              id="new-password"
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="w-full p-2 border rounded"
+              required
+            />
           </div>
-
-          <div className="mb-6">
+          <div className="mb-4">
             <label
-              className="block text-gray-300 text-sm md:text-base mb-2"
+              className="block text-sm font-medium mb-2"
               htmlFor="confirm-password"
             >
               Confirm Password
             </label>
-            <div className="relative">
-              <input
-                id="confirm-password"
-                type={showPassword ? "text" : "password"}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirm new password"
-                className="w-full bg-transparent text-paan-blue font-light border-b-2 border-gray-700 rounded-none py-2.5 px-2 focus:outline-none focus:border-blue-500"
-                required
-              />
-              <span
-                onClick={togglePasswordVisibility}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-paan-blue cursor-pointer"
-              >
-                {showPassword ? (
-                  <Icon icon="heroicons:eye-slash" className="w-5 h-5" />
-                ) : (
-                  <Icon icon="heroicons:eye" className="w-5 h-5" />
-                )}
-              </span>
-            </div>
+            <input
+              id="confirm-password"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full p-2 border rounded"
+              required
+            />
           </div>
-
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-2" htmlFor="code">
+              Confirmation Code (Optional)
+            </label>
+            <input
+              id="code"
+              type="text"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              className="w-full p-2 border rounded"
+              placeholder="Enter code from email (e.g., 871928)"
+            />
+          </div>
           <button
             type="submit"
-            disabled={isSubmitting}
-            className={`w-full bg-paan-red text-white font-bold py-3 rounded-full transform transition-transform duration-700 ease-in-out hover:scale-105 ${
-              isSubmitting ? "opacity-50 cursor-not-allowed" : ""
-            }`}
+            disabled={loading}
+            className="w-full bg-orange-500 text-white p-2 rounded disabled:opacity-50"
           >
-            {isSubmitting ? "Updating..." : "Update Password"}
+            {loading ? "Resetting..." : "Reset Password"}
           </button>
         </form>
-
-        <div className="mt-4 text-center">
-          <button
-            onClick={() => router.push("/login")}
-            className="text-paan-blue font-light text-sm md:text-base hover:underline hover:text-paan-red"
-          >
-            Back to Login
-          </button>
-        </div>
+        <p className="mt-4 text-center text-sm">
+          Back to{" "}
+          <Link href="/login" className="text-orange-500">
+            Login
+          </Link>
+        </p>
       </div>
     </div>
   );
-};
-
-export default ResetPasswordPage;
+}

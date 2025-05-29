@@ -283,7 +283,7 @@ const LanguageSwitch = ({ mode }) => {
             languages.find((lang) => lang.name === selectedLanguage)?.flag ||
             languages[0].flag
           }
-          className="h-6 w-6 rounded-lg"
+          className="h-6 w-6 rounded-full"
         />
       </TooltipIconButton>
 
@@ -305,7 +305,7 @@ const LanguageSwitch = ({ mode }) => {
                   : ""
               }`}
             >
-              <Icon icon={language.flag} className="h-6 w-6 mr-2" />
+              <Icon icon={language.flag} className="h-6 w-6 mr-2 rounded-full" />
               {language.name}
             </button>
           ))}

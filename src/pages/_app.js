@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { useRef } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import "../styles/globals.css";
 import { sidebarNav } from "@/data/nav";

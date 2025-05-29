@@ -44,11 +44,9 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem("paan_member_session", "authenticated");
             localStorage.setItem("user_email", email);
           } else {
-            console.error("AuthContext: Session invalid:", error);
-            await supabase.auth.signOut();
-            localStorage.removeItem("paan_member_session");
-            localStorage.removeItem("user_email");
-            setShowExpiredModal(true);
+            console.error("AuthContext: No candidate found for user:", error);
+            setShowLoginError(true);
+            router.push("/");
           }
         } else {
           localStorage.removeItem("paan_member_session");
@@ -58,7 +56,7 @@ export const AuthProvider = ({ children }) => {
         console.error("AuthContext: Initialization error:", err);
         localStorage.removeItem("paan_member_session");
         localStorage.removeItem("user_email");
-        setShowExpiredModal(true);
+        setShowLoginError(true);
       }
       setLoading(false);
     };
@@ -75,7 +73,7 @@ export const AuthProvider = ({ children }) => {
           localStorage.removeItem("user_email");
           localStorage.removeItem("paan_remembered_email");
           localStorage.removeItem("paan_session_expiry");
-          router.push("/"); // Fixed to login page
+          router.push("/");
         }
       }
     );
@@ -211,6 +209,7 @@ export const AuthProvider = ({ children }) => {
         if (error) {
           console.error("AuthContext: Error retrieving session:", error);
           setShowLoginError(true);
+          router.push("/");
           return;
         }
 
@@ -246,7 +245,7 @@ export const AuthProvider = ({ children }) => {
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 redirectTo: "https://membership.paan.africa/",
-                authUserId, // Pass authUserId to delete
+                authUserId,
               }),
             });
 
@@ -282,10 +281,12 @@ export const AuthProvider = ({ children }) => {
         } else {
           console.log("AuthContext: No session user, showing login error");
           setShowLoginError(true);
+          router.push("/");
         }
       } catch (error) {
         console.error("AuthContext: Social login callback error:", error);
         setShowLoginError(true);
+        router.push("/");
       }
     };
 

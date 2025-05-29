@@ -15,7 +15,6 @@ export default async function handler(req, res) {
   );
 
   try {
-    // Delete auth.users entry if authUserId is provided
     if (authUserId) {
       console.log("API: Attempting to delete auth.users entry:", authUserId);
       const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(
@@ -28,14 +27,12 @@ export default async function handler(req, res) {
       console.log("API: Successfully deleted auth.users entry:", authUserId);
     }
 
-    // Perform sign-out
     const { error } = await supabaseAdmin.auth.signOut();
     if (error) {
       console.error("API: Sign-out error:", error);
       throw error;
     }
 
-    // Server-side redirect
     console.log(
       "API: Redirecting to:",
       redirectTo || "https://member-portal.paan.africa/"

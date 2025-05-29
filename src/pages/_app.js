@@ -6,7 +6,6 @@ import { sidebarNav } from "@/data/nav";
 import { Questrial } from "next/font/google";
 import { AuthProvider } from "@/context/authContext";
 
-
 const questrial = Questrial({
   weight: "400",
   subsets: ["latin"],
@@ -16,7 +15,6 @@ function MyApp({ Component, pageProps }) {
   const [mode, setMode] = useState("light");
   const router = useRouter();
 
-  // Toggle dark mode and persist in localStorage
   const toggleMode = () => {
     const newMode = mode === "light" ? "dark" : "light";
     setMode(newMode);
@@ -26,10 +24,8 @@ function MyApp({ Component, pageProps }) {
   };
 
   useEffect(() => {
-    // Only run client-side
     if (typeof window === "undefined") return;
 
-    // Load saved mode or system preference on mount
     const savedMode = window.localStorage.getItem("mode");
     if (savedMode) {
       setMode(savedMode);
@@ -42,7 +38,6 @@ function MyApp({ Component, pageProps }) {
       window.localStorage.setItem("mode", systemMode);
     }
 
-    // Listen for system theme changes
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const handleChange = (e) => {
       const systemMode = e.matches ? "dark" : "light";
@@ -55,11 +50,10 @@ function MyApp({ Component, pageProps }) {
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
-  // Handle route change with toast
   useEffect(() => {
     const routeChangeStart = (url) => {
+      console.log("App: Route change started to:", url);
       const pageSlug = url.split("/").pop() || "overview";
-      // Flatten sidebarNav to access items
       const navItems = sidebarNav.flatMap((category) => category.items);
       const page = navItems.find(
         (item) => item.href === url || item.href.endsWith(`/${pageSlug}`)
@@ -72,13 +66,10 @@ function MyApp({ Component, pageProps }) {
       });
     };
 
-    const handleRouteChange = () => {
-      // Reset any unexpected padding/margin or layout issues on route change
-      document.body.style.paddingTop = "0px"; // Reset any extra padding
+    const handleRouteChange = (url) => {
+      console.log("App: Route change completed to:", url);
+      document.body.style.paddingTop = "0px";
     };
-
-    router.events.on("routeChangeComplete", handleRouteChange);
-
 
     const routeChangeComplete = () => {
       toast.dismiss("route-loading");
@@ -89,26 +80,25 @@ function MyApp({ Component, pageProps }) {
     };
 
     router.events.on("routeChangeStart", routeChangeStart);
-    router.events.on("routeChangeComplete", routeChangeComplete);
+    router.events.on("routeChangeComplete", handleRouteChange);
     router.events.on("routeChangeError", routeChangeError);
 
     return () => {
       router.events.off("routeChangeStart", routeChangeStart);
-      router.events.off("routeChangeComplete", routeChangeComplete);
+      router.events.off("routeChangeComplete", handleRouteChange);
       router.events.off("routeChangeError", routeChangeError);
     };
   }, [router]);
 
-  // Compute breadcrumbs
   const breadcrumbs = (() => {
-    const path = router.asPath.split("?")[0]; // Remove query params
-    const segments = path.split("/").filter((s) => s); // Split and remove empty
-    const crumbs = [{ href: "/", label: "Home" }]; // Start with Home
+    const path = router.asPath.split("?")[0];
+    const segments = path.split("/").filter((s) => s);
+    const crumbs = [{ href: "/", label: "Home" }];
 
     let currentPath = "";
     const navItems = sidebarNav.flatMap((category) => category.items);
 
-    segments.forEach((segment, index) => {
+    segments.forEach((segment) => {
       currentPath += `/${segment}`;
       const navItem = navItems.find(
         (item) => item.href === currentPath || item.href.endsWith(`/${segment}`)
@@ -126,13 +116,13 @@ function MyApp({ Component, pageProps }) {
     <div className={`${mode === "dark" ? "dark" : ""} ${questrial.className}`}>
       <Toaster position="top-center" reverseOrder={false} />
       <AuthProvider>
-      <Component
-        {...pageProps}
-        mode={mode}
-        toggleMode={toggleMode}
-        breadcrumbs={breadcrumbs}
+        <Component
+          {...pageProps}
+          mode={mode}
+          toggleMode={toggleMode}
+          breadcrumbs={breadcrumbs}
         />
-        </AuthProvider>
+      </AuthProvider>
     </div>
   );
 }

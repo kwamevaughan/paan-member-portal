@@ -1,5 +1,5 @@
 const normalizeTier = (tier) => {
-  if (!tier) return "Free Member";
+  if (!tier || typeof tier !== "string") return "Free Member";
   const tierMap = {
     "gold member (tier 3)": "Gold Member",
     "full member (tier 2)": "Full Member",
@@ -27,7 +27,6 @@ const hasTierAccess = (entityTier, user) => {
   const userTierIndex = tiers.indexOf(userTier);
   const entityTierIndex = tiers.indexOf(normalizedTier);
   if (userTierIndex === -1 || entityTierIndex === -1) return false;
-  // User can access their tier and lower tiers (higher indices)
   return userTierIndex <= entityTierIndex;
 };
 

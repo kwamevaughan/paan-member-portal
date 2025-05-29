@@ -145,7 +145,6 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
           : "bg-gradient-to-br from-gray-50 via-white to-gray-100 text-gray-900"
       }`}
     >
-      <Toaster />
       <HrHeader
         toggleSidebar={toggleSidebar}
         isSidebarOpen={isSidebarOpen}

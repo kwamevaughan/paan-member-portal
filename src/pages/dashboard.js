@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useUser } from "@/hooks/useUser";
 import useLogout from "@/hooks/useLogout";
@@ -36,8 +36,7 @@ const StatsChart = dynamic(() => import("@/components/StatsChart"), {
 });
 
 export default function Dashboard({ mode = "light", toggleMode }) {
-  const { isSidebarOpen, toggleSidebar, sidebarState, updateDragOffset } =
-    useSidebar();
+  const { isSidebarOpen, toggleSidebar, sidebarState, updateDragOffset } = useSidebar();
   const router = useRouter();
   const { user, loading: userLoading, LoadingComponent } = useUser();
   const { handleLogout } = useLogout();
@@ -47,7 +46,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     latestItems,
     loading: latestUpdateLoading,
     error: latestUpdateError,
-  } = useLatestUpdate(user || { selected_tier: "Free Member" });
+  } = useLatestUpdate(user?.selected_tier || "Free Member");
 
   // Fetch data
   const {
@@ -57,9 +56,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     error: opportunitiesError,
   } = useBusinessOpportunities(
     filters.opportunities,
-    user || {
-      selected_tier: "Free Member",
-    }
+    user?.selected_tier || "Free Member"
   );
 
   const {
@@ -69,21 +66,21 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     loading: eventsLoading,
     error: eventsError,
     handleEventRegistration,
-  } = useEvents(filters.events, user || { selected_tier: "Free Member" });
+  } = useEvents(filters.events, user?.selected_tier || "Free Member");
 
   const {
     resources,
     filterOptions: resourceFilterOptions,
     loading: resourcesLoading,
     error: resourcesError,
-  } = useResources(filters.resources, user || { selected_tier: "Free Member" });
+  } = useResources(filters.resources, user?.selected_tier || "Free Member");
 
   const {
     updates,
     filterOptions: updateFilterOptions,
     loading: updatesLoading,
     error: updatesError,
-  } = useUpdates(filters.updates, user || { selected_tier: "Free Member" });
+  } = useUpdates(filters.updates, user?.selected_tier || "Free Member");
 
   const {
     marketIntel,
@@ -94,7 +91,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     filters.marketIntel,
     "",
     [],
-    user || { selected_tier: "Free Member" }
+    user?.selected_tier || "Free Member" // Fix: Pass selected_tier
   );
 
   const {
@@ -104,20 +101,37 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     error: offersError,
   } = useOffers(
     { tier_restriction: filters.offers?.tier_restriction || "" },
-    user || { selected_tier: "Free Member" }
+    user?.selected_tier || "Free Member"
   );
 
-  // Debug user and offers
+  // Debug user and data
   useEffect(() => {
-    console.log("User:", user);
-    console.log("User tier:", user?.selected_tier);
-    console.log("Offers:", offers);
-    console.log("Offers Loading:", offersLoading);
-    console.log("Offers Error:", offersError);
-    console.log("Offer Filters:", filters.offers);
-    console.log("Offer Filter Options:", offerFilterOptions);
+    console.log("[Dashboard] User:", {
+      id: user?.id,
+      tier: user?.selected_tier,
+      fullUser: user,
+    });
+    console.log("[Dashboard] MarketIntel:", {
+      count: marketIntel.length,
+      loading: marketIntelLoading,
+      error: marketIntelError,
+      filters: filters.marketIntel,
+      filterOptions: marketIntelFilterOptions,
+    });
+    console.log("[Dashboard] Offers:", {
+      count: offers.length,
+      loading: offersLoading,
+      error: offersError,
+      filters: filters.offers,
+      filterOptions: offerFilterOptions,
+    });
   }, [
     user,
+    marketIntel,
+    marketIntelLoading,
+    marketIntelError,
+    filters.marketIntel,
+    marketIntelFilterOptions,
     offers,
     offersLoading,
     offersError,
@@ -155,15 +169,14 @@ export default function Dashboard({ mode = "light", toggleMode }) {
         mode === "dark" ? "bg-gray-900 text-white" : "bg-white text-gray-900"
       }`}
     >
-      <Toaster />
       <HrHeader
         toggleSidebar={toggleSidebar}
         isSidebarOpen={isSidebarOpen}
         sidebarState={sidebarState}
         fullName={user?.name ?? "Member"}
-        jobTitle={user.job_type}
-        selectedTier={user.selected_tier}
-        agencyName={user.agencyName}
+        jobTitle={user?.job_type}
+        selectedTier={user?.selected_tier || "Free Member"}
+        agencyName={user?.agencyName}
         mode={mode}
         toggleMode={toggleMode}
         onLogout={handleLogout}
@@ -197,7 +210,6 @@ export default function Dashboard({ mode = "light", toggleMode }) {
               JobTypeBadge={JobTypeBadge}
               useLatestUpdate={useLatestUpdate}
             />
-
             <div className="pb-12 grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
               <StatsChart
                 opportunities={opportunities}
@@ -213,7 +225,6 @@ export default function Dashboard({ mode = "light", toggleMode }) {
               />
               <YouTubeVideo mode={mode} />
             </div>
-
             <TabContentTransition
               activeTab={activeTab}
               setActiveTab={setActiveTab}

@@ -97,21 +97,7 @@ export default function MarketIntel({ mode = "light", toggleMode }) {
           : "bg-gradient-to-br from-slate-50 to-blue-50"
       }`}
     >
-      <Toaster
-        position="top-center"
-        toastOptions={{
-          className: `!${
-            mode === "dark"
-              ? "bg-gray-800/50 text-white"
-              : "bg-white/50 text-gray-800"
-          } font-medium backdrop-blur-lg`,
-          style: {
-            borderRadius: "10px",
-            padding: "16px",
-            boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-          },
-        }}
-      />
+      
       <HrHeader
         toggleSidebar={toggleSidebar}
         isSidebarOpen={isSidebarOpen}

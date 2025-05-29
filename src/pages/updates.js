@@ -132,7 +132,6 @@ export default function Updates({ mode = "light", toggleMode }) {
           : "bg-gradient-to-br from-slate-50 to-blue-50"
       }`}
     >
-      <Toaster />
       <HrHeader
         toggleSidebar={toggleSidebar}
         isSidebarOpen={isSidebarOpen}

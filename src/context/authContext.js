@@ -11,69 +11,104 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [skipRedirect, setSkipRedirect] = useState(false);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const router = useRouter();
   const [showExpiredModal, setShowExpiredModal] = useState(false);
-  const [showLoginError, setShowLoginError] = useState(false);
+  const [loginError, setLoginError] = useState(null);
 
-  useEffect(() => {
-    const initializeAuth = async () => {
-      try {
-        const { data: session } = await supabase.auth.getSession();
-        const email = session?.session?.user?.email;
-        const authUserId = session?.session?.user?.id;
+  const debounce = (fn, delay) => {
+    let timeout;
+    return (...args) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => fn(...args), delay);
+    };
+  };
 
-        if (session?.session && email && authUserId) {
-          const { data, error } = await supabase
-            .from("candidates")
-            .select(
-              "id, primaryContactEmail, primaryContactName, job_type, selected_tier, agencyName, auth_user_id"
-            )
-            .eq("auth_user_id", authUserId)
-            .single();
+  const initializeAuth = async () => {
+    if (isAuthenticating) {
+      console.log(
+        "AuthContext: Skipping initializeAuth, already authenticating"
+      );
+      return;
+    }
+    setIsAuthenticating(true);
 
-          if (data && !error) {
-            setUser({
-              id: data.id,
-              email: data.primaryContactEmail,
-              primaryContactName: data.primaryContactName,
-              job_type: data.job_type,
-              selected_tier: data.selected_tier,
-              agencyName: data.agencyName,
-              role: "agency_member",
-            });
-            localStorage.setItem("paan_member_session", "authenticated");
-            localStorage.setItem("user_email", email);
-          } else {
-            console.error("AuthContext: No candidate found for user:", error);
-            setShowLoginError(true);
-            router.push("/");
-          }
+    try {
+      console.log(
+        "AuthContext: Running initializeAuth, pathname:",
+        router.pathname
+      );
+      const { data: session } = await supabase.auth.getSession();
+      const email = session?.session?.user?.email;
+      const authUserId = session?.session?.user?.id;
+
+      if (session?.session && email && authUserId) {
+        const { data, error } = await supabase
+          .from("candidates")
+          .select(
+            "id, primaryContactEmail, primaryContactName, job_type, selected_tier, agencyName, auth_user_id"
+          )
+          .eq("auth_user_id", authUserId)
+          .single();
+
+        if (data && !error) {
+          setUser({
+            id: data.id,
+            email: data.primaryContactEmail,
+            primaryContactName: data.primaryContactName,
+            job_type: data.job_type,
+            selected_tier: data.selected_tier,
+            agencyName: data.agencyName,
+            role: "agency_member",
+          });
+          localStorage.setItem("paan_member_session", "authenticated");
+          localStorage.setItem("user_email", email);
         } else {
-          localStorage.removeItem("paan_member_session");
-          localStorage.removeItem("user_email");
+          console.error("AuthContext: No candidate found for user:", error);
+          if (router.pathname !== "/auth/callback") {
+            setLoginError(
+              "No account found for this email. Please ensure your account is activated or contact support."
+            );
+          }
         }
-      } catch (err) {
-        console.error("AuthContext: Initialization error:", err);
+      } else {
         localStorage.removeItem("paan_member_session");
         localStorage.removeItem("user_email");
-        setShowLoginError(true);
       }
+    } catch (err) {
+      console.error("AuthContext: Initialization error:", err);
+      localStorage.removeItem("paan_member_session");
+      localStorage.removeItem("user_email");
+      if (router.pathname !== "/auth/callback") {
+        setLoginError(
+          "An error occurred during authentication. Please try again."
+        );
+      }
+    } finally {
       setLoading(false);
-    };
+      setIsAuthenticating(false);
+    }
+  };
 
+  const debouncedInitializeAuth = debounce(initializeAuth, 500);
+
+  useEffect(() => {
     initializeAuth();
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log("AuthContext: onAuthStateChange event:", event);
         if (event === "SIGNED_IN" && session?.user?.email) {
-          initializeAuth();
+          debouncedInitializeAuth();
         } else if (event === "SIGNED_OUT" && !skipRedirect) {
           setUser(null);
           localStorage.removeItem("paan_member_session");
           localStorage.removeItem("user_email");
           localStorage.removeItem("paan_remembered_email");
           localStorage.removeItem("paan_session_expiry");
-          router.push("/");
+          if (router.pathname !== "/auth/callback") {
+            router.push("/");
+          }
         }
       }
     );
@@ -91,12 +126,10 @@ export const AuthProvider = ({ children }) => {
 
       if (authError) {
         console.error("AuthContext: Supabase auth error:", authError);
-        setShowLoginError(true);
-        throw new Error(
-          authError.message.includes("Invalid login credentials")
-            ? "Invalid email or password. If you recently received a new password, please use it or contact support at support@paan.africa."
-            : `Authentication failed: ${authError.message}`
+        setLoginError(
+          "Invalid email or password. If you recently received a new password, please use it or contact support at support@paan.africa."
         );
+        throw new Error(authError.message);
       }
 
       const authUserId = authData.user.id;
@@ -110,10 +143,10 @@ export const AuthProvider = ({ children }) => {
 
       if (error || !userData) {
         console.error("AuthContext: User not found:", error);
-        setShowLoginError(true);
-        throw new Error(
+        setLoginError(
           "No account found for this email. Please ensure your account is activated or contact support at support@paan.africa."
         );
+        throw new Error("No account found.");
       }
 
       if (rememberMe) {
@@ -168,6 +201,7 @@ export const AuthProvider = ({ children }) => {
           `AuthContext: Social login error with ${provider}:`,
           error
         );
+        setLoginError(`Failed to sign in with ${provider}. Please try again.`);
         throw new Error(`Failed to sign in with ${provider}`);
       }
     } catch (error) {
@@ -186,6 +220,7 @@ export const AuthProvider = ({ children }) => {
 
       if (!response.ok) {
         const { error } = await response.json();
+        setLoginError("Failed to send reset email. Please try again.");
         throw new Error(error || "Failed to send reset email");
       }
     } catch (error) {
@@ -208,7 +243,6 @@ export const AuthProvider = ({ children }) => {
 
         if (error) {
           console.error("AuthContext: Error retrieving session:", error);
-          setShowLoginError(true);
           router.push("/");
           return;
         }
@@ -240,6 +274,10 @@ export const AuthProvider = ({ children }) => {
             );
             toast.error("No account found. Redirecting to Membership page.");
             setSkipRedirect(true);
+            console.log(
+              "AuthContext: Calling /api/signout with authUserId:",
+              authUserId
+            );
             const response = await fetch("/api/signout", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -254,12 +292,8 @@ export const AuthProvider = ({ children }) => {
                 "AuthContext: Sign-out error:",
                 await response.json()
               );
+              window.location.assign("https://membership.paan.africa/");
             }
-
-            console.log(
-              "AuthContext: Redirecting to https://membership.paan.africa/"
-            );
-            window.location.assign("https://membership.paan.africa/");
             return;
           }
 
@@ -279,13 +313,11 @@ export const AuthProvider = ({ children }) => {
           toast.success("Social login successful! Redirecting...");
           router.push("/dashboard");
         } else {
-          console.log("AuthContext: No session user, showing login error");
-          setShowLoginError(true);
+          console.log("AuthContext: No session user, redirecting to login");
           router.push("/");
         }
       } catch (error) {
         console.error("AuthContext: Social login callback error:", error);
-        setShowLoginError(true);
         router.push("/");
       }
     };
@@ -319,8 +351,9 @@ export const AuthProvider = ({ children }) => {
         }}
       />
       <LoginErrorModal
-        isOpen={showLoginError}
-        onClose={() => setShowLoginError(false)}
+        isOpen={!!loginError}
+        onClose={() => setLoginError(null)}
+        errorMessage={loginError}
       />
     </AuthContext.Provider>
   );

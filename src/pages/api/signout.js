@@ -7,6 +7,8 @@ export default async function handler(req, res) {
   }
 
   const { redirectTo, authUserId } = req.body;
+  console.log("API: /api/signout called with:", { redirectTo, authUserId });
+
   const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.SUPABASE_SERVICE_KEY
@@ -15,6 +17,7 @@ export default async function handler(req, res) {
   try {
     // Delete auth.users entry if authUserId is provided
     if (authUserId) {
+      console.log("API: Attempting to delete auth.users entry:", authUserId);
       const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(
         authUserId
       );
@@ -22,7 +25,7 @@ export default async function handler(req, res) {
         console.error("API: Delete user error:", deleteError);
         throw deleteError;
       }
-      console.log("API: Deleted auth.users entry:", authUserId);
+      console.log("API: Successfully deleted auth.users entry:", authUserId);
     }
 
     // Perform sign-out
@@ -33,6 +36,10 @@ export default async function handler(req, res) {
     }
 
     // Server-side redirect
+    console.log(
+      "API: Redirecting to:",
+      redirectTo || "https://member-portal.paan.africa/"
+    );
     res.setHeader(
       "Location",
       redirectTo || "https://member-portal.paan.africa/"

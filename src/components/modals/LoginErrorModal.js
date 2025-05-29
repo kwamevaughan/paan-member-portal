@@ -1,7 +1,7 @@
 // components/modals/LoginErrorModal.js
 import { Icon } from "@iconify/react";
 
-const LoginErrorModal = ({ isOpen, onClose }) => {
+const LoginErrorModal = ({ isOpen, onClose, errorMessage }) => {
   if (!isOpen) return null;
 
   return (
@@ -12,7 +12,8 @@ const LoginErrorModal = ({ isOpen, onClose }) => {
           <h2 className="text-xl font-semibold text-red-600">Login Failed</h2>
         </div>
         <p className="text-gray-600 mt-3 text-sm leading-relaxed">
-          Invalid email or password. Please double-check and try again.
+          {errorMessage ||
+            "An error occurred during login. Please try again or contact support at support@paan.africa."}
         </p>
         <div className="mt-6 flex justify-end">
           <button

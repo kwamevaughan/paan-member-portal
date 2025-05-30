@@ -72,9 +72,6 @@ const TitleCard = ({
     return `${day}${ordinal(day)} ${month}, ${year}`;
   };
 
-  console.log("[TitleCard] Page table:", pageTable);
-  console.log("[TitleCard] Last updated:", lastUpdated);
-
   const descriptionParts = description.split("<br />");
 
   if (windowWidth === null) return null;
@@ -128,14 +125,14 @@ const TitleCard = ({
               className={`flex items-center flex-wrap space-x-4 isMobile ? sm:space-x-6 } pt-2`}
             >
               <div
-                className={`py-2 rounded-full px-4 text-xs sm:text-sm ${
+                className={`rounded-full text-xs sm:text-sm ${
                   mode === "dark"
                     ? "bg-blue-500/20 border border-blue-400/30"
                     : "bg-blue-100 border-blue-200"
                 }`}
               >
                 <span
-                  className={`px-2 py-1 sm:py-2 rounded-xl mr-2 isMobile ? 0 : ""} ${
+                  className={`px-2 py-1 sm:py-1 rounded-xl mr-2 isMobile ? 0 : ""} ${
                     mode === "dark"
                       ? "bg-orange-500/20 border-orange-400/30 text-orange-300"
                       : "bg-orange-50 border-orange-200 text-gray-700"
@@ -144,7 +141,7 @@ const TitleCard = ({
                   Last Updated:
                 </span>
                 <span
-                  className={mode === "dark" ? "text-white" : "text-gray-900"}
+                  className={`mode === "dark" ? "text-white" : "text-gray-900" px-2`}
                 >
                   {formatDate(lastUpdated)}
                 </span>

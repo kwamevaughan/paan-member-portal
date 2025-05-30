@@ -144,7 +144,7 @@ export default function Updates({ mode = "light", toggleMode }) {
         />
 
         <div
-          className={`content-container flex-1 p-4 md:p-6 lg:p-8 transition-all duration-300 overflow-hidden ${
+          className={`content-container flex-1 p-4 md:p-6 lg:p-8 transition-all duration-300 ${
             isSidebarOpen && !isMobile ? "sidebar-open" : ""
           }`}
           style={{

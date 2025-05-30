@@ -62,7 +62,7 @@ export default function RegionalHub({ mode = "light", toggleMode }) {
         <div
           className={`content-container flex-1 p-4 md:p-6 lg:p-8 transition-all duration-300 ${
             isSidebarOpen && !isMobile ? "sidebar-open" : ""
-          }`} // Removed overflow-hidden
+          }`} 
           style={{
             marginLeft: isMobile ? "0px" : isSidebarOpen ? "200px" : "80px",
           }}

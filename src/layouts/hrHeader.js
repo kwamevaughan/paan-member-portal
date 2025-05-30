@@ -13,6 +13,7 @@ const HrHeader = ({
   toggleSidebar,
   onLogout,
   user,
+  onSearchModalToggle,
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(null);
@@ -56,7 +57,7 @@ const HrHeader = ({
     >
       <div
         className={`
-          p-2 m-4 transition-transform duration-300 bg-transparent
+          p-2 m-4 transition-transform duration-300
           ${
             isMobile ? "ml-0" : isSidebarOpen ? "md:ml-[200px]" : "md:ml-[80px]"
           }
@@ -65,12 +66,11 @@ const HrHeader = ({
               ? "bg-[#101827]/50 text-white"
               : "bg-white/50 text-black"
           }
-          backdrop-blur-md shadow-lg rounded-2xl
+          backdrop-blur-sm shadow-lg rounded-2xl
         `}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center w-full gap-2">
-            {/* Hamburger Menu for Mobile */}
             {isMobile && (
               <button
                 onClick={() => toggleSidebar(!isSidebarOpen)}
@@ -84,12 +84,11 @@ const HrHeader = ({
               </button>
             )}
             <div className="flex-grow">
-              <Search mode={mode} />
+              <Search mode={mode} onSearchModalToggle={onSearchModalToggle} />
             </div>
           </div>
 
           <div className="flex justify-end items-center w-full gap-2">
-            {/* Dark Mode Toggle */}
             <TooltipIconButton
               label={
                 <span className={mode === "dark" ? "text-black" : "text-black"}>
@@ -114,16 +113,13 @@ const HrHeader = ({
               />
             </TooltipIconButton>
 
-            {/* Fullscreen Toggle */}
             <FullscreenToggle mode={mode} />
-
-            {/* Language Switch */}
             <LanguageSwitch mode={mode} />
 
-            {/* User Dropdown */}
             <div
               className="flex items-center gap-2 pl-4 relative group cursor-default"
               ref={dropdownRef}
+              overd
               onClick={() => setDropdownOpen(!dropdownOpen)}
             >
               <div className="flex items-center gap-2 cursor-pointer">

@@ -1,3 +1,6 @@
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+
 export default function WelcomeCard({
   user,
   mode,
@@ -8,6 +11,18 @@ export default function WelcomeCard({
   useLatestUpdate,
 }) {
   const { latestItems, loading, error } = useLatestUpdate(user);
+  const [windowWidth, setWindowWidth] = useState(null);
+  const router = useRouter();
+
+  // Detect window width for responsive design
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Find the most recent item across all sections
   const latestItem = Object.entries(latestItems).reduce(
@@ -43,6 +58,10 @@ export default function WelcomeCard({
     });
   };
 
+  if (windowWidth === null) return null;
+
+  const isMobile = windowWidth < 640;
+
   return (
     <div className="relative mt-6 mb-10 group">
       {/* Glassmorphism background */}
@@ -56,8 +75,12 @@ export default function WelcomeCard({
         } shadow-2xl group-hover:shadow-3xl transition-all duration-500`}
       ></div>
 
-      <div className="relative p-8 flex items-start justify-between">
-        <div className="flex items-start space-x-6 flex-1">
+      <div
+        className={`relative p-4 sm:p-6 md:p-8 flex ${
+          isMobile ? "flex-col" : "flex-row"
+        } items-start justify-between gap-4`}
+      >
+        <div className="flex items-start space-x-4 sm:space-x-6 flex-1">
           {/* Animated icon container */}
           <div className="relative">
             <div
@@ -66,7 +89,7 @@ export default function WelcomeCard({
               } animate-pulse`}
             ></div>
             <div
-              className={`relative p-2 rounded-2xl ${
+              className={`relative p-2 rounded-xl ${
                 mode === "dark"
                   ? "bg-gradient-to-br from-amber-400/20 to-orange-500/20 border border-amber-400/30"
                   : "bg-gradient-to-br from-amber-100 to-orange-100 border border-amber-200"
@@ -74,8 +97,8 @@ export default function WelcomeCard({
             >
               <Icon
                 icon="mdi:bell-check"
-                width={30}
-                height={30}
+                width={isMobile ? 24 : 30}
+                height={isMobile ? 24 : 30}
                 className={`${
                   mode === "dark" ? "text-amber-400" : "text-amber-600"
                 } animate-bounce`}
@@ -88,92 +111,159 @@ export default function WelcomeCard({
           </div>
 
           {/* Text content */}
-          <div className="flex-1 space-y-3">
+          <div className="flex-1 space-y-2 sm:space-y-3">
             <h2
-              className={`text-2xl font-bold tracking-tight ${
+              className={`text-xl sm:text-2xl font-bold tracking-tight ${
                 mode === "dark" ? "text-white" : "text-slate-900"
               }`}
             >
               Welcome back, {user.name}! 👋
             </h2>
             <p
-              className={`text-md leading-relaxed ${
+              className={`text-sm sm:text-md leading-relaxed ${
                 mode === "dark" ? "text-slate-300" : "text-slate-600"
               }`}
             >
               Here's your dashboard overview at a glance.
             </p>
 
-            {/* Stats section */}
-            <div className="flex items-center space-x-6 pt-2">
-              <div
-                className={`py-2 rounded-xl pr-4 text-sm ${
-                  mode === "dark"
-                    ? "bg-blue-500/20 border border-blue-400/30"
-                    : "bg-blue-50 border border-blue-200"
-                }`}
-              >
-                <span
-                  className={`px-2 py-2 rounded-xl mr-2 ${
+            {/* Recently Added Section */}
+            <div className="pt-2 flex">
+              {isMobile ? (
+                <div
+                  className={`py-2 px-3 rounded-xl text-xs sm:text-sm ${
                     mode === "dark"
-                      ? "bg-orange-500/20 border border-orange-400/30 text-orange-300"
-                      : "bg-orange-50 border border-orange-200 text-gray-700"
+                      ? "bg-blue-500/20 border border-blue-400/30"
+                      : "bg-blue-50 border border-blue-200"
                   }`}
                 >
-                  Recently Added:
-                </span>
-                {loading ? (
+                  <div className="flex flex-col space-y-2 ">
+                    <span
+                      className={`block px-2 py-1 rounded-xl bg-orange-500/20 border border-orange-400/30 text-gray-900`}
+                    >
+                      Recently Added:
+                    </span>
+                    <div className="px-2">
+                      {loading ? (
+                        <span
+                          className={
+                            mode === "dark" ? "text-gray-400" : "text-gray-500"
+                          }
+                        >
+                          Loading...
+                        </span>
+                      ) : error ? (
+                        <span
+                          className={
+                            mode === "dark" ? "text-red-400" : "text-red-500"
+                          }
+                        >
+                          Error fetching update
+                        </span>
+                      ) : latestItem ? (
+                        <>
+                          <span
+                            className={
+                              mode === "dark" ? "text-white" : "text-gray-900"
+                            }
+                          >
+                            "{latestItem.title}"
+                          </span>{" "}
+                          <Link
+                            href={`/${getSectionRoute(latestItem.section)}`}
+                            className={
+                              mode === "dark"
+                                ? "text-blue-400 hover:underline"
+                                : "text-gray-600 hover:underline"
+                            }
+                            aria-label={`View ${latestItem.section} section`}
+                          >
+                            Posted under {latestItem.section}
+                          </Link>
+                        </>
+                      ) : (
+                        <span
+                          className={
+                            mode === "dark" ? "text-gray-400" : "text-gray-500"
+                          }
+                        >
+                          No recent updates
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className={`py-2 rounded-xl pr-4 text-xs sm:text-sm ${
+                    mode === "dark"
+                      ? "bg-blue-500/20 border border-blue-400/30"
+                      : "bg-blue-50 border border-blue-200"
+                  }`}
+                >
                   <span
-                    className={
-                      mode === "dark" ? "text-gray-400" : "text-gray-500"
-                    }
+                    className={`px-2 py-1 sm:py-2 rounded-xl mr-2 ${
+                      mode === "dark"
+                        ? "bg-orange-500/20 border border-orange-400/30 text-orange-300"
+                        : "bg-orange-50 border border-orange-200 text-gray-700"
+                    }`}
                   >
-                    Loading...
+                    Recently Added:
                   </span>
-                ) : error ? (
-                  <span
-                    className={
-                      mode === "dark" ? "text-red-400" : "text-red-500"
-                    }
-                  >
-                    Error fetching update
-                  </span>
-                ) : latestItem ? (
-                  <>
+                  {loading ? (
                     <span
                       className={
-                        mode === "dark" ? "text-white" : "text-gray-900"
+                        mode === "dark" ? "text-gray-400" : "text-gray-500"
                       }
                     >
-                      "{latestItem.title}"
-                    </span>{" "}
-                    <Link
-                      href={`/${getSectionRoute(latestItem.section)}`}
+                      Loading...
+                    </span>
+                  ) : error ? (
+                    <span
                       className={
-                        mode === "dark"
-                          ? "text-blue-400 hover:underline"
-                          : "text-gray-600 hover:underline"
+                        mode === "dark" ? "text-red-400" : "text-red-500"
                       }
                     >
-                      Posted under {latestItem.section}
-                    </Link>
-                  </>
-                ) : (
-                  <span
-                    className={
-                      mode === "dark" ? "text-gray-400" : "text-gray-500"
-                    }
-                  >
-                    No recent updates
-                  </span>
-                )}
-              </div>
+                      Error fetching update
+                    </span>
+                  ) : latestItem ? (
+                    <>
+                      <span
+                        className={
+                          mode === "dark" ? "text-white" : "text-gray-900"
+                        }
+                      >
+                        "{latestItem.title}"
+                      </span>{" "}
+                      <Link
+                        href={`/${getSectionRoute(latestItem.section)}`}
+                        className={
+                          mode === "dark"
+                            ? "text-blue-400 hover:underline"
+                            : "text-gray-600 hover:underline"
+                        }
+                        aria-label={`View ${latestItem.section} section`}
+                      >
+                        Posted under {latestItem.section}
+                      </Link>
+                    </>
+                  ) : (
+                    <span
+                      className={
+                        mode === "dark" ? "text-gray-400" : "text-gray-500"
+                      }
+                    >
+                      No recent updates
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
 
         {/* Enhanced Action Card */}
-        <div className="ml-6">
+        <div className={isMobile ? "w-full" : "ml-6 w-auto"}>
           <div className="relative group/card">
             <div
               className={`group-hover/card:opacity-40 transition duration-300`}
@@ -181,14 +271,16 @@ export default function WelcomeCard({
 
             {/* Main card */}
             <div
-              className={`relative rounded-2xl p-6 backdrop-blur-sm shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 min-w-[280px] 
-    border ${mode === "dark" ? "border-blue-400/30" : "border-blue-200"}`}
+              className={`relative rounded-2xl p-4 sm:p-6 backdrop-blur-sm shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 w-full sm:min-w-[280px] 
+              border ${
+                mode === "dark" ? "border-blue-400/30" : "border-blue-200"
+              }`}
             >
               {/* Membership info */}
               <Link href="/profile/">
-                <div className="space-y-3 mb-4">
+                <div className="space-y-2 sm:space-y-3 mb-4">
                   <div
-                    className={`text-sm font-bold tracking-wide ${
+                    className={`text-xs sm:text-sm font-bold tracking-wide ${
                       mode === "dark" ? "text-gray-400" : "text-gray-600"
                     }`}
                   >
@@ -198,7 +290,7 @@ export default function WelcomeCard({
                     <TierBadge tier={user?.selected_tier} mode={mode} />
                     <JobTypeBadge jobType={user?.job_type} mode={mode} />
                   </div>
-                  <div className="text-sm">
+                  <div className="text-xs sm:text-sm">
                     <span
                       className={`font-medium ${
                         mode === "dark" ? "text-gray-200" : "text-gray-700"
@@ -220,7 +312,9 @@ export default function WelcomeCard({
               </Link>
             </div>
           </div>
-          <div className="absolute top-2 right-2 w-16 h-16 opacity-10">
+          <div
+            className={`absolute top-2 right-2 w-12 sm:w-16 h-12 sm:h-16 opacity-10`}
+          >
             <div
               className={`w-full h-full rounded-full bg-gradient-to-br ${
                 mode === "dark"
@@ -242,8 +336,12 @@ export default function WelcomeCard({
       ></div>
 
       {/* Floating elements */}
-      <div className="absolute -top-2 -right-2 w-4 h-4 bg-[#85c2da] rounded-full opacity-60"></div>
-      <div className="absolute -bottom-1 -left-1 w-3 h-3 bg-[#f3584a] rounded-full opacity-40 animate-pulse delay-1000"></div>
+      <div
+        className={`absolute -top-1 sm:-top-2 -right-1 sm:-right-2 w-3 sm:w-4 h-3 sm:h-4 bg-[#85c2da] rounded-full opacity-60`}
+      ></div>
+      <div
+        className={`absolute -bottom-1 -left-1 w-2 sm:w-3 h-2 sm:h-3 bg-[#f3584a] rounded-full opacity-40 animate-pulse delay-1000`}
+      ></div>
     </div>
   );
 }

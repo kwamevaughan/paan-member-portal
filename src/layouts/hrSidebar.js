@@ -3,7 +3,6 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import { Icon } from "@iconify/react";
 import { sidebarNav } from "@/data/nav";
-import DraggableToggle from "@/components/DraggableToggle";
 
 const HrSidebar = ({
   isOpen,
@@ -13,13 +12,9 @@ const HrSidebar = ({
   onLogout,
   user,
   toggleSidebar,
-  setDragOffset: setParentDragOffset,
 }) => {
   const [windowWidth, setWindowWidth] = useState(null);
   const [isHovering, setIsHovering] = useState(false);
-  const [sidebarHidden, setSidebarHidden] = useState(false);
-  const [dragOffset, setDragOffset] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
   const router = useRouter();
   const sidebarRef = useRef(null);
   const [showLogout, setShowLogout] = useState(false);
@@ -50,18 +45,6 @@ const HrSidebar = ({
     }));
   };
 
-  // Debounce setParentDragOffset to reduce update frequency
-  const debouncedSetParentDragOffset = useCallback(
-    (offset) => {
-      let timeout;
-      clearTimeout(timeout);
-      timeout = setTimeout(() => {
-        setParentDragOffset?.(offset);
-      }, 50);
-    },
-    [setParentDragOffset]
-  );
-
   /* Custom scrollbar styling */
   useEffect(() => {
     const style = document.createElement("style");
@@ -88,12 +71,7 @@ const HrSidebar = ({
     };
   }, []);
 
-  // Sync dragOffset with parent
-  useEffect(() => {
-    debouncedSetParentDragOffset(dragOffset);
-  }, [dragOffset, debouncedSetParentDragOffset]);
-
-  // Handle hover states
+  // Handle hover states for desktop
   const handleMouseEnter = () => {
     if (!isOpen && windowWidth >= 640) {
       setIsHovering(true);
@@ -114,6 +92,7 @@ const HrSidebar = ({
     return () => window.removeEventListener("resize", handleResize);
   }, [handleResize]);
 
+  // Close sidebar on mobile when clicking outside
   useEffect(() => {
     const handleOutsideClick = (e) => {
       if (
@@ -122,7 +101,7 @@ const HrSidebar = ({
         sidebarRef.current &&
         !sidebarRef.current.contains(e.target)
       ) {
-        toggleSidebar();
+        toggleSidebar(false);
       }
     };
     document.addEventListener("mousedown", handleOutsideClick);
@@ -132,22 +111,6 @@ const HrSidebar = ({
       document.removeEventListener("touchstart", handleOutsideClick);
     };
   }, [isOpen, windowWidth, toggleSidebar]);
-
-  // Update document body and content-container class for layout
-  useEffect(() => {
-    const contentContainer = document.querySelector(".content-container");
-    if (sidebarHidden) {
-      document.body.classList.add("sidebar-hidden");
-      contentContainer?.classList.add("sidebar-hidden");
-    } else {
-      document.body.classList.remove("sidebar-hidden");
-      contentContainer?.classList.remove("sidebar-hidden");
-    }
-    return () => {
-      document.body.classList.remove("sidebar-hidden");
-      contentContainer?.classList.remove("sidebar-hidden");
-    };
-  }, [sidebarHidden]);
 
   // Define isActive function
   const isActive = (pathname) =>
@@ -159,25 +122,16 @@ const HrSidebar = ({
       ? "text-gray-200 hover:bg-gray-700 hover:text-white"
       : "text-[#231812] hover:bg-[#19191e]";
 
-  const toggleSidebarVisibility = () => {
-    setSidebarHidden((prev) => {
-      const newHidden = !prev;
-      const event = new CustomEvent("sidebarVisibilityChange", {
-        detail: { hidden: newHidden },
-      });
-      document.dispatchEvent(event);
-      return newHidden;
-    });
-    setDragOffset(0);
-  };
-
   if (windowWidth === null) return null;
 
-  const shouldAppearExpanded = isOpen || isHovering;
-  const sidebarWidth = shouldAppearExpanded
+  const isMobile = windowWidth < 640;
+  const shouldAppearExpanded = isMobile ? isOpen : isOpen || isHovering;
+  const sidebarWidth = isMobile
+    ? isOpen
+      ? "100vw"
+      : "0"
+    : shouldAppearExpanded
     ? "200px"
-    : windowWidth < 640
-    ? "0"
     : "80px";
 
   return (
@@ -187,39 +141,27 @@ const HrSidebar = ({
         ref={sidebarRef}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        className={`fixed left-4 top-0 z-50 h-[calc(100vh-2rem)] my-4 rounded-xl select-none touch-action-none overflow-visible ${
-          isDragging ? "transition-none" : "transition-all duration-300"
-        }
-        ${
-          isHovering && !isOpen
-            ? "backdrop-blur-sm backdrop-filter border border-gray-700"
-            : mode === "dark"
-            ? "bg-[#05050a]"
-            : "bg-[#05050a]"
-        } 
-        group shadow-lg shadow-black/20`}
+        className={`fixed left-0 top-0 z-50 h-full transition-all duration-300
+          ${isMobile ? (isOpen ? "block" : "hidden") : "block"}
+          ${mode === "dark" ? "bg-[#05050a]" : "bg-[#05050a]"}
+          ${
+            isHovering && !isOpen && !isMobile
+              ? "backdrop-blur-sm backdrop-filter border border-gray-700"
+              : ""
+          }
+          group shadow-lg shadow-black/20 custom-scrollbar`}
         style={{
           width: sidebarWidth,
-          backgroundColor: isHovering && !isOpen ? "rgba(5, 5, 11, 0.7)" : "",
+          backgroundColor:
+            isHovering && !isOpen && !isMobile ? "rgba(5, 5, 11, 0.7)" : "",
           boxShadow:
-            isHovering && !isOpen ? "0 8px 32px 0 rgba(31, 38, 135, 0.37)" : "",
-          transform: `translateX(${
-            sidebarHidden ? -parseInt(sidebarWidth) + dragOffset : dragOffset
-          }px)`,
+            isHovering && !isOpen && !isMobile
+              ? "0 8px 32px 0 rgba(31, 38, 135, 0.37)"
+              : "",
         }}
       >
         <div className="flex flex-col h-full relative">
-          {/* Draggable Toggle */}
-          <DraggableToggle
-            sidebarHidden={sidebarHidden}
-            toggleSidebarVisibility={toggleSidebarVisibility}
-            sidebarWidth={sidebarWidth}
-            setDragOffset={setDragOffset}
-            isDragging={isDragging}
-            setIsDragging={setIsDragging}
-          />
-
-          {/* Logo + Toggle Button */}
+          {/* Logo + Toggle/Close Button */}
           <div
             className={`flex items-center justify-${
               shouldAppearExpanded ? "between" : "center"
@@ -235,18 +177,34 @@ const HrSidebar = ({
                   className="object-contain"
                   priority
                 />
-                <button
-                  onClick={toggleSidebar}
-                  className="text-white hover:scale-110 transition-transform hover:bg-[#19191e] rounded-full p-2"
-                  title="Collapse sidebar"
-                >
-                  <Icon icon="ri:skip-left-line" className="w-6 h-6" />
-                </button>
+                {isMobile ? (
+                  <button
+                    onClick={() => toggleSidebar(false)}
+                    className="text-white hover:scale-110 transition-transform hover:bg-[#19191e] rounded-full p-2"
+                    aria-label="Close sidebar"
+                    title="Close sidebar"
+                  >
+                    <Icon icon="ri:close-line" className="w-6 h-6" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => toggleSidebar(!isOpen)}
+                    className="text-white hover:scale-110 transition-transform hover:bg-[#19191e] rounded-full p-2"
+                    aria-label={isOpen ? "Collapse sidebar" : "Expand sidebar"}
+                    title={isOpen ? "Collapse sidebar" : "Expand sidebar"}
+                  >
+                    <Icon
+                      icon={isOpen ? "ri:skip-left-line" : "ri:skip-right-line"}
+                      className="w-6 h-6"
+                    />
+                  </button>
+                )}
               </>
             ) : (
               <button
-                onClick={toggleSidebar}
+                onClick={() => toggleSidebar(true)}
                 className="text-white hover:scale-110 transition-transform"
+                aria-label="Expand sidebar"
                 title="Expand sidebar"
               >
                 <Icon icon="ri:skip-right-line" className="w-6 h-6" />
@@ -255,7 +213,7 @@ const HrSidebar = ({
           </div>
 
           {/* Navigation with collapsible categories */}
-          <div className="flex-grow px-2 overflow-y-auto flex flex-col scrollbar-thin ">
+          <div className="flex-grow px-2 overflow-y-auto flex flex-col scrollbar-thin">
             {sidebarNav.map(({ category, items }, index) => (
               <div key={category} className="w-full mb-1">
                 {index !== 0 && (
@@ -299,7 +257,7 @@ const HrSidebar = ({
                           key={href}
                           onClick={() => {
                             router.push(href);
-                            if (windowWidth < 640) toggleSidebar();
+                            if (isMobile) toggleSidebar(false);
                           }}
                           className={`relative py-3 px-2 flex items-center font-normal text-sm w-full text-white cursor-pointer rounded-lg hover:shadow-md transition-all duration-200 group mb-1 ${isActive(
                             href
@@ -335,9 +293,9 @@ const HrSidebar = ({
           </div>
 
           {/* Profile/Logout */}
-          {!shouldAppearExpanded && windowWidth < 640 ? null : (
+          {shouldAppearExpanded && (
             <div
-              className={`px-4 py-2 mt-auto${
+              className={`px-4 py-2 mt-auto ${
                 mode === "dark"
                   ? "bg-gradient-to-r from-gray-800 to-gray-700"
                   : ""

@@ -35,11 +35,12 @@ const StatsChart = dynamic(() => import("@/components/StatsChart"), {
 });
 
 export default function Dashboard({ mode = "light", toggleMode }) {
-  const { isSidebarOpen, toggleSidebar, sidebarState, updateDragOffset } = useSidebar();
+  const { isSidebarOpen, toggleSidebar, sidebarState } = useSidebar();
   const router = useRouter();
   const { user, loading: userLoading, LoadingComponent } = useUser();
   const { handleLogout } = useLogout();
   const [activeTab, setActiveTab] = useState("opportunities");
+  const [windowWidth, setWindowWidth] = useState(null);
   const { filters, handleFilterChange } = useFilters();
   const {
     latestItems,
@@ -90,7 +91,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     filters.marketIntel,
     "",
     [],
-    user?.selected_tier || "Free Member" // Fix: Pass selected_tier
+    user?.selected_tier || "Free Member"
   );
 
   const {
@@ -101,7 +102,17 @@ export default function Dashboard({ mode = "light", toggleMode }) {
   } = useOffers(
     { tier_restriction: filters.offers?.tier_restriction || "" },
     user?.selected_tier || "Free Member"
-  );  
+  );
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Handle restricted access
   const handleRestrictedClick = (message) => {
@@ -125,7 +136,9 @@ export default function Dashboard({ mode = "light", toggleMode }) {
 
   // Empty state
   if (userLoading && LoadingComponent) return LoadingComponent;
-  if (!user) return null;
+  if (!user || windowWidth === null) return null;
+
+  const isMobile = windowWidth < 640;
 
   return (
     <div
@@ -136,7 +149,6 @@ export default function Dashboard({ mode = "light", toggleMode }) {
       <HrHeader
         toggleSidebar={toggleSidebar}
         isSidebarOpen={isSidebarOpen}
-        sidebarState={sidebarState}
         user={user}
         mode={mode}
         toggleMode={toggleMode}
@@ -149,17 +161,14 @@ export default function Dashboard({ mode = "light", toggleMode }) {
           mode={mode}
           toggleSidebar={toggleSidebar}
           onLogout={handleLogout}
-          setDragOffset={updateDragOffset}
           toggleMode={toggleMode}
         />
         <div
           className={`content-container flex-1 p-4 md:p-6 lg:p-8 transition-all duration-300 overflow-hidden ${
-            isSidebarOpen ? "sidebar-open" : ""
-          } ${sidebarState.hidden ? "sidebar-hidden" : ""}`}
+            isSidebarOpen && !isMobile ? "sidebar-open" : ""
+          }`}
           style={{
-            marginLeft: sidebarState.hidden
-              ? "0px"
-              : `${84 + (isSidebarOpen ? 120 : 0) + sidebarState.offset}px`,
+            marginLeft: isMobile ? "0px" : isSidebarOpen ? "200px" : "80px",
           }}
         >
           <div className="max-w-7xl mx-auto space-y-8 pb-10">

@@ -10,22 +10,32 @@ const HrHeader = ({
   mode,
   toggleMode,
   isSidebarOpen,
+  toggleSidebar,
   onLogout,
-  sidebarState,
   user,
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(null);
   const dropdownRef = useRef(null);
   const headerRef = useRef(null);
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setDropdownOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   useEffect(() => {
@@ -35,24 +45,21 @@ const HrHeader = ({
     }
   }, []);
 
+  const isMobile = windowWidth !== null && windowWidth < 640;
+
   return (
     <header
       ref={headerRef}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ${
         mode === "dark" ? "bg-[#101827]" : "bg-transparent"
       }`}
     >
       <div
         className={`
-          p-2 m-4 transition-all duration-300 bg-transparent
+          p-2 m-4 transition-transform duration-300 bg-transparent
           ${
-            sidebarState.hidden
-              ? "md:ml-0"
-              : isSidebarOpen
-              ? "md:ml-[250px]"
-              : "md:ml-[84px]"
+            isMobile ? "ml-0" : isSidebarOpen ? "md:ml-[200px]" : "md:ml-[80px]"
           }
-          sm:ml-0
           ${
             mode === "dark"
               ? "bg-[#101827]/50 text-white"
@@ -62,13 +69,26 @@ const HrHeader = ({
         `}
       >
         <div className="flex items-center justify-between">
-          <div className="flex items-center w-full">
+          <div className="flex items-center w-full gap-2">
+            {/* Hamburger Menu for Mobile */}
+            {isMobile && (
+              <button
+                onClick={() => toggleSidebar(!isSidebarOpen)}
+                className="text-white hover:scale-110 transition-transform"
+                title={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
+              >
+                <Icon
+                  icon={isSidebarOpen ? "ri:close-line" : "ri:menu-line"}
+                  className="w-6 h-6 text-gray-900"
+                />
+              </button>
+            )}
             <div className="flex-grow">
               <Search mode={mode} />
             </div>
           </div>
 
-          <div className="flex justify-end items-center w-full gap-2 ">
+          <div className="flex justify-end items-center w-full gap-2">
             {/* Dark Mode Toggle */}
             <TooltipIconButton
               label={
@@ -99,18 +119,6 @@ const HrHeader = ({
 
             {/* Language Switch */}
             <LanguageSwitch mode={mode} />
-
-            {/* Notifications */}
-            {/* <TooltipIconButton
-              label={<span className="text-black">View Notifications</span>}
-              mode={mode}
-              className="bg-white/50"
-            >
-              <Icon
-                icon="mdi-light:bell"
-                className="animate-swing-infinite h-6 w-6"
-              />
-            </TooltipIconButton> */}
 
             {/* User Dropdown */}
             <div
@@ -160,11 +168,10 @@ const HrHeader = ({
                       <div className="flex flex-col">
                         <div className="flex gap-2">
                           <span className="text-md font-bold">{user.name}</span>
-                          <span class="rounded-md capitalize bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-green-600/20 ring-inset">
+                          <span className="rounded-md capitalize bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-green-600/20 ring-inset">
                             {user.job_type}
                           </span>
                         </div>
-
                         <span className="text-sm">{user.agencyName}</span>
                       </div>
                     </div>

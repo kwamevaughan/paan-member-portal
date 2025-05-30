@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { TierBadge, JobTypeBadge } from "@/components/Badge";
 
 const TitleCard = ({
@@ -12,6 +12,18 @@ const TitleCard = ({
   pageTable,
   lastUpdated, // Use this prop for the date
 }) => {
+  const [windowWidth, setWindowWidth] = useState(null);
+
+  // Detect window width for responsive design
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   // Format the timestamp to "26th May, 2025"
   const formatDate = (timestamp) => {
     if (!timestamp) return "No recent updates";
@@ -65,6 +77,10 @@ const TitleCard = ({
 
   const descriptionParts = description.split("<br />");
 
+  if (windowWidth === null) return null;
+
+  const isMobile = windowWidth < 640;
+
   return (
     <div className="relative mx-2 mb-10 group">
       {/* Glassmorphism background */}
@@ -78,12 +94,20 @@ const TitleCard = ({
         } shadow-2xl group-hover:shadow-3xl transition-all duration-500`}
       ></div>
 
-      <div className="relative p-8 flex items-start justify-between">
-        <div className="flex items-start space-x-6 flex-1">
+      <div
+        className={`relative p-4 sm:p-8 flex ${
+          isMobile ? "flex-col" : "flex-row"
+        } items-start justify-between gap-4`}
+      >
+        <div
+          className={`flex items-start ${
+            isMobile ? "flex-col space-y-4" : "space-x-6"
+          } flex-1`}
+        >
           {/* Text content */}
-          <div className="flex-1 space-y-3">
+          <div className="flex-1 space-y-2 sm:space-y-3">
             <h2
-              className={`text-2xl font-bold tracking-tight ${
+              className={`text-xl sm:text-2xl font-bold tracking-tight ${
                 mode === "dark" ? "text-white" : "text-slate-900"
               }`}
             >
@@ -92,25 +116,29 @@ const TitleCard = ({
             {descriptionParts.map((part, index) => (
               <p
                 key={index}
-                className={mode === "dark" ? "text-gray-300" : "text-gray-600"}
+                className={`text-sm sm:text-md leading-relaxed ${
+                  mode === "dark" ? "text-gray-300" : "text-gray-600"
+                }`}
               >
                 {part}
               </p>
             ))}
 
-            <div className="flex items-center space-x-6 pt-2">
+            <div
+              className={`flex items-center flex-wrap space-x-4 isMobile ? sm:space-x-6 } pt-2`}
+            >
               <div
-                className={`py-2 rounded-xl pr-4 text-sm ${
+                className={`py-2 rounded-full px-4 text-xs sm:text-sm ${
                   mode === "dark"
                     ? "bg-blue-500/20 border border-blue-400/30"
-                    : "bg-blue-50 border border-blue-200"
+                    : "bg-blue-100 border-blue-200"
                 }`}
               >
                 <span
-                  className={`px-2 py-2 rounded-xl mr-2 ${
+                  className={`px-2 py-1 sm:py-2 rounded-xl mr-2 isMobile ? 0 : ""} ${
                     mode === "dark"
-                      ? "bg-orange-500/20 border border-orange-400/30 text-orange-300"
-                      : "bg-orange-50 border border-orange-200 text-gray-700"
+                      ? "bg-orange-500/20 border-orange-400/30 text-orange-300"
+                      : "bg-orange-50 border-orange-200 text-gray-700"
                   }`}
                 >
                   Last Updated:
@@ -126,20 +154,24 @@ const TitleCard = ({
         </div>
 
         {/* TierCard (membership info) */}
-        <div className="ml-6">
+        <div className={isMobile ? "w-full" : "ml-6 w-auto"}>
           <div className="relative group/card">
-            <div className="group-hover/card:opacity-40 transition duration-300"></div>
+            <div
+              className={`group-hover/card:opacity-40 transition duration-300`}
+            ></div>
 
             {/* Main card */}
             <div
-              className={`relative rounded-2xl p-6 backdrop-blur-sm shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 min-w-[280px] border ${
+              className={`relative rounded-2xl p-4 sm:p-6 backdrop-blur-sm shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 ${
+                isMobile ? "w-full" : "min-w-[280px]"
+              } border ${
                 mode === "dark" ? "border-blue-400/30" : "border-blue-200"
               }`}
             >
               <Link href="/profile">
-                <div className="space-y-1">
+                <div className="space-y-1 sm:space-y-2">
                   <div
-                    className={`text-sm font-semibold tracking-wide ${
+                    className={`text-xs sm:text-sm font-semibold tracking-wide ${
                       mode === "dark" ? "text-gray-400" : "text-gray-600"
                     }`}
                   >
@@ -159,7 +191,9 @@ const TitleCard = ({
               </Link>
             </div>
 
-            <div className="absolute top-0 right-0 w-16 h-16 rounded-full bg-gradient-to-br from-blue-500/30 to-purple-500/30 opacity-10"></div>
+            <div
+              className={`absolute top-0 right-0 w-12 sm:w-16 h-12 sm:h-16 rounded-full bg-gradient-to-br from-blue-500/30 to-purple-500/30 opacity-10`}
+            ></div>
           </div>
         </div>
       </div>
@@ -174,8 +208,12 @@ const TitleCard = ({
       />
 
       {/* Floating decorative elements */}
-      <div className="absolute -top-2 -right-2 w-4 h-4 bg-blue-200 rounded-full opacity-60"></div>
-      <div className="absolute -bottom-2 -left-2 w-3 h-3 bg-purple-300 rounded-full opacity-40 animate-pulse"></div>
+      <div
+        className={`absolute -top-1 sm:-top-2 -right-1 sm:-right-2 w-3 sm:w-4 h-3 sm:h-4 bg-blue-200 rounded-full opacity-60`}
+      ></div>
+      <div
+        className={`absolute -bottom-1 sm:-bottom-2 -left-1 sm:-left-2 w-2 sm:w-3 h-2 sm:h-3 bg-purple-300 rounded-full opacity-40 animate-pulse`}
+      ></div>
     </div>
   );
 };

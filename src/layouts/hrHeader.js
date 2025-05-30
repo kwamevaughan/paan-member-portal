@@ -84,7 +84,11 @@ const HrHeader = ({
               </button>
             )}
             <div className="flex-grow">
-              <Search mode={mode} onSearchModalToggle={onSearchModalToggle} />
+              <Search
+                mode={mode}
+                onSearchModalToggle={onSearchModalToggle}
+                user={user}
+              />
             </div>
           </div>
 

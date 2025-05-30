@@ -177,7 +177,7 @@ const HrHeader = ({
                     </div>
                     <button
                       onClick={onLogout}
-                      className="block w-full text-center text-white px-4 py-2 bg-[#f05d23] rounded-full hover:bg-[#d94f1e] transition duration-200 mt-4"
+                      className="block w-full text-center text-white px-4 py-2 bg-[#0088d2] rounded-full hover:bg-[#528fa7] transition duration-200 mt-4"
                     >
                       Logout
                     </button>

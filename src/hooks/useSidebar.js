@@ -3,10 +3,15 @@ import { useState, useEffect, useCallback } from "react";
 const useSidebar = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(null); // Initial state is null
   const [isLoading, setIsLoading] = useState(true); // Loading state
+    const [windowWidth, setWindowWidth] = useState(null);
+
   const [sidebarState, setSidebarState] = useState({
     hidden: false,
     offset: 0,
   });
+
+    const isMobile = windowWidth < 640;
+
 
   const getInitialSidebarState = () => {
     if (typeof window === "undefined") return false; // SSR default
@@ -63,12 +68,22 @@ const useSidebar = () => {
     });
   }, []);
 
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return {
     isSidebarOpen,
     toggleSidebar,
     isLoading,
     sidebarState,
     updateDragOffset,
+    isMobile,
   };
 };
 

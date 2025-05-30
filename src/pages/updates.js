@@ -16,8 +16,13 @@ import Link from "next/link";
 import { TierBadge, JobTypeBadge } from "@/components/Badge";
 
 export default function Updates({ mode = "light", toggleMode }) {
-  const { isSidebarOpen, toggleSidebar, sidebarState, updateDragOffset } =
-    useSidebar();
+  const {
+    isSidebarOpen,
+    toggleSidebar,
+    sidebarState,
+    updateDragOffset,
+    isMobile,
+  } = useSidebar();
   const router = useRouter();
   const { user, loading: userLoading, LoadingComponent } = useUser();
   const { handleLogout } = useLogout();
@@ -139,11 +144,11 @@ export default function Updates({ mode = "light", toggleMode }) {
         />
 
         <div
-          className="flex-1 p-4 md:p-6 lg:p-8 overflow-auto"
+          className={`content-container flex-1 p-4 md:p-6 lg:p-8 transition-all duration-300 overflow-hidden ${
+            isSidebarOpen && !isMobile ? "sidebar-open" : ""
+          }`}
           style={{
-            marginLeft: sidebarState.hidden
-              ? "0px"
-              : `${84 + (isSidebarOpen ? 120 : 0) + sidebarState.offset}px`,
+            marginLeft: isMobile ? "0px" : isSidebarOpen ? "200px" : "80px",
           }}
         >
           <div className="max-w-7xl mx-auto space-y-8">

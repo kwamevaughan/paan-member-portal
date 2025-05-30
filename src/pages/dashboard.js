@@ -35,12 +35,12 @@ const StatsChart = dynamic(() => import("@/components/StatsChart"), {
 });
 
 export default function Dashboard({ mode = "light", toggleMode }) {
-  const { isSidebarOpen, toggleSidebar, sidebarState } = useSidebar();
+const { isSidebarOpen, toggleSidebar, sidebarState, isMobile, windowWidth } =
+    useSidebar();
   const router = useRouter();
   const { user, loading: userLoading, LoadingComponent } = useUser();
   const { handleLogout } = useLogout();
   const [activeTab, setActiveTab] = useState("opportunities");
-  const [windowWidth, setWindowWidth] = useState(null);
   const { filters, handleFilterChange } = useFilters();
   const {
     latestItems,
@@ -104,15 +104,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     user?.selected_tier || "Free Member"
   );
 
-  // Handle window resize
-  useEffect(() => {
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-    };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  
 
   // Handle restricted access
   const handleRestrictedClick = (message) => {
@@ -138,7 +130,6 @@ export default function Dashboard({ mode = "light", toggleMode }) {
   if (userLoading && LoadingComponent) return LoadingComponent;
   if (!user || windowWidth === null) return null;
 
-  const isMobile = windowWidth < 640;
 
   return (
     <div

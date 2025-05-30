@@ -1,4 +1,3 @@
-
 const DashboardTabs = ({ activeTab, setActiveTab, mode, Icon }) => {
   const tabs = [
     {
@@ -24,12 +23,12 @@ const DashboardTabs = ({ activeTab, setActiveTab, mode, Icon }) => {
         } border rounded-2xl p-2 shadow-lg mb-4`}
       >
         <div className="flex w-full overflow-x-auto scrollbar-hide">
-          <div className="flex min-w-full gap-1">
+          <div className="flex min-w-full gap-1 flex-wrap justify-center sm:justify-start">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`group relative px-6 py-4 text-sm font-medium transition-all duration-300 ease-in-out flex-1 whitespace-nowrap focus:outline-none rounded-xl overflow-hidden
+                className={`group relative px-6 py-4 text-sm font-medium transition-all duration-300 ease-in-out flex-shrink-0 whitespace-nowrap focus:outline-none rounded-xl overflow-hidden
                   ${
                     activeTab === tab.id
                       ? mode === "dark"
@@ -70,9 +69,9 @@ const DashboardTabs = ({ activeTab, setActiveTab, mode, Icon }) => {
                         : "text-blue-400"
                     }`}
                   >
-                    <Icon icon={tab.icon} width={24} height={24} />
+                    <Icon icon={tab.icon} width={20} height={20} />
                   </span>
-                  <span className="font-semibold tracking-wide">
+                  <span className="font-semibold tracking-wide text-xs sm:text-sm">
                     {tab.label}
                   </span>
                 </div>

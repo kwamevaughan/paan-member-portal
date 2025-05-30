@@ -14,8 +14,13 @@
     import Link from "next/link";
 
     export default function RegionalHub({ mode = "light", toggleMode }) {
-    const { isSidebarOpen, toggleSidebar, sidebarState, updateDragOffset } =
-        useSidebar();
+    const {
+      isSidebarOpen,
+      toggleSidebar,
+      sidebarState,
+      updateDragOffset,
+      isMobile,
+    } = useSidebar();
     const router = useRouter();
     const { user, loading: userLoading, LoadingComponent } = useUser();
     const { handleLogout } = useLogout();
@@ -59,15 +64,15 @@
                 toggleMode={toggleMode}
               />
               <div
-                className={`content-container flex-1 pt-4 transition-all duration-300 overflow-hidden ${
-                  isSidebarOpen ? "sidebar-open" : ""
-                } ${sidebarState.hidden ? "sidebar-hidden" : ""}`}
+                className={`content-container flex-1 p-4 md:p-6 lg:p-8 transition-all duration-300 overflow-hidden ${
+                  isSidebarOpen && !isMobile ? "sidebar-open" : ""
+                }`}
                 style={{
-                  marginLeft: sidebarState.hidden
+                  marginLeft: isMobile
                     ? "0px"
-                    : `${
-                        84 + (isSidebarOpen ? 120 : 0) + sidebarState.offset
-                      }px`,
+                    : isSidebarOpen
+                    ? "200px"
+                    : "80px",
                 }}
               >
                 <div className="max-w-7xl mx-auto pb-10">

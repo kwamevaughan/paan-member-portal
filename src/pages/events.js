@@ -97,21 +97,7 @@ export default function Events({ mode = "light", toggleMode }) {
     }
   }, [eventType, filterOptions.eventTypes]);
 
-  useEffect(() => {
-    console.log("[Events] User:", user);
-    console.log("[Events] Events:", events);
-    console.log("[Events] RegisteredEvents:", registeredEvents);
-    console.log("[Events] Latest Events Date:", latestEventsDate);
-    console.log("[Events] Filters:", filters);
-    console.log("[Events] FilterOptions:", filterOptions);
-  }, [
-    events,
-    registeredEvents,
-    user,
-    latestEventsDate,
-    filters,
-    filterOptions,
-  ]);
+  
 
   useEffect(() => {
     const handleError = (event) => {

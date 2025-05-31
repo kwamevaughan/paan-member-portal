@@ -60,13 +60,7 @@ export default function Offers({ mode = "light", toggleMode }) {
         })
       : "No offers available";
 
-  useEffect(() => {
-    console.log("[Offers] User:", user);
-    console.log("[Offers] Offers:", offers);
-    console.log("[Offers] Latest Offer Date:", latestOfferDate);
-    console.log("[Offers] Filters:", filters);
-    console.log("[Offers] FilterOptions:", filterOptions);
-  }, [offers, user, latestOfferDate, filters, filterOptions]);
+  
 
   useEffect(() => {
     const handleError = (event) => {
@@ -110,7 +104,6 @@ export default function Offers({ mode = "light", toggleMode }) {
         await supabase
           .from("offer_clicks")
           .insert([{ offer_id: offer.id, user_id: authUser.id }]);
-        console.log("[Offers] Click tracked for offer:", offer.title);
         window.open(offer.url, "_blank", "noopener,noreferrer");
       }
     } catch (err) {

@@ -209,7 +209,6 @@ export default function Updates({ mode = "light", toggleMode }) {
                       whileTap={{ scale: 0.95 }}
                       onClick={(e) => {
                         e.preventDefault();
-                        console.log("[Updates] Setting tag filter:", tag);
                         setFilters({ tags: tag });
                       }}
                       className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${

@@ -67,13 +67,6 @@ export default function Resources({ mode = "light", toggleMode }) {
         })
       : "No resources available";
 
-  useEffect(() => {
-    console.log("[Resources] User:", user);
-    console.log("[Resources] Resources:", resources);
-    console.log("[Resources] Latest Resource Date:", latestResourceDate);
-    console.log("[Resources] Filters:", filters);
-    console.log("[Resources] FilterOptions:", filterOptions);
-  }, [resources, user, latestResourceDate, filters, filterOptions]);
 
   useEffect(() => {
     const handleError = (event) => {

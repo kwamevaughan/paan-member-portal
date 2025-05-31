@@ -62,16 +62,6 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
       : "No opportunities available";
 
   useEffect(() => {
-    console.log("[BusinessOpportunities] User:", user);
-    console.log("[BusinessOpportunities] Opportunities:", opportunities);
-    console.log(
-      "[BusinessOpportunities] Latest Opportunity Date:",
-      latestOpportunityDate
-    );
-    console.log("[BusinessOpportunities] Filters:", filters);
-  }, [opportunities, user, latestOpportunityDate, filters]);
-
-  useEffect(() => {
     const handleError = (event) => {
       console.error("[BusinessOpportunities] Global error:", event.error);
     };

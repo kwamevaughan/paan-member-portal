@@ -41,7 +41,7 @@ const LoadingSpinner = () => {
       {/* Progress bar */}
       <div className="w-64 h-2 bg-gray-200 rounded-full mb-4 overflow-hidden">
         <div
-          className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-300 ease-out"
+          className="h-full bg-gradient-to-r from-blue-200 to-blue-400 rounded-full transition-all duration-300 ease-out"
           style={{ width: `${progress}%` }}
         ></div>
       </div>

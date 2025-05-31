@@ -1,14 +1,14 @@
 import Chart from "react-apexcharts";
 import { format } from "date-fns";
-import { hasTierAccess } from "@/utils/tierUtils"; // Import hasTierAccess
+import { hasTierAccess } from "@/utils/tierUtils";
 
 const StatsChart = ({
-  opportunities,
-  events,
-  resources,
-  offers,
-  marketIntel,
-  updates,
+  opportunities = [],
+  events = [],
+  resources = [],
+  offers = [],
+  marketIntel = [],
+  updates = [],
   user,
   mode,
   getLastUpdatedForSection,
@@ -16,18 +16,31 @@ const StatsChart = ({
 }) => {
   const router = useRouter();
 
+  // Fallback to "Free Member" if user or selected_tier is missing
+  const userTier = user?.selected_tier || "Free Member";
+
   // Data for the chart
   const series = [
-    opportunities.filter((item) => hasTierAccess(item.tier_restriction, user))
-      .length,
-    events.filter((item) => hasTierAccess(item.tier_restriction, user)).length,
-    resources.filter((item) => hasTierAccess(item.tier_restriction, user))
-      .length,
-    offers.filter((item) => hasTierAccess(item.tier_restriction, user)).length,
-    marketIntel.filter((item) => hasTierAccess(item.tier_restriction, user))
-      .length,
-    updates.filter((item) => hasTierAccess(item.tier_restriction, user)).length,
+    opportunities.filter((item) =>
+      hasTierAccess(item.tier_restriction, { selected_tier: userTier })
+    ).length,
+    events.filter((item) =>
+      hasTierAccess(item.tier_restriction, { selected_tier: userTier })
+    ).length,
+    resources.filter((item) =>
+      hasTierAccess(item.tier_restriction, { selected_tier: userTier })
+    ).length,
+    offers.filter((item) =>
+      hasTierAccess(item.tier_restriction, { selected_tier: userTier })
+    ).length,
+    marketIntel.filter((item) =>
+      hasTierAccess(item.tier_restriction, { selected_tier: userTier })
+    ).length,
+    updates.filter((item) =>
+      hasTierAccess(item.tier_restriction, { selected_tier: userTier })
+    ).length,
   ];
+
 
   const labels = [
     "Active Opportunities",
@@ -153,13 +166,16 @@ const StatsChart = ({
     ],
   };
 
+  // Check if series is empty
+  const isSeriesEmpty = series.every((value) => value === 0);
+
   return (
     <div
       className={`p-6 rounded-2xl ${
         mode === "dark"
           ? "bg-gray-900/60 border-gray-700"
           : "bg-white border-gray-200"
-      } border shadow-lg`}
+      } border shadow-lg w-full min-h-[400px]`}
     >
       <h2
         className={`text-xl font-semibold mb-4 ${
@@ -168,7 +184,19 @@ const StatsChart = ({
       >
         Dashboard Statistics
       </h2>
-      <Chart options={options} series={series} type="polarArea" height={350} />
+      {isSeriesEmpty ? (
+        <div className="text-center text-gray-500">
+          No data available for the chart.
+        </div>
+      ) : (
+        <Chart
+          key={JSON.stringify(series)}
+          options={options}
+          series={series}
+          type="polarArea"
+          height={350}
+        />
+      )}
     </div>
   );
 };

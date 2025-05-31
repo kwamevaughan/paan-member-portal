@@ -25,65 +25,85 @@ export const AuthProvider = ({ children }) => {
   };
 
   const initializeAuth = async () => {
-    if (isAuthenticating) {
-      console.log(
-        "AuthContext: Skipping initializeAuth, already authenticating"
-      );
-      return;
-    }
-    if (router.pathname === "/auth/callback") {
-      console.log("AuthContext: Skipping initializeAuth on /auth/callback");
-      return;
-    }
+    if (isAuthenticating || router.pathname === "/auth/callback") return;
     setIsAuthenticating(true);
 
     try {
-      console.log(
-        "AuthContext: Running initializeAuth, pathname:",
-        router.pathname
-      );
-      const { data: session } = await supabase.auth.getSession();
-      const email = session?.session?.user?.email;
-      const authUserId = session?.session?.user?.id;
+      const cachedUser = localStorage.getItem("paan_user_data");
+      if (cachedUser) {
+        const parsedUser = JSON.parse(cachedUser);
+        console.log("[AuthProvider] Loaded cached user:", parsedUser);
+        if (!parsedUser.selected_tier || !parsedUser.name) {
+          console.log("[AuthProvider] Invalid cache, clearing");
+          localStorage.removeItem("paan_user_data");
+          localStorage.removeItem("paan_member_session");
+          localStorage.removeItem("user_email");
+        } else {
+          setUser(parsedUser);
+          setLoading(false);
+          const { data: user } = await supabase.auth.getUser();
+          if (!user?.user) {
+            setUser(null);
+            localStorage.removeItem("paan_user_data");
+            localStorage.removeItem("paan_member_session");
+            localStorage.removeItem("user_email");
+            if (router.pathname !== "/") {
+              router.push("/");
+            }
+          }
+          setIsAuthenticating(false);
+          return;
+        }
+      }
 
-      if (session?.session && email && authUserId) {
+      const { data: user } = await supabase.auth.getUser();
+      const email = user?.user?.email;
+      const authUserId = user?.user?.id;
+
+      if (user?.user && email && authUserId) {
         const { data, error } = await supabase
           .from("candidates")
           .select(
-            "id, primaryContactEmail, primaryContactName, job_type, selected_tier, agencyName, auth_user_id"
+            "id, primaryContactEmail, primaryContactName, job_type, selected_tier, agencyName, auth_user_id, created_at"
           )
           .eq("auth_user_id", authUserId)
           .single();
 
         if (data && !error) {
-          setUser({
+          const userData = {
             id: data.id,
             email: data.primaryContactEmail,
-            primaryContactName: data.primaryContactName,
+            name: data.primaryContactName,
             job_type: data.job_type,
             selected_tier: data.selected_tier,
             agencyName: data.agencyName,
+            created_at: data.created_at,
             role: "agency_member",
-          });
+          };
+          setUser(userData);
+          localStorage.setItem("paan_user_data", JSON.stringify(userData));
           localStorage.setItem("paan_member_session", "authenticated");
           localStorage.setItem("user_email", email);
         } else {
-          console.error("AuthContext: No candidate found for user:", error);
-          setLoginError(
-            "No account found for this email. Please ensure your account is activated or contact support."
-          );
+          setLoginError("No account found for this email.");
+          setUser(null);
+          localStorage.removeItem("paan_user_data");
+          localStorage.removeItem("paan_member_session");
+          localStorage.removeItem("user_email");
         }
       } else {
+        setUser(null);
+        localStorage.removeItem("paan_user_data");
         localStorage.removeItem("paan_member_session");
         localStorage.removeItem("user_email");
       }
     } catch (err) {
       console.error("AuthContext: Initialization error:", err);
+      setLoginError("An error occurred during authentication.");
+      setUser(null);
+      localStorage.removeItem("paan_user_data");
       localStorage.removeItem("paan_member_session");
       localStorage.removeItem("user_email");
-      setLoginError(
-        "An error occurred during authentication. Please try again."
-      );
     } finally {
       setLoading(false);
       setIsAuthenticating(false);
@@ -102,6 +122,7 @@ export const AuthProvider = ({ children }) => {
           debouncedInitializeAuth();
         } else if (event === "SIGNED_OUT" && !skipRedirect) {
           setUser(null);
+          localStorage.removeItem("paan_user_data");
           localStorage.removeItem("paan_member_session");
           localStorage.removeItem("user_email");
           localStorage.removeItem("paan_remembered_email");
@@ -114,7 +135,7 @@ export const AuthProvider = ({ children }) => {
     );
 
     return () => authListener.subscription?.unsubscribe();
-  }, [router]);
+  }, []);
 
   const login = async (email, password, rememberMe) => {
     try {
@@ -136,7 +157,7 @@ export const AuthProvider = ({ children }) => {
       const { data: userData, error } = await supabase
         .from("candidates")
         .select(
-          "id, primaryContactEmail, primaryContactName, job_type, selected_tier, agencyName, auth_user_id"
+          "id, primaryContactEmail, primaryContactName, job_type, selected_tier, agencyName, auth_user_id, created_at"
         )
         .eq("auth_user_id", authUserId)
         .single();
@@ -163,20 +184,24 @@ export const AuthProvider = ({ children }) => {
       const user = {
         id: userData.id,
         email: userData.primaryContactEmail,
-        primaryContactName: userData.primaryContactName,
+        name: userData.primaryContactName,
         job_type: userData.job_type,
         selected_tier: userData.selected_tier,
         agencyName: userData.agencyName,
+        created_at: userData.created_at,
         role: "agency_member",
       };
 
       setUser(user);
+      localStorage.setItem("paan_user_data", JSON.stringify(user));
+      localStorage.setItem("paan_member_session", "authenticated");
+      localStorage.setItem("user_email", email);
       console.log(
         "AuthContext: User authenticated, navigating to /dashboard:",
         user
       );
       await router.push("/dashboard");
-      toast.dismiss("route-loading"); // Explicitly dismiss toast
+      toast.dismiss("route-loading");
     } catch (error) {
       console.error("AuthContext: Login error:", error);
       throw error;
@@ -271,7 +296,7 @@ export const AuthProvider = ({ children }) => {
           const { data: existingUser, error: fetchError } = await supabase
             .from("candidates")
             .select(
-              "id, primaryContactEmail, primaryContactName, job_type, selected_tier, agencyName, auth_user_id"
+              "id, primaryContactEmail, primaryContactName, job_type, selected_tier, agencyName, auth_user_id, created_at"
             )
             .eq("auth_user_id", authUserId)
             .single();
@@ -316,10 +341,11 @@ export const AuthProvider = ({ children }) => {
           setUser({
             id: existingUser.id,
             email: existingUser.primaryContactEmail,
-            primaryContactName: existingUser.primaryContactName,
+            name: existingUser.primaryContactName,
             job_type: existingUser.job_type,
             selected_tier: existingUser.selected_tier,
             agencyName: existingUser.agencyName,
+            created_at: existingUser.created_at,
             role: "agency_member",
           });
 
@@ -328,7 +354,7 @@ export const AuthProvider = ({ children }) => {
             "AuthContext: Social login successful, navigating to /dashboard"
           );
           await router.push("/dashboard");
-          toast.dismiss("route-loading"); // Explicitly dismiss toast
+          toast.dismiss("route-loading");
         } else {
           console.log("AuthContext: No session user, redirecting to login");
           router.push("/");
@@ -352,11 +378,12 @@ export const AuthProvider = ({ children }) => {
         return;
       }
       setUser(null);
+      localStorage.removeItem("paan_user_data");
       localStorage.removeItem("paan_member_session");
       localStorage.removeItem("user_email");
       localStorage.removeItem("paan_remembered_email");
       localStorage.removeItem("paan_session_expiry");
-      await router.push("/"); // Use await to ensure navigation completes
+      await router.push("/");
     } catch (err) {
       console.error("AuthContext: Logout error:", err);
       toast.error("An error occurred during logout. Please try again.");
@@ -372,6 +399,7 @@ export const AuthProvider = ({ children }) => {
         isOpen={showExpiredModal}
         onClose={() => {
           setShowExpiredModal(false);
+          localStorage.removeItem("paan_user_data");
           localStorage.removeItem("paan_member_session");
           localStorage.removeItem("user_email");
           router.push("/");

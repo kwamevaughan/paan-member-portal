@@ -117,10 +117,10 @@ const HrSidebar = ({
     router.pathname === pathname
       ? mode === "dark"
         ? "bg-[#19191e] text-white shadow-md"
-        : "bg-[#19191e] text-[#E7EEF8] shadow-md"
+        : "bg-[#0a1215] text-[#E7EEF8] shadow-md"
       : mode === "dark"
       ? "text-gray-200 hover:bg-gray-700 hover:text-white"
-      : "text-[#231812] hover:bg-[#19191e]";
+      : "text-[#231812] hover:bg-[#0B1215]";
 
   if (windowWidth === null) return null;
 
@@ -143,7 +143,7 @@ const HrSidebar = ({
         onMouseLeave={handleMouseLeave}
         className={`fixed left-0 top-0 z-50 h-full transition-all duration-300
           ${isMobile ? (isOpen ? "block" : "hidden") : "block"}
-          ${mode === "dark" ? "bg-[#05050a]" : "bg-[#05050a]"}
+          ${mode === "dark" ? "bg-[#05050a]" : "bg-[#101720]"}
           ${
             isHovering && !isOpen && !isMobile
               ? "backdrop-blur-sm backdrop-filter border border-gray-700"
@@ -302,7 +302,7 @@ const HrSidebar = ({
               } shadow-inner`}
             >
               <div
-                className="flex items-center space-x-4 cursor-pointer bg-[#19191e] rounded-2xl p-2"
+                className="flex items-center space-x-4 cursor-pointer bg-[#0a1215] rounded-2xl p-2"
                 onClick={() => setShowLogout((prev) => !prev)}
               >
                 <div className="w-10 h-10 overflow-hidden rounded-full">

@@ -35,7 +35,7 @@ const StatsChart = dynamic(() => import("@/components/StatsChart"), {
 });
 
 export default function Dashboard({ mode = "light", toggleMode }) {
-const { isSidebarOpen, toggleSidebar, sidebarState, isMobile, windowWidth } =
+  const { isSidebarOpen, toggleSidebar, sidebarState, isMobile, windowWidth } =
     useSidebar();
   const router = useRouter();
   const { user, loading: userLoading, LoadingComponent } = useUser();
@@ -104,8 +104,6 @@ const { isSidebarOpen, toggleSidebar, sidebarState, isMobile, windowWidth } =
     user?.selected_tier || "Free Member"
   );
 
-  
-
   // Handle restricted access
   const handleRestrictedClick = (message) => {
     toast.error(message, { duration: 3000 });
@@ -126,10 +124,20 @@ const { isSidebarOpen, toggleSidebar, sidebarState, isMobile, windowWidth } =
     return latestItems[section]?.timestamp || null;
   };
 
+  // Handle auth=expired
+  useEffect(() => {
+    if (router.query.auth === "expired") {
+      toast.error("Session expired. Please log in again.", { duration: 1000 });
+      router.replace("/", undefined, { shallow: true });
+    }
+  }, [router]);
+
   // Empty state
   if (userLoading && LoadingComponent) return LoadingComponent;
-  if (!user || windowWidth === null) return null;
-
+  if (!user || windowWidth === null) {
+    router.push("/");
+    return null;
+  }
 
   return (
     <div

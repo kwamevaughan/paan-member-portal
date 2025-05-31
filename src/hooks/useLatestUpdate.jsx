@@ -13,10 +13,7 @@ export const useLatestUpdate = (user = { selected_tier: "Free Member" }) => {
       setError(null);
       try {
         const userTierNormalized = normalizeTier(user?.selected_tier);
-        console.log(
-          "[useLatestUpdate] User tier normalized:",
-          userTierNormalized
-        );
+        
 
         // Define tables and their display names
         const tables = [
@@ -45,17 +42,13 @@ export const useLatestUpdate = (user = { selected_tier: "Free Member" }) => {
             return { section, item: null };
           }
 
-          console.log(`[useLatestUpdate] Data from ${name}:`, data);
 
           if (data && data.length > 0) {
             const item = data[0];
             const itemTier = normalizeTier(
               item.tier_restriction || "Free Member"
             );
-            console.log(
-              `[useLatestUpdate] ${name} item tier normalized:`,
-              itemTier
-            );
+            
             return {
               section,
               item: {
@@ -75,7 +68,6 @@ export const useLatestUpdate = (user = { selected_tier: "Free Member" }) => {
           return acc;
         }, {});
 
-        console.log("[useLatestUpdate] Latest items map:", latestItemsMap);
 
         setLatestItems(latestItemsMap);
       } catch (err) {

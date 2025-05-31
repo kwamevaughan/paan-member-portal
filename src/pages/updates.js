@@ -95,8 +95,7 @@ export default function Updates({ mode = "light", toggleMode }) {
 
   if (userLoading || updatesLoading) return LoadingComponent;
   if (!user) {
-    console.log("[Updates] No user, redirecting to /login");
-    router.push("/login");
+    router.push("/");
     return null;
   }
   if (error) {

@@ -183,8 +183,7 @@ export default function Events({ mode = "light", toggleMode }) {
   }
 
   if (!user) {
-    console.log("[Events] No user, redirecting to /login");
-    router.push("/login");
+    router.push("/");
     return null;
   }
 

@@ -72,8 +72,7 @@ export default function MarketIntel({ mode = "light", toggleMode }) {
   }
 
   if (!user) {
-    console.log("[MarketIntel] No user, redirecting to /login");
-    router.push("/login");
+    router.push("/");
     return null;
   }
 

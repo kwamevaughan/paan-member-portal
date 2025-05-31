@@ -130,8 +130,7 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
   }
 
   if (!user) {
-    console.log("[BusinessOpportunities] No user, redirecting to /login");
-    router.push("/login");
+    router.push("/");
     return null;
   }
 

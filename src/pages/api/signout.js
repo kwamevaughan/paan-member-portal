@@ -33,10 +33,13 @@ export default async function handler(req, res) {
       throw error;
     }
 
-    console.log(
-      "API: Returning redirect URL:",
-      redirectTo || "https://member-portal.paan.africa/"
-    );
+    // Clear cookies
+    res.setHeader("Set-Cookie", [
+      `sb-kswioogssarubigcpzez-auth-token=; Path=/; SameSite=Strict; Max-Age=0`,
+      `sb-kswioogssarubigcpzez-auth-token-code-verifier=; Path=/; SameSite=Strict; Max-Age=0`,
+      `refresh_token=; Path=/; SameSite=Strict; Max-Age=0`,
+    ]);
+
     return res
       .status(200)
       .json({ redirectTo: redirectTo || "https://member-portal.paan.africa/" });

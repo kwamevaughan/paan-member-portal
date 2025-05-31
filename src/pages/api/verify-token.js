@@ -1,45 +1,37 @@
-import jwt from "jsonwebtoken";
-import supabaseAdmin from "lib/supabaseAdmin";
+// pages/api/auth/verify-token.js
+import { supabaseServer } from "@/lib/supabase";
 
 export default async function handler(req, res) {
-  const token = req.headers.authorization?.split(" ")[1];
-  console.log("🔐 /api/verify-token endpoint was called");
-
-  if (!token) {
-    return res.status(401).json({ error: "No token provided" });
-  }
-
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("Decoded JWT:", decoded);
-
-    const { data: user, error } = await supabaseAdmin
-      .from("users")
-      .select("user_id, email, full_name, role, partner_id")
-      .eq("email", decoded.email) // Use .eq("user_id", decoded.user_id) if JWT includes user_id
-      .single();
-
+    const supabase = supabaseServer(req);
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
     if (error || !user) {
-      console.error("Supabase error:", error);
+      return res.status(401).json({ error: "Invalid session" });
+    }
+    const { data, error: dbError } = await supabase
+      .from("candidates")
+      .select(
+        "id, primaryContactEmail, primaryContactName, job_type, selected_tier, agencyName"
+      )
+      .eq("auth_user_id", user.id)
+      .single();
+    if (dbError || !data) {
       return res.status(404).json({ error: "User not found" });
     }
-
-    console.log("User fetched:", user);
-    // Map user_id to id and partner_id to agency_id for compatibility
-    res.status(200).json({
+    return res.status(200).json({
       user: {
-        id: user.user_id,
-        email: user.email,
-        full_name: user.full_name,
-        role: user.role,
-        agency_id: user.partner_id,
+        id: data.id,
+        email: data.primaryContactEmail,
+        full_name: data.primaryContactName,
+        role: "agency_member",
+        agency_id: data.agencyName,
       },
     });
   } catch (err) {
-    console.error("Token verification error:", err);
-    if (err.name === "TokenExpiredError") {
-      return res.status(401).json({ error: "Token expired" });
-    }
-    res.status(401).json({ error: "Invalid token" });
+    console.error("API: Verify token error:", err);
+    return res.status(500).json({ error: "Internal server error" });
   }
 }

@@ -52,7 +52,6 @@ function MyApp({ Component, pageProps }) {
 
   useEffect(() => {
     const routeChangeStart = (url) => {
-      console.log("App: Route change started to:", url);
       const pageSlug = url.split("/").pop() || "overview";
       const navItems = sidebarNav.flatMap((category) => category.items);
       const page = navItems.find(
@@ -63,21 +62,19 @@ function MyApp({ Component, pageProps }) {
         : pageSlug.charAt(0).toUpperCase() + pageSlug.slice(1);
       toast.loading(`Fetching ${pageName}...`, {
         id: "route-loading",
+        duration: 1000, // Reduced duration for quicker toasts
       });
     };
 
     const handleRouteChange = (url) => {
-      console.log("App: Route change completed to:", url);
       document.body.style.paddingTop = "0px";
     };
 
     const routeChangeComplete = () => {
-      console.log("App: Route change complete, dismissing toast");
       toast.dismiss("route-loading");
     };
 
     const routeChangeError = (err, url) => {
-      console.log("App: Route change error:", err, "URL:", url);
       if (url === "/") {
         toast.dismiss("route-loading");
       } else {
@@ -85,11 +82,11 @@ function MyApp({ Component, pageProps }) {
       }
     };
 
-    // Fallback to dismiss toast after 5 seconds
-    const dismissToastTimeout = setTimeout(() => {
-      console.log("App: Fallback toast dismissal triggered");
-      toast.dismiss("route-loading");
-    }, 5000);
+    // Prefetch sidebar routes
+    const navItems = sidebarNav.flatMap((category) => category.items);
+    navItems.forEach((item) => {
+      router.prefetch(item.href);
+    });
 
     router.events.on("routeChangeStart", routeChangeStart);
     router.events.on("routeChangeComplete", handleRouteChange);
@@ -101,7 +98,6 @@ function MyApp({ Component, pageProps }) {
       router.events.off("routeChangeComplete", handleRouteChange);
       router.events.off("routeChangeComplete", routeChangeComplete);
       router.events.off("routeChangeError", routeChangeError);
-      clearTimeout(dismissToastTimeout);
     };
   }, [router]);
 
@@ -120,7 +116,7 @@ function MyApp({ Component, pageProps }) {
       );
       const label = navItem
         ? navItem.label
-        : segment.charAt(0).toUpperCase() + segment.slice(1); // Fixed: Use segment instead of pageSlug
+        : segment.charAt(0).toUpperCase() + segment.slice(1);
       crumbs.push({ href: currentPath, label });
     });
 

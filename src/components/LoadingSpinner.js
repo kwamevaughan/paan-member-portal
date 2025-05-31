@@ -48,7 +48,7 @@ const LoadingSpinner = () => {
 
       {/* Loading text with fade in/out effect */}
       <div className="text-indigo-700 font-medium text-lg animate-pulse">
-        Loading your dashboard...
+        Loading... {progress}%
       </div>
     </div>
   );

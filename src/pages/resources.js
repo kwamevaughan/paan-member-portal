@@ -141,8 +141,7 @@ export default function Resources({ mode = "light", toggleMode }) {
   }
 
   if (!user) {
-    console.log("[Resources] No user, redirecting to /login");
-    router.push("/login");
+    router.push("/");
     return null;
   }
 

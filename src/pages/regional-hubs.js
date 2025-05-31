@@ -13,7 +13,7 @@ import TitleCard from "@/components/TitleCard";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
 
-export default function RegionalHub({ mode = "light", toggleMode }) {
+export default function RegionalHubs({ mode = "light", toggleMode }) {
   const {
     isSidebarOpen,
     toggleSidebar,
@@ -25,9 +25,20 @@ export default function RegionalHub({ mode = "light", toggleMode }) {
   const { user, loading: userLoading, LoadingComponent } = useUser();
   const { handleLogout } = useLogout();
 
+  // Handle auth=expired
+  useEffect(() => {
+    if (router.query.auth === "expired") {
+      toast.error("Session expired. Please log in again.", { duration: 1000 });
+      router.replace("/", undefined, { shallow: true });
+    }
+  }, [router]);
+
   // Empty state
   if (userLoading && LoadingComponent) return LoadingComponent;
-  if (!user) return null;
+  if (!user) {
+    router.push("/");
+    return null;
+  }
 
   const title = "Regional Expansion & Hubs";
   const description =
@@ -62,7 +73,7 @@ export default function RegionalHub({ mode = "light", toggleMode }) {
         <div
           className={`content-container flex-1 p-4 md:p-6 lg:p-8 transition-all duration-300 ${
             isSidebarOpen && !isMobile ? "sidebar-open" : ""
-          }`} 
+          }`}
           style={{
             marginLeft: isMobile ? "0px" : isSidebarOpen ? "200px" : "80px",
           }}
@@ -94,4 +105,70 @@ export default function RegionalHub({ mode = "light", toggleMode }) {
       </div>
     </div>
   );
+}
+
+export async function getServerSideProps({ req, res }) {
+  try {
+    const supabase = supabaseServer(req, res);
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
+
+    console.log("[getServerSideProps] User data fetched:", user?.email);
+
+    if (error || !user) {
+      console.error("[getServerSideProps] Auth error:", error?.message);
+      return {
+        redirect: {
+          destination: "/?auth=expired",
+          permanent: false,
+        },
+      };
+    }
+
+    const { data: userData, error: userError } = await supabase
+      .from("candidates")
+      .select(
+        "id, primaryContactEmail, primaryContactName, job_type, selected_tier, agencyName"
+      )
+      .eq("auth_user_id", user.id)
+      .single();
+
+    if (userError || !userData) {
+      console.error(
+        "[getServerSideProps] User data error:",
+        userError?.message
+      );
+      return {
+        redirect: {
+          destination: "/?auth=expired",
+          permanent: false,
+        },
+      };
+    }
+
+    const initialUser = {
+      id: userData.id,
+      email: userData.primaryContactEmail,
+      name: userData.primaryContactName,
+      job_type: userData.job_type,
+      selected_tier: userData.selected_tier,
+      agencyName: userData.agencyName,
+      role: "agency_member",
+    };
+
+    return {
+      props: {
+        initialUser,
+      },
+    };
+  } catch (err) {
+    console.error("[getServerSideProps] Unexpected error:", err);
+    return {
+      props: {
+        initialUser: null, // Let client-side handle auth
+      },
+    };
+  }
 }

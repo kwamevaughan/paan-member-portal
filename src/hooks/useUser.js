@@ -51,7 +51,6 @@ export const useUser = () => {
               "[useUser] Session found, fetching user data for:",
               email
             );
-            console.log("[useUser] Query response:", { data, error });
           }
 
           if (data && !error && isMounted) {

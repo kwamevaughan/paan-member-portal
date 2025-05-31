@@ -123,7 +123,7 @@ const HrHeader = ({
             <div
               className="flex items-center gap-2 pl-4 relative group cursor-default"
               ref={dropdownRef}
-              overd
+              onMouseEnter={() => setDropdownOpen(true)}
               onClick={() => setDropdownOpen(!dropdownOpen)}
             >
               <div className="flex items-center gap-2 cursor-pointer">

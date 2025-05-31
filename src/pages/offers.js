@@ -129,8 +129,7 @@ export default function Offers({ mode = "light", toggleMode }) {
   }
 
   if (!user) {
-    console.log("[Offers] No user, redirecting to /login");
-    router.push("/login");
+    router.push("/");
     return null;
   }
 

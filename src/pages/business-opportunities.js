@@ -13,6 +13,7 @@ import { Icon } from "@iconify/react";
 import Link from "next/link";
 import { hasTierAccess, normalizeTier } from "@/utils/tierUtils";
 import { TierBadge, JobTypeBadge } from "@/components/Badge";
+import TabsSelector from "@/components/TabsSelector";
 
 export default function BusinessOpportunities({ mode = "light", toggleMode }) {
   const {
@@ -184,45 +185,36 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
             />
 
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex overflow-x-auto no-scrollbar gap-2 pb-2">
-                {[
-                  {
-                    id: "all",
-                    label: "All Opportunities",
-                    icon: "mdi:view-grid",
-                  },
-                  {
-                    id: "accessible",
-                    label: "For Your Tier",
-                    icon: "mdi:accessibility",
-                  },
-                  {
-                    id: "trending",
-                    label: "Trending",
-                    icon: "mdi:trending-up",
-                  },
-                  {
-                    id: "deadlineSoon",
-                    label: "Closing Soon",
-                    icon: "mdi:clock-fast",
-                  },
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`px-4 py-2 rounded-full whitespace-nowrap flex items-center gap-2 transition-all ${
-                      activeTab === tab.id
-                        ? "bg-blue-600 text-white font-medium shadow-md"
-                        : mode === "dark"
-                        ? "bg-gray-800 hover:bg-gray-700"
-                        : "bg-white hover:bg-gray-100"
-                    } shadow-sm`}
+              {isMobile ? (
+                <div className="w-full">
+                  <select
+                    value={activeTab}
+                    onChange={(e) => setActiveTab(e.target.value)}
+                    className={`w-full px-4 py-2 rounded-lg border shadow-sm ${
+                      mode === "dark"
+                        ? "bg-gray-800 text-white border-gray-600"
+                        : "bg-white text-gray-800 border-gray-200"
+                    }`}
                   >
-                    <Icon icon={tab.icon} />
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
+                    {[
+                      { id: "all", label: "All Opportunities" },
+                      { id: "accessible", label: "For Your Tier" },
+                      { id: "trending", label: "Trending" },
+                      { id: "deadlineSoon", label: "Closing Soon" },
+                    ].map((tab) => (
+                      <option key={tab.id} value={tab.id}>
+                        {tab.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
+                <TabsSelector
+                  activeTab={activeTab}
+                  setActiveTab={setActiveTab}
+                  mode={mode}
+                />
+              )}
 
               <button
                 onClick={() => setShowFilterPanel(!showFilterPanel)}

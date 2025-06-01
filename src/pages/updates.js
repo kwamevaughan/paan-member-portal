@@ -14,6 +14,8 @@ import toast from "react-hot-toast";
 import { hasTierAccess, normalizeTier } from "@/utils/tierUtils";
 import Link from "next/link";
 import { TierBadge, JobTypeBadge } from "@/components/Badge";
+import TabsSelector from "@/components/TabsSelector";
+
 
 export default function Updates({ mode = "light", toggleMode }) {
   const {
@@ -201,30 +203,13 @@ export default function Updates({ mode = "light", toggleMode }) {
 
                 {/* Tag Filters */}
                 <div className="flex flex-wrap gap-2">
-                  {filterOptions.tags.map((tag) => (
-                    <motion.button
-                      type="button"
-                      key={tag}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setFilters({ tags: tag });
-                      }}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
-                        filters.tags === tag
-                          ? mode === "dark"
-                            ? "bg-blue-600 text-white shadow-lg"
-                            : "bg-blue-500 text-white shadow-lg"
-                          : mode === "dark"
-                          ? "bg-gray-700/50 text-gray-300 hover:bg-gray-600/50"
-                          : "bg-gray-100/80 text-gray-600 hover:bg-gray-200/80"
-                      }`}
-                    >
-                      <Icon icon="mdi:tag" className="w-4 h-4" />
-                      <span className="text-sm">{tag}</span>
-                    </motion.button>
-                  ))}
+                  <TabsSelector
+                    tabs={filterOptions.tags}
+                    selectedTab={filters.tags}
+                    onSelect={(tag) => setFilters({ tags: tag })}
+                    mode={mode}
+                    icon="mdi:tag"
+                  />
                 </div>
 
                 {/* View Toggle */}

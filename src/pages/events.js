@@ -14,6 +14,7 @@ import Link from "next/link";
 import { hasTierAccess, normalizeTier } from "@/utils/tierUtils";
 import { TierBadge, JobTypeBadge } from "@/components/Badge";
 import RegisteredEventsModal from "@/components/RegisteredEventsModal";
+import TabsSelector from "@/components/TabsSelector";
 
 export default function Events({ mode = "light", toggleMode }) {
   const {
@@ -144,6 +145,19 @@ export default function Events({ mode = "light", toggleMode }) {
     handleEventRegistration(event.id);
   };
 
+  const tabs = [
+    { id: "all", label: "All Events", icon: "mdi:view-grid" },
+    { id: "accessible", label: "For Your Tier", icon: "mdi:accessibility" },
+    { id: "trending", label: "Trending", icon: "mdi:trending-up" },
+    { id: "upcoming", label: "Upcoming", icon: "mdi:clock-fast" },
+    {
+      id: "registrations",
+      label: "My Registrations",
+      icon: "mdi:calendar-check",
+    },
+  ];
+
+
   const filteredByTab =
     activeTab === "all"
       ? events
@@ -233,63 +247,18 @@ export default function Events({ mode = "light", toggleMode }) {
             />
 
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex overflow-x-auto no-scrollbar gap-2 pb-2">
-                {[
-                  {
-                    id: "all",
-                    label: "All Events",
-                    icon: "mdi:view-grid",
-                  },
-                  {
-                    id: "accessible",
-                    label: "For Your Tier",
-                    icon: "mdi:accessibility",
-                  },
-                  {
-                    id: "trending",
-                    label: "Trending",
-                    icon: "mdi:trending-up",
-                  },
-                  {
-                    id: "upcoming",
-                    label: "Upcoming",
-                    icon: "mdi:clock-fast",
-                  },
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`px-4 py-2 rounded-full whitespace-nowrap flex items-center gap-2 transition-all ${
-                      activeTab === tab.id
-                        ? "bg-blue-600 text-white font-medium shadow-md"
-                        : mode === "dark"
-                        ? "bg-gray-800 hover:bg-gray-700"
-                        : "bg-white hover:bg-gray-100"
-                    } shadow-sm`}
-                  >
-                    <Icon icon={tab.icon} />
-                    {tab.label}
-                  </button>
-                ))}
-                <button
-                  onClick={() =>
-                    !eventsLoading && setShowRegistrationsModal(true)
+              <TabsSelector
+                tabs={tabs}
+                selectedTab={activeTab}
+                onSelect={(id) => {
+                  if (id === "registrations") {
+                    if (!eventsLoading) setShowRegistrationsModal(true);
+                  } else {
+                    setActiveTab(id);
                   }
-                  className={`px-4 py-2 rounded-full whitespace-nowrap flex items-center gap-2 transition-all ${
-                    eventsLoading
-                      ? "bg-gray-400 text-gray-700 cursor-not-allowed"
-                      : activeTab === "registrations"
-                      ? "bg-blue-600 text-white font-medium shadow-md"
-                      : mode === "dark"
-                      ? "bg-gray-800 hover:bg-gray-700"
-                      : "bg-white hover:bg-gray-100"
-                  } shadow-sm`}
-                  disabled={eventsLoading}
-                >
-                  <Icon icon="mdi:calendar-check" />
-                  My Registrations
-                </button>
-              </div>
+                }}
+                mode={mode}
+              />
 
               <button
                 onClick={() => setShowFilterPanel(!showFilterPanel)}

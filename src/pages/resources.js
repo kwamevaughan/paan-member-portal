@@ -20,6 +20,7 @@ import {
 import Link from "next/link";
 import { hasTierAccess } from "@/utils/tierUtils";
 import { supabase } from "@/lib/supabase";
+import TabsSelector from "@/components/TabsSelector";
 
 export default function Resources({ mode = "light", toggleMode }) {
   const {
@@ -67,7 +68,6 @@ export default function Resources({ mode = "light", toggleMode }) {
         })
       : "No resources available";
 
-
   useEffect(() => {
     const handleError = (event) => {
       console.error("[Resources] Global error:", event.error);
@@ -75,12 +75,6 @@ export default function Resources({ mode = "light", toggleMode }) {
     window.addEventListener("error", handleError);
     return () => window.removeEventListener("error", handleError);
   }, []);
-
-  const handleFilterChange = (e) => {
-    e.preventDefault();
-    const { name, value } = e.target;
-    setFilters((prev) => ({ ...prev, [name]: value }));
-  };
 
   const handleResetFilters = (e) => {
     e.preventDefault();
@@ -146,6 +140,31 @@ export default function Resources({ mode = "light", toggleMode }) {
     );
   }
 
+  // Define tabs for the top-level filter
+  const mainTabs = [
+    { id: "all", label: "All Resources", icon: "mdi:view-grid" },
+    { id: "accessible", label: "For Your Tier", icon: "mdi:accessibility" },
+  ];
+
+  // Define tabs for resource types and tiers
+  const resourceTypeTabs = [
+    { id: "", label: "All Types", icon: "mdi:tag" },
+    ...(filterOptions.resource_types?.map((type) => ({
+      id: type,
+      label: type,
+      icon: "mdi:tag",
+    })) || []),
+  ];
+
+  const tierTabs = [
+    { id: "", label: "All Tiers", icon: "mdi:crown-outline" },
+    ...(filterOptions.tier_restrictions?.map((tier) => ({
+      id: tier,
+      label: tier,
+      icon: "mdi:crown-outline",
+    })) || []),
+  ];
+
   return (
     <div
       className={`min-h-screen flex flex-col ${
@@ -198,31 +217,13 @@ export default function Resources({ mode = "light", toggleMode }) {
             />
 
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex overflow-x-auto no-scrollbar gap-2 pb-2">
-                {[
-                  { id: "all", label: "All Resources", icon: "mdi:view-grid" },
-                  {
-                    id: "accessible",
-                    label: "For Your Tier",
-                    icon: "mdi:accessibility",
-                  },
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`px-4 py-2 rounded-full whitespace-nowrap flex items-center gap-2 transition-all ${
-                      activeTab === tab.id
-                        ? "bg-blue-600 text-white font-medium shadow-md"
-                        : mode === "dark"
-                        ? "bg-gray-800 hover:bg-gray-700"
-                        : "bg-white hover:bg-gray-100"
-                    } shadow-sm`}
-                  >
-                    <Icon icon={tab.icon} />
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
+              <TabsSelector
+                tabs={mainTabs}
+                selectedTab={activeTab}
+                onSelect={setActiveTab}
+                mode={mode}
+                icon="mdi:view-grid"
+              />
               <button
                 onClick={() => setShowFilterPanel(!showFilterPanel)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-full transition ${
@@ -266,47 +267,44 @@ export default function Resources({ mode = "light", toggleMode }) {
                       Reset All
                     </button>
                   </div>
-                  <form
-                    onSubmit={(e) => e.preventDefault()}
-                    className="grid grid-cols-1 md:grid-cols-2 gap-4"
-                  >
-                    {[
-                      {
-                        key: "resource_type",
-                        icon: "mdi:tag",
-                        label: "Resource Type",
-                      },
-                      {
-                        key: "tier_restriction",
-                        icon: "mdi:crown-outline",
-                        label: "Tier",
-                      },
-                    ].map(({ key, icon, label }) => (
-                      <div key={key} className="space-y-1">
-                        <label className="text-sm font-medium text-gray-600 dark:text-gray-300 flex items-center gap-1.5">
-                          <Icon icon={icon} />
-                          {label}
-                        </label>
-                        <select
-                          name={key}
-                          value={filters[key]}
-                          onChange={handleFilterChange}
-                          className={`w-full p-2.5 rounded-lg border ${
-                            mode === "dark"
-                              ? "bg-gray-700 border-gray-600 text-white"
-                              : "bg-white border-gray-200 text-gray-800"
-                          } focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all`}
-                        >
-                          <option value="">All {label}s</option>
-                          {(filterOptions[`${key}s`] || []).map((val) => (
-                            <option key={val} value={val}>
-                              {val}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    ))}
-                  </form>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-600 dark:text-gray-300 flex items-center gap-1.5">
+                        <Icon icon="mdi:tag" />
+                        Resource Type
+                      </label>
+                      <TabsSelector
+                        tabs={resourceTypeTabs}
+                        selectedTab={filters.resource_type}
+                        onSelect={(value) =>
+                          setFilters((prev) => ({
+                            ...prev,
+                            resource_type: value,
+                          }))
+                        }
+                        mode={mode}
+                        icon="mdi:tag"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-600 dark:text-gray-300 flex items-center gap-1.5">
+                        <Icon icon="mdi:crown-outline" />
+                        Tier
+                      </label>
+                      <TabsSelector
+                        tabs={tierTabs}
+                        selectedTab={filters.tier_restriction}
+                        onSelect={(value) =>
+                          setFilters((prev) => ({
+                            ...prev,
+                            tier_restriction: value,
+                          }))
+                        }
+                        mode={mode}
+                        icon="mdi:crown-outline"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             )}

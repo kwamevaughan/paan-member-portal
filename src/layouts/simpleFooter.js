@@ -39,7 +39,7 @@ const SimpleFooter = ({ mode, isSidebarOpen }) => {
         transition-all duration-300
         w-full sticky bottom-0 z-50 mt-10 md:mt-10
         ${
-          sidebarHidden ? "md:ml-0" : isSidebarOpen ? "md:ml-0" : "md:ml-[84px]"
+          sidebarHidden ? "md:ml-0" : isSidebarOpen ? "md:ml-0" : "md:ml-0"
         }
       `}
     >

@@ -141,7 +141,7 @@ const HrSidebar = ({
         ref={sidebarRef}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        className={`fixed left-0 top-0 z-50 h-full transition-all duration-300
+        className={`fixed left-0 top-0 z-50 rounded-xl m-0 md:m-3 transition-all duration-300
           ${isMobile ? (isOpen ? "block" : "hidden") : "block"}
           ${mode === "dark" ? "bg-[#05050a]" : "bg-[#101720]"}
           ${
@@ -151,7 +151,8 @@ const HrSidebar = ({
           }
           group shadow-lg shadow-black/20 custom-scrollbar`}
         style={{
-          width: sidebarWidth,
+          width: isMobile ? (isOpen ? "100vw" : "0") : sidebarWidth,
+          height: isMobile ? "100vh" : "calc(100vh - 24px)",
           backgroundColor:
             isHovering && !isOpen && !isMobile ? "rgba(5, 5, 11, 0.7)" : "",
           boxShadow:

@@ -121,13 +121,14 @@ const HrHeader = ({
             <LanguageSwitch mode={mode} />
 
             <div
-              className="flex items-center gap-2 pl-4 relative group cursor-default"
+              className="flex items-center gap-2 pl-2 relative group cursor-default"
               ref={dropdownRef}
               onMouseEnter={() => setDropdownOpen(true)}
+              onMouseLeave={() => setDropdownOpen(false)} // Added onMouseLeave to close the dropdown
               onClick={() => setDropdownOpen(!dropdownOpen)}
             >
-              <div className="flex items-center gap-2 cursor-pointer">
-                <div className="w-10 h-10 overflow-hidden">
+              <div className="flex items-center cursor-pointer">
+                <div className="overflow-hidden">
                   <Image
                     src={
                       mode === "dark"
@@ -135,8 +136,8 @@ const HrHeader = ({
                         : "/assets/images/paan-logo-icon.svg"
                     }
                     alt="User Profile"
-                    width={40}
-                    height={40}
+                    width={35}
+                    height={35}
                     className="object-cover"
                   />
                 </div>

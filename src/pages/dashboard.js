@@ -287,7 +287,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
               )}
             </TabContentTransition>
 
-            <div className="pb-12 grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
               <StatsChart
                 opportunities={opportunities}
                 events={events}

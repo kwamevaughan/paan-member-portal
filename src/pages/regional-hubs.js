@@ -78,7 +78,7 @@ export default function RegionalHubs({ mode = "light", toggleMode }) {
             marginLeft: isMobile ? "0px" : isSidebarOpen ? "200px" : "80px",
           }}
         >
-          <div className="max-w-7xl mx-auto pb-10">
+          <div className="max-w-7xl mx-auto pb-10 mt-20">
             <TitleCard
               title={title}
               description={description}

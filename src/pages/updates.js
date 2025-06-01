@@ -119,15 +119,12 @@ export default function Updates({ mode = "light", toggleMode }) {
   return (
     <div
       className={`min-h-screen flex flex-col ${
-        mode === "dark"
-          ? "bg-gray-950"
-          : "bg-gradient-to-br from-slate-50 to-blue-50"
+        mode === "dark" ? "bg-gray-900 text-white" : "bg-white text-gray-900"
       }`}
     >
       <HrHeader
         toggleSidebar={toggleSidebar}
         isSidebarOpen={isSidebarOpen}
-        sidebarState={sidebarState}
         user={user}
         mode={mode}
         toggleMode={toggleMode}
@@ -140,10 +137,8 @@ export default function Updates({ mode = "light", toggleMode }) {
           mode={mode}
           toggleSidebar={toggleSidebar}
           onLogout={handleLogout}
-          setDragOffset={updateDragOffset}
           toggleMode={toggleMode}
         />
-
         <div
           className={`content-container flex-1 p-4 md:p-6 lg:p-8 transition-all duration-300 ${
             isSidebarOpen && !isMobile ? "sidebar-open" : ""
@@ -152,7 +147,7 @@ export default function Updates({ mode = "light", toggleMode }) {
             marginLeft: isMobile ? "0px" : isSidebarOpen ? "200px" : "80px",
           }}
         >
-          <div className="max-w-7xl mx-auto space-y-8">
+          <div className="max-w-7xl mx-auto space-y-8 pb-10">
             {/* Header Section */}
             <TitleCard
               title={title}
@@ -501,9 +496,8 @@ export default function Updates({ mode = "light", toggleMode }) {
               )}
             </AnimatePresence>
           </div>
+          <SimpleFooter mode={mode} isSidebarOpen={isSidebarOpen} />
         </div>
-
-        <SimpleFooter mode={mode} isSidebarOpen={isSidebarOpen} />
       </div>
     </div>
   );

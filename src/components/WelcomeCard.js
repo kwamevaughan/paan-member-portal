@@ -80,189 +80,131 @@ export default function WelcomeCard({
           isMobile ? "flex-col" : "flex-row"
         } items-start justify-between gap-4`}
       >
-        <div className="flex items-start space-x-4 sm:space-x-6 flex-1">
-          {/* Animated icon container */}
-          <div className="relative">
-            <div
-              className={`absolute inset-0 rounded-2xl blur-md ${
-                mode === "dark" ? "bg-amber-400/30" : "bg-amber-500/30"
-              } animate-pulse`}
-            ></div>
-            <div
-              className={`relative p-2 rounded-xl ${
-                mode === "dark"
-                  ? "bg-gradient-to-br from-amber-400/20 to-orange-500/20 border border-amber-400/30"
-                  : "bg-gradient-to-br from-amber-100 to-orange-100 border border-amber-200"
-              }`}
-            >
-              <Icon
-                icon="mdi:bell-check"
-                width={isMobile ? 24 : 30}
-                height={isMobile ? 24 : 30}
-                className={`${
-                  mode === "dark" ? "text-amber-400" : "text-amber-600"
-                } animate-bounce`}
-                style={{
-                  animationDuration: "2s",
-                  animationIterationCount: "infinite",
-                }}
-              />
+        <div className="flex-1 space-y-2 sm:space-y-3">
+          <div className="flex items-start space-x-4 sm:space-x-6">
+            {/* Animated icon container */}
+            <div className="relative">
+              <div
+                className={`absolute inset-0 rounded-2xl blur-md ${
+                  mode === "dark" ? "bg-amber-400/30" : "bg-amber-500/30"
+                } animate-pulse`}
+              ></div>
+              <div
+                className={`relative p-2 rounded-xl ${
+                  mode === "dark"
+                    ? "bg-gradient-to-br from-amber-400/20 to-orange-500/20 border border-amber-400/30"
+                    : "bg-gradient-to-br from-amber-100 to-orange-100 border border-amber-200"
+                }`}
+              >
+                <Icon
+                  icon="mdi:bell-check"
+                  width={isMobile ? 24 : 30}
+                  height={isMobile ? 24 : 30}
+                  className={`${
+                    mode === "dark" ? "text-amber-400" : "text-amber-600"
+                  } animate-bounce`}
+                  style={{
+                    animationDuration: "2s",
+                    animationIterationCount: "infinite",
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Text content */}
+            <div className="flex-1">
+              <h2
+                className={`text-xl sm:text-2xl font-bold tracking-tight ${
+                  mode === "dark" ? "text-white" : "text-slate-900"
+                }`}
+              >
+                Welcome back, {user.name}! 👋
+              </h2>
+              <p
+                className={`text-sm sm:text-md leading-relaxed ${
+                  mode === "dark" ? "text-slate-300" : "text-slate-600"
+                }`}
+              >
+                Here's your dashboard overview at a glance.
+              </p>
             </div>
           </div>
 
-          {/* Text content */}
-          <div className="flex-1 space-y-2 sm:space-y-3">
-            <h2
-              className={`text-xl sm:text-2xl font-bold tracking-tight ${
-                mode === "dark" ? "text-white" : "text-slate-900"
+          {/* Recently Added Section */}
+          <div
+            className={`w-full sm:w-fit rounded-xl text-xs sm:text-sm ${
+              mode === "dark"
+                ? "bg-blue-500/20 border border-blue-400/30"
+                : "bg-blue-50 border border-blue-200"
+            } sm:mt-2`}
+          >
+            <div
+              className={`flex flex-row items-center space-x-2 ${
+                isMobile ? "truncate max-w-[90%] overflow-hidden" : ""
               }`}
             >
-              Welcome back, {user.name}! 👋
-            </h2>
-            <p
-              className={`text-sm sm:text-md leading-relaxed ${
-                mode === "dark" ? "text-slate-300" : "text-slate-600"
-              }`}
-            >
-              Here's your dashboard overview at a glance.
-            </p>
-
-            {/* Recently Added Section */}
-            <div className="pt-2 flex">
-              {isMobile ? (
-                <div
-                  className={`py-2 px-3 rounded-xl text-xs sm:text-sm ${
-                    mode === "dark"
-                      ? "bg-blue-500/20 border border-blue-400/30"
-                      : "bg-blue-50 border border-blue-200"
-                  }`}
-                >
-                  <div className="flex flex-col space-y-2 ">
-                    <span
-                      className={`block px-2 py-1 rounded-xl bg-orange-500/20 border border-orange-400/30 text-gray-900`}
-                    >
-                      Recently Added:
-                    </span>
-                    <div className="px-2">
-                      {loading ? (
-                        <span
-                          className={
-                            mode === "dark" ? "text-gray-400" : "text-gray-500"
-                          }
-                        >
-                          Loading...
-                        </span>
-                      ) : error ? (
-                        <span
-                          className={
-                            mode === "dark" ? "text-red-400" : "text-red-500"
-                          }
-                        >
-                          Error fetching update
-                        </span>
-                      ) : latestItem ? (
-                        <>
-                          <span
-                            className={
-                              mode === "dark" ? "text-white" : "text-gray-900"
-                            }
-                          >
-                            "{latestItem.title}"
-                          </span>{" "}
-                          <Link
-                            href={`/${getSectionRoute(latestItem.section)}`}
-                            className={
-                              mode === "dark"
-                                ? "text-blue-400 hover:underline"
-                                : "text-gray-600 hover:underline"
-                            }
-                            aria-label={`View ${latestItem.section} section`}
-                          >
-                            Posted under {latestItem.section}
-                          </Link>
-                        </>
-                      ) : (
-                        <span
-                          className={
-                            mode === "dark" ? "text-gray-400" : "text-gray-500"
-                          }
-                        >
-                          No recent updates
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div
-                  className={`py-2 rounded-xl pr-4 text-xs sm:text-sm ${
-                    mode === "dark"
-                      ? "bg-blue-500/20 border border-blue-400/30"
-                      : "bg-blue-50 border border-blue-200"
-                  }`}
-                >
+              <span
+                className={`px-2 py-1 sm:py-2 rounded-xl flex-shrink-0 ${
+                  mode === "dark"
+                    ? "bg-orange-500/20 border border-orange-400/30 text-orange-300"
+                    : "bg-orange-50 border border-orange-200 text-gray-700"
+                }`}
+              >
+                Recently Added:
+              </span>
+              <div className="px-2">
+                {loading ? (
                   <span
-                    className={`px-2 py-1 sm:py-2 rounded-xl mr-2 ${
-                      mode === "dark"
-                        ? "bg-orange-500/20 border border-orange-400/30 text-orange-300"
-                        : "bg-orange-50 border border-orange-200 text-gray-700"
-                    }`}
+                    className={
+                      mode === "dark" ? "text-gray-400" : "text-gray-500"
+                    }
                   >
-                    Recently Added:
+                    Loading...
                   </span>
-                  {loading ? (
+                ) : error ? (
+                  <span
+                    className={
+                      mode === "dark" ? "text-red-400" : "text-red-500"
+                    }
+                  >
+                    Error fetching update
+                  </span>
+                ) : latestItem ? (
+                  <>
                     <span
                       className={
-                        mode === "dark" ? "text-gray-400" : "text-gray-500"
+                        mode === "dark" ? "text-white" : "text-gray-900"
                       }
                     >
-                      Loading...
-                    </span>
-                  ) : error ? (
-                    <span
+                      "{latestItem.title}"
+                    </span>{" "}
+                    <Link
+                      href={`/${getSectionRoute(latestItem.section)}`}
                       className={
-                        mode === "dark" ? "text-red-400" : "text-red-500"
+                        mode === "dark"
+                          ? "text-blue-400 hover:underline"
+                          : "text-gray-600 hover:underline"
                       }
+                      aria-label={`View ${latestItem.section} section`}
                     >
-                      Error fetching update
-                    </span>
-                  ) : latestItem ? (
-                    <>
-                      <span
-                        className={
-                          mode === "dark" ? "text-white" : "text-gray-900"
-                        }
-                      >
-                        "{latestItem.title}"
-                      </span>{" "}
-                      <Link
-                        href={`/${getSectionRoute(latestItem.section)}`}
-                        className={
-                          mode === "dark"
-                            ? "text-blue-400 hover:underline"
-                            : "text-gray-600 hover:underline"
-                        }
-                        aria-label={`View ${latestItem.section} section`}
-                      >
-                        Posted under {latestItem.section}
-                      </Link>
-                    </>
-                  ) : (
-                    <span
-                      className={
-                        mode === "dark" ? "text-gray-400" : "text-gray-500"
-                      }
-                    >
-                      No recent updates
-                    </span>
-                  )}
-                </div>
-              )}
+                      Posted under {latestItem.section}
+                    </Link>
+                  </>
+                ) : (
+                  <span
+                    className={
+                      mode === "dark" ? "text-gray-400" : "text-gray-500"
+                    }
+                  >
+                    No recent updates
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Enhanced Action Card */}
+        {/* Enhanced Action Card (Membership Info) */}
         <div className={isMobile ? "w-full" : "ml-6 w-auto"}>
           <div className="relative group/card">
             <div

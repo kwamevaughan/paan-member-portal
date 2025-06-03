@@ -144,7 +144,7 @@ const HrSidebar = ({
     : "80px";
 
   return (
-    <div className="relative z-[60]">
+    <div className="relative z-[20]">
       <div
         ref={sidebarRef}
         onMouseEnter={handleMouseEnter}

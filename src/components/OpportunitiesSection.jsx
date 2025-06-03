@@ -6,6 +6,7 @@ import { hasTierAccess } from "@/utils/tierUtils";
 import { TierBadge } from "./Badge";
 import { Icon } from "@iconify/react";
 import debounce from "lodash.debounce";
+import OpportunityDetailsModal from "./OpportunityDetailsModal"; // New import
 
 const FilterField = ({
   key,
@@ -46,13 +47,14 @@ const OpportunitiesSection = ({
   loading,
   error,
   user,
-  handleRestrictedClick,
+  handleRestrictedClick: handleExpressInterest, // Renamed for clarity
   mode,
   Icon,
   filterOptions = {},
   filters = {},
   handleFilterChange,
   handleResetFilters,
+  toast,
 }) => {
   const [viewMode] = useState("grid");
   const [statsFilter, setStatsFilter] = useState("total");
@@ -60,6 +62,7 @@ const OpportunitiesSection = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [inputValue, setInputValue] = useState("");
   const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [selectedOpportunity, setSelectedOpportunity] = useState(null); // Modal state
 
   const isFreelancer = user?.job_type?.toLowerCase() === "freelancer";
   const itemLabel = isFreelancer ? "Gigs" : "Opportunities";
@@ -78,6 +81,14 @@ const OpportunitiesSection = ({
     },
     [debouncedSearch]
   );
+
+  const handleViewMoreInfo = useCallback((opportunity) => {
+    setSelectedOpportunity(opportunity);
+  }, []);
+
+  const handleCloseModal = useCallback(() => {
+    setSelectedOpportunity(null);
+  }, []);
 
   const {
     searchedOpportunities,
@@ -493,15 +504,16 @@ const OpportunitiesSection = ({
                   opportunity={opportunity}
                   mode={mode}
                   TierBadge={TierBadge}
+                  toast={toast}
                   isRestricted={
                     !hasTierAccess(
                       opportunity.tier_restriction,
                       user || { selected_tier: "Free Member" }
                     )
                   }
-                  onRestrictedClick={() => handleRestrictedClick(opportunity)}
+                  onRestrictedClick={() => handleViewMoreInfo(opportunity)} // Updated to open modal
                   isFreelancer={isFreelancer}
-                  showExpressInterestButton
+                  showExpressInterestButton={false} // Disable button
                 />
               </div>
             ))}
@@ -509,6 +521,18 @@ const OpportunitiesSection = ({
         ) : (
           renderEmptyState()
         )}
+
+        {/* Modal */}
+        <OpportunityDetailsModal
+          isOpen={!!selectedOpportunity}
+          onClose={handleCloseModal}
+          opportunity={selectedOpportunity}
+          mode={mode}
+          user={user}
+          onExpressInterest={handleExpressInterest}
+          isFreelancer={isFreelancer}
+          toast={toast}
+        />
       </div>
     );
   };

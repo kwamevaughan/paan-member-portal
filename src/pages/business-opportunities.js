@@ -15,6 +15,7 @@ import { hasTierAccess, normalizeTier } from "@/utils/tierUtils";
 import { TierBadge, JobTypeBadge } from "@/components/Badge";
 import TabsSelector from "@/components/TabsSelector";
 import OpportunitiesSection from "@/components/OpportunitiesSection";
+import { supabase } from "@/lib/supabase";
 
 export default function BusinessOpportunities({ mode = "light", toggleMode }) {
   const { isSidebarOpen, toggleSidebar, updateDragOffset, isMobile } =
@@ -112,7 +113,7 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
   }, []);
 
   const handleExpressInterest = useCallback(
-    (opportunity) => {
+    async (opportunity) => {
       if (!hasTierAccess(opportunity.tier_restriction, user)) {
         toast.error(
           `This opportunity requires ${normalizeTier(
@@ -121,9 +122,54 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
         );
         return;
       }
-      toast.success(`Interest expressed for ${opportunity.title}!`);
+
+      try {
+        // Get authenticated user's ID
+        const {
+          data: { user: authUser },
+          error: authError,
+        } = await supabase.auth.getUser();
+        if (authError || !authUser) {
+          toast.error("User not authenticated. Please log in.");
+          return;
+        }
+
+        // Verify candidate record exists
+        const { data: candidate, error: candidateError } = await supabase
+          .from("candidates")
+          .select("auth_user_id")
+          .eq("auth_user_id", authUser.id)
+          .single();
+
+        if (candidateError || !candidate) {
+          toast.error("Please complete your profile to express interest.");
+          router.push("/profile"); // Adjust redirect path as needed
+          return;
+        }
+
+        // Insert interest
+        const { error: insertError } = await supabase
+          .from("opportunity_interests")
+          .insert({
+            user_id: authUser.id,
+            opportunity_id: opportunity.id,
+          });
+
+        if (insertError) {
+          if (insertError.code === "23505") {
+            toast.error("You have already expressed interest in this gig.");
+          } else {
+            throw insertError;
+          }
+        } else {
+          toast.success(`Interest expressed for ${opportunity.title}!`);
+        }
+      } catch (err) {
+        console.error("Error saving interest:", err);
+        toast.error("Failed to express interest. Please try again.");
+      }
     },
-    [user]
+    [user, router]
   );
 
   if (userLoading || loading) return LoadingComponent;
@@ -224,6 +270,7 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
               filters={filters}
               handleFilterChange={handleFilterChange}
               handleResetFilters={handleResetFilters}
+              toast={toast}
             />
           </div>
           <SimpleFooter mode={mode} isSidebarOpen={isSidebarOpen} />

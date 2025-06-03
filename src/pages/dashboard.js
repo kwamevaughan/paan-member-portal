@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useUser } from "../hooks/useUser";
 import useLogout from "../hooks/useLogout";
@@ -29,62 +29,53 @@ import { Icon } from "@iconify/react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 
-// Dynamically import StatsChart with SSR disabled
 const StatsChart = dynamic(() => import("../components/StatsChart"), {
   ssr: false,
 });
 
 export default function Dashboard({ mode = "light", toggleMode }) {
-  const { isSidebarOpen, toggleSidebar, sidebarState, isMobile, windowWidth } =
-    useSidebar();
+  const { isSidebarOpen, toggleSidebar, isMobile, windowWidth } = useSidebar();
   const router = useRouter();
   const { user, loading: userLoading, LoadingComponent } = useUser();
   const { handleLogout } = useLogout();
   const [activeTab, setActiveTab] = useState("opportunities");
   const { filters, handleFilterChange } = useFilters();
-  const {
-    latestItems,
-    loading: latestUpdateLoading,
-    error: latestUpdateError,
-  } = useLatestUpdate(user?.selected_tier || "Free Member");
+  const { latestItems, loading: latestUpdateLoading } = useLatestUpdate(
+    user?.selected_tier || "Free Member"
+  );
 
-  // Fetch data
   const {
-    opportunities,
-    filterOptions: opportunityFilterOptions,
+    opportunities = [],
+    filterOptions: opportunityFilterOptions = {},
     loading: opportunitiesLoading,
     error: opportunitiesError,
   } = useBusinessOpportunities(
     filters.opportunities,
     user || { selected_tier: "Free Member", job_type: "" }
   );
-
   const {
-    events,
-    registeredEvents,
-    filterOptions: eventFilterOptions,
+    events = [],
+    registeredEvents = [],
+    filterOptions: eventFilterOptions = {},
     loading: eventsLoading,
     error: eventsError,
     handleEventRegistration,
   } = useEvents(filters.events, user?.selected_tier || "Free Member");
-
   const {
-    resources,
-    filterOptions: resourceFilterOptions,
+    resources = [],
+    filterOptions: resourceFilterOptions = {},
     loading: resourcesLoading,
     error: resourcesError,
   } = useResources(filters.resources, user?.selected_tier || "Free Member");
-
   const {
-    updates,
-    filterOptions: updateFilterOptions,
+    updates = [],
+    filterOptions: updateFilterOptions = {},
     loading: updatesLoading,
     error: updatesError,
   } = useUpdates(filters.updates, user?.selected_tier || "Free Member");
-
   const {
-    marketIntel,
-    filterOptions: marketIntelFilterOptions,
+    marketIntel = [],
+    filterOptions: marketIntelFilterOptions = {},
     loading: marketIntelLoading,
     error: marketIntelError,
   } = useMarketIntel(
@@ -93,10 +84,9 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     [],
     user?.selected_tier || "Free Member"
   );
-
   const {
-    offers,
-    filterOptions: offerFilterOptions,
+    offers = [],
+    filterOptions: offerFilterOptions = {},
     loading: offersLoading,
     error: offersError,
   } = useOffers(
@@ -104,14 +94,11 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     user?.selected_tier || "Free Member"
   );
 
-  // Handle restricted access
-  const handleRestrictedClick = (message) => {
+  const handleRestrictedClick = (message) =>
     toast.error(message, { duration: 3000 });
-  };
 
-  // Map card titles to section names for lastUpdated
   const getLastUpdatedForSection = (sectionTitle) => {
-    if (latestUpdateLoading || latestUpdateError) return null;
+    if (latestUpdateLoading) return null;
     const sectionMap = {
       "Active Opportunities": "Business Opportunities",
       "Upcoming Events": "Events",
@@ -120,11 +107,9 @@ export default function Dashboard({ mode = "light", toggleMode }) {
       "Market Intel": "Market Intel",
       Updates: "Updates",
     };
-    const section = sectionMap[sectionTitle];
-    return latestItems[section]?.timestamp || null;
+    return latestItems[sectionMap[sectionTitle]]?.timestamp || null;
   };
 
-  // Handle auth=expired
   useEffect(() => {
     if (router.query.auth === "expired") {
       toast.error("Session expired. Please log in again.", { duration: 1000 });
@@ -132,7 +117,6 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     }
   }, [router]);
 
-  // Empty state
   if (userLoading && LoadingComponent) return LoadingComponent;
   if (!user || windowWidth === null) {
     router.push("/");
@@ -163,12 +147,9 @@ export default function Dashboard({ mode = "light", toggleMode }) {
           toggleMode={toggleMode}
         />
         <div
-          className={`content-container flex-1 p-4 md:p-6 lg:p-8 transition-all duration-300 ${
-            isSidebarOpen && !isMobile ? "sidebar-open" : ""
+          className={`flex-1 p-4 md:p-6 lg:p-8 transition-all ${
+            isSidebarOpen && !isMobile ? "ml-52" : "ml-20"
           }`}
-          style={{
-            marginLeft: isMobile ? "0px" : isSidebarOpen ? "200px" : "80px",
-          }}
         >
           <div className="max-w-7xl mx-auto space-y-8 pb-10">
             <WelcomeCard
@@ -180,7 +161,6 @@ export default function Dashboard({ mode = "light", toggleMode }) {
               JobTypeBadge={JobTypeBadge}
               useLatestUpdate={useLatestUpdate}
             />
-
             <TabContentTransition
               activeTab={activeTab}
               setActiveTab={setActiveTab}
@@ -287,7 +267,6 @@ export default function Dashboard({ mode = "light", toggleMode }) {
                 />
               )}
             </TabContentTransition>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
               <StatsChart
                 opportunities={opportunities}
@@ -297,6 +276,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
                 marketIntel={marketIntel}
                 updates={updates}
                 user={user}
+                jobType={user?.job_type || ""}
                 mode={mode}
                 getLastUpdatedForSection={getLastUpdatedForSection}
                 useRouter={useRouter}

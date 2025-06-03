@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useMemo,
-  useRef,
-  useEffect,
-  useCallback,
-} from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import SectionCard from "./SectionCard";
 import OpportunityCard from "./OpportunityCard";
 import FilterDropdown from "./FilterDropdown";
@@ -13,115 +7,106 @@ import { TierBadge } from "./Badge";
 import { Icon } from "@iconify/react";
 import debounce from "lodash.debounce";
 
+const FilterField = ({
+  key,
+  icon,
+  label,
+  value = "",
+  onChange,
+  options = [],
+  mode,
+}) => (
+  <div className="space-y-1">
+    <label className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+      <Icon icon={icon} className="h-4 w-4" />
+      {label}
+    </label>
+    <select
+      name={key}
+      value={value}
+      onChange={onChange}
+      className={`w-full p-2 rounded-lg border ${
+        mode === "dark"
+          ? "bg-gray-700 border-gray-600 text-white"
+          : "bg-white border-gray-200 text-gray-900"
+      } focus:ring-2 focus:ring-blue-500`}
+    >
+      <option value="">All {label}</option>
+      {options.map((val) => (
+        <option key={val} value={val}>
+          {val}
+        </option>
+      ))}
+    </select>
+  </div>
+);
+
 const OpportunitiesSection = ({
-  opportunities,
-  opportunitiesLoading,
-  opportunitiesError,
+  opportunities = [],
+  loading,
+  error,
   user,
   handleRestrictedClick,
   mode,
   Icon,
+  filterOptions = {},
+  filters = {},
+  handleFilterChange,
+  handleResetFilters,
 }) => {
-  const [viewMode, setViewMode] = useState("grid");
+  const [viewMode] = useState("grid");
   const [statsFilter, setStatsFilter] = useState("total");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [inputValue, setInputValue] = useState(""); // Add separate input state
-  const renderCount = useRef(0);
+  const [inputValue, setInputValue] = useState("");
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
 
   const isFreelancer = user?.job_type?.toLowerCase() === "freelancer";
-  const sectionTitle = isFreelancer ? "Gigs" : "Business Opportunities";
   const itemLabel = isFreelancer ? "Gigs" : "Opportunities";
 
-  // Track render count
-  useEffect(() => {
-    renderCount.current++;
-  });
-
-
-  // Create stable debounced function using useCallback with empty dependency array
   const debouncedSearch = useCallback(
-    debounce((value) => {
-      setSearchQuery(value);
-    }, 300), // Increased debounce delay for better UX
+    debounce((value) => setSearchQuery(value), 300),
     []
   );
+  useEffect(() => () => debouncedSearch.cancel(), [debouncedSearch]);
 
-  // Handle input change - update input immediately, debounce search
   const handleInputChange = useCallback(
     (e) => {
       const value = e.target.value;
-      setInputValue(value); // Update input immediately for responsive UI
-      debouncedSearch(value); // Debounce the search query update
+      setInputValue(value);
+      debouncedSearch(value);
     },
     [debouncedSearch]
   );
 
-  // Cleanup debounced function on unmount
-  useEffect(() => {
-    return () => {
-      debouncedSearch.cancel();
-    };
-  }, [debouncedSearch]);
-
-  const handleStatsFilter = (filter) => {
-    setStatsFilter(filter);
-    if (filter !== "categories") {
-      setSelectedCategory("");
-    }
-  };
-
-  // Debug input focus/blur
-  const handleInputFocus = () => {
-  };
-
-  const handleInputBlur = () => {
-  };
-
-  // Memoized computations
-  const searchedOpportunities = useMemo(
-    () =>
-      opportunities.filter((opp) =>
-        `${opp.title} ${opp.description}`
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase())
+  const {
+    searchedOpportunities,
+    accessibleOpportunities,
+    restrictedOpportunities,
+    opportunitiesByType,
+  } = useMemo(() => {
+    const searched = opportunities.filter((opp) =>
+      `${opp.title} ${opp.description}`
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase())
+    );
+    const userTier = user || { selected_tier: "Free Member" };
+    return {
+      searchedOpportunities: searched,
+      accessibleOpportunities: searched.filter((opp) =>
+        hasTierAccess(opp.tier_restriction, userTier)
       ),
-    [opportunities, searchQuery]
-  );
-
-  const accessibleOpportunities = useMemo(
-    () =>
-      searchedOpportunities.filter((opportunity) =>
-        hasTierAccess(
-          opportunity.tier_restriction,
-          user || { selected_tier: "Free Member" }
-        )
+      restrictedOpportunities: searched.filter(
+        (opp) => !hasTierAccess(opp.tier_restriction, userTier)
       ),
-    [searchedOpportunities, user]
-  );
-
-  const restrictedOpportunities = useMemo(
-    () =>
-      searchedOpportunities.filter(
-        (opportunity) =>
-          !hasTierAccess(
-            opportunity.tier_restriction,
-            user || { selected_tier: "Free Member" }
-          )
-      ),
-    [searchedOpportunities, user]
-  );
-
-  const opportunitiesByType = useMemo(
-    () =>
-      searchedOpportunities.reduce((acc, opportunity) => {
-        const type = opportunity.job_type || "Uncategorized";
+      opportunitiesByType: searched.reduce((acc, opp) => {
+        const type = opp.job_type || "Uncategorized";
         acc[type] = acc[type] || [];
-        acc[type].push(opportunity);
+        acc[type].push(opp);
         return acc;
       }, {}),
-    [searchedOpportunities]
-  );
+    };
+  }, [opportunities, searchQuery, user]);
 
   const displayOpportunities = useMemo(() => {
     if (statsFilter === "available") return accessibleOpportunities;
@@ -135,7 +120,6 @@ const OpportunitiesSection = ({
     accessibleOpportunities,
     restrictedOpportunities,
     opportunitiesByType,
-    searchedOpportunities,
   ]);
 
   const sortedOpportunities = useMemo(
@@ -149,13 +133,41 @@ const OpportunitiesSection = ({
           b.tier_restriction,
           user || { selected_tier: "Free Member" }
         );
-        if (aAccessible === bAccessible) {
-          return a.title.localeCompare(b.title);
-        }
-        return aAccessible ? -1 : 1;
+        return aAccessible === bAccessible
+          ? a.title.localeCompare(b.title)
+          : aAccessible
+          ? -1
+          : 1;
       }),
     [displayOpportunities, user]
   );
+
+  const statsConfig = [
+    {
+      filter: "total",
+      label: `Total ${itemLabel}`,
+      count: searchedOpportunities.length,
+      color: "blue",
+    },
+    {
+      filter: "available",
+      label: "Available",
+      count: accessibleOpportunities.length,
+      color: "green",
+    },
+    {
+      filter: "restricted",
+      label: "Restricted",
+      count: restrictedOpportunities.length,
+      color: "orange",
+    },
+    {
+      filter: "categories",
+      label: "Categories",
+      count: Object.keys(opportunitiesByType).length,
+      color: "purple",
+    },
+  ];
 
   const renderLoadingState = () => (
     <div className="space-y-4">
@@ -232,7 +244,7 @@ const OpportunitiesSection = ({
           mode === "dark" ? "text-red-300/80" : "text-red-600/80"
         }`}
       >
-        {opportunitiesError}
+        {error}
       </p>
     </div>
   );
@@ -269,7 +281,7 @@ const OpportunitiesSection = ({
         }`}
       >
         {searchQuery
-          ? `Try adjusting your search terms or browse all ${itemLabel.toLowerCase()}`
+          ? `Try adjusting your search or browse all ${itemLabel.toLowerCase()}`
           : `Check back later for new ${itemLabel.toLowerCase()}`}
       </p>
       {searchQuery && (
@@ -278,7 +290,7 @@ const OpportunitiesSection = ({
             setInputValue("");
             setSearchQuery("");
           }}
-          className={`mt-4 px-4 py-2 rounded-lg transition-colors ${
+          className={`mt-4 px-4 py-2 rounded-lg ${
             mode === "dark"
               ? "bg-blue-600 hover:bg-blue-700 text-white"
               : "bg-blue-600 hover:bg-blue-700 text-white"
@@ -291,12 +303,9 @@ const OpportunitiesSection = ({
   );
 
   const renderContent = () => {
-    if (opportunitiesLoading) return renderLoadingState();
-    if (opportunitiesError) return renderErrorState();
-
-    const hasResults =
-      searchedOpportunities && searchedOpportunities.length > 0;
-
+    if (loading) return renderLoadingState();
+    if (error) return renderErrorState();
+    const hasResults = searchedOpportunities.length > 0;
     const gridClass =
       viewMode === "grid"
         ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
@@ -304,12 +313,11 @@ const OpportunitiesSection = ({
 
     return (
       <div className="space-y-6">
-        {/* Header with Search and Filters - Always visible */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-center gap-4">
           <div className="relative flex-1 max-w-md">
             <Icon
               icon="mdi:magnify"
-              className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${
+              className={`absolute left-3 top-1/2 -translate-y-1/2 ${
                 mode === "dark" ? "text-gray-400" : "text-gray-500"
               }`}
             />
@@ -318,19 +326,88 @@ const OpportunitiesSection = ({
               placeholder={`Search ${itemLabel.toLowerCase()}...`}
               value={inputValue}
               onChange={handleInputChange}
-              onFocus={handleInputFocus}
-              onBlur={handleInputBlur}
               className={`w-full pl-10 pr-4 py-2 rounded-lg border ${
                 mode === "dark"
                   ? "bg-gray-700 border-gray-600 text-white"
                   : "bg-white border-gray-200 text-gray-900"
-              } focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all z-10`}
+              } focus:ring-2 focus:ring-blue-500 z-10`}
               aria-label={`Search ${itemLabel.toLowerCase()}`}
             />
           </div>
+          <button
+            onClick={() => setShowFilterPanel(!showFilterPanel)}
+            className={`md:ml-auto flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
+              mode === "dark"
+                ? "bg-gray-800 hover:bg-gray-700 text-white"
+                : "bg-white hover:bg-gray-100 text-gray-900"
+            } ${showFilterPanel ? "ring-2 ring-blue-600" : ""}`}
+          >
+            <Icon icon="mdi:filter" />
+            <span>Filters</span>
+            {filters && Object.values(filters).some((val) => val !== "") && (
+              <span className="flex items-center justify-center w-5 h-5 text-xs font-medium rounded-full bg-blue-600 text-white">
+                {Object.values(filters).filter((val) => val !== "").length}
+              </span>
+            )}
+          </button>
         </div>
 
-        {/* Stats dashboard */}
+        {showFilterPanel && (
+          <div
+            className={`rounded-2xl shadow-lg ${
+              mode === "dark"
+                ? "bg-gray-800 border border-gray-400"
+                : "bg-white border border-gray-200"
+            }`}
+          >
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2 text-lg font-semibold">
+                  <Icon
+                    icon="mdi:filter-variant"
+                    className="h-5 w-5 text-blue-600"
+                  />
+                  <span>Refine Your Search</span>
+                </div>
+                <button
+                  onClick={handleResetFilters}
+                  className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
+                >
+                  <Icon icon="mdi:refresh" />
+                  Reset All
+                </button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                {[
+                  { key: "country", icon: "mdi:earth", label: "Country" },
+                  {
+                    key: "serviceType",
+                    icon: "mdi:cog",
+                    label: "Service Type",
+                  },
+                  { key: "industry", icon: "mdi:industry", label: "Industry" },
+                  {
+                    key: "projectType",
+                    icon: "mdi:folder",
+                    label: "Project Type",
+                  },
+                  { key: "tier_restriction", icon: "mdi:crown", label: "Tier" },
+                ].map(({ key, icon, label }) => (
+                  <FilterField
+                    key={key}
+                    icon={icon}
+                    label={label}
+                    value={filters[key] || ""}
+                    onChange={handleFilterChange}
+                    options={filterOptions[`${key}s`] || []}
+                    mode={mode}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         <div
           className={`grid grid-cols-2 md:grid-cols-4 gap-4 p-6 rounded-2xl ${
             mode === "dark"
@@ -338,35 +415,10 @@ const OpportunitiesSection = ({
               : "bg-blue-50 border border-blue-200/50"
           }`}
         >
-          {[
-            {
-              filter: "total",
-              label: `Total ${itemLabel}`,
-              count: searchedOpportunities.length,
-              color: "blue",
-            },
-            {
-              filter: "available",
-              label: "Available",
-              count: accessibleOpportunities.length,
-              color: "green",
-            },
-            {
-              filter: "restricted",
-              label: "Restricted",
-              count: restrictedOpportunities.length,
-              color: "orange",
-            },
-            {
-              filter: "categories",
-              label: "Categories",
-              count: Object.keys(opportunitiesByType).length,
-              color: "purple",
-            },
-          ].map(({ filter, label, count, color }) => (
+          {statsConfig.map(({ filter, label, count, color }) => (
             <div
               key={filter}
-              className={`text-center cursor-pointer p-2 rounded-lg transition-all duration-200 ${
+              className={`text-center cursor-pointer p-2 rounded-lg transition-all ${
                 statsFilter === filter
                   ? mode === "dark"
                     ? `bg-${color}-900/30 border border-${color}-700`
@@ -377,16 +429,18 @@ const OpportunitiesSection = ({
                   ? `hover:bg-${color}-900/30 hover:border hover:border-${color}-700`
                   : `hover:bg-${color}-100/50 hover:border hover:border-${color}-300`
               }`}
-              onClick={() => handleStatsFilter(filter)}
+              onClick={() => {
+                setStatsFilter(filter);
+                if (filter !== "categories") setSelectedCategory("");
+              }}
               role="button"
               tabIndex={0}
               aria-label={`Filter by ${filter} ${itemLabel.toLowerCase()}`}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  handleStatsFilter(filter);
-                }
-              }}
+              onKeyDown={(e) =>
+                e.key === "Enter" &&
+                (setStatsFilter(filter),
+                filter !== "categories" && setSelectedCategory(""))
+              }
             >
               <div
                 className={`text-3xl font-bold ${
@@ -406,14 +460,11 @@ const OpportunitiesSection = ({
           ))}
         </div>
 
-        {/* Category dropdown */}
         {statsFilter === "categories" && (
           <div className="mb-4">
             <FilterDropdown
               value={selectedCategory}
-              onChange={(value) => {
-                setSelectedCategory(value);
-              }}
+              onChange={setSelectedCategory}
               options={[
                 { value: "", label: "All Categories" },
                 ...Object.keys(opportunitiesByType).map((type) => ({
@@ -427,7 +478,6 @@ const OpportunitiesSection = ({
           </div>
         )}
 
-        {/* Results section */}
         {hasResults ? (
           <div className={gridClass}>
             {sortedOpportunities.map((opportunity, index) => (
@@ -451,7 +501,7 @@ const OpportunitiesSection = ({
                   }
                   onRestrictedClick={() => handleRestrictedClick(opportunity)}
                   isFreelancer={isFreelancer}
-                  showExpressInterestButton={true}
+                  showExpressInterestButton
                 />
               </div>
             ))}
@@ -464,7 +514,7 @@ const OpportunitiesSection = ({
   };
 
   return (
-    <SectionCard title={sectionTitle} icon="mdi:briefcase" mode={mode}>
+    <SectionCard title={itemLabel} icon="mdi:briefcase" mode={mode}>
       {renderContent()}
     </SectionCard>
   );

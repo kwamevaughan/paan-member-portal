@@ -9,76 +9,82 @@ const StatsChart = ({
   offers = [],
   marketIntel = [],
   updates = [],
-  user,
-  mode,
-  getLastUpdatedForSection,
+  user = { selected_tier: "Free Member", job_type: "" },
+  mode = "light",
+  getLastUpdatedForSection = () => null,
   useRouter,
 }) => {
   const router = useRouter();
-
-  // Fallback to "Free Member" if user or selected_tier is missing
   const userTier = user?.selected_tier || "Free Member";
+  const isFreelancer = user?.job_type?.toLowerCase() === "freelancer";
 
-  // Data for the chart
-  const series = [
-    opportunities.filter((item) =>
-      hasTierAccess(item.tier_restriction, { selected_tier: userTier })
-    ).length,
-    events.filter((item) =>
-      hasTierAccess(item.tier_restriction, { selected_tier: userTier })
-    ).length,
-    resources.filter((item) =>
-      hasTierAccess(item.tier_restriction, { selected_tier: userTier })
-    ).length,
-    offers.filter((item) =>
-      hasTierAccess(item.tier_restriction, { selected_tier: userTier })
-    ).length,
-    marketIntel.filter((item) =>
-      hasTierAccess(item.tier_restriction, { selected_tier: userTier })
-    ).length,
-    updates.filter((item) =>
-      hasTierAccess(item.tier_restriction, { selected_tier: userTier })
-    ).length,
-  ];
+  // Data for the chart, filtered for freelancers
+  const series = isFreelancer
+    ? [
+        opportunities.filter((item) =>
+          hasTierAccess(item.tier_restriction, { selected_tier: userTier })
+        ).length,
+        events.filter((item) =>
+          hasTierAccess(item.tier_restriction, { selected_tier: userTier })
+        ).length,
+      ]
+    : [
+        opportunities.filter((item) =>
+          hasTierAccess(item.tier_restriction, { selected_tier: userTier })
+        ).length,
+        events.filter((item) =>
+          hasTierAccess(item.tier_restriction, { selected_tier: userTier })
+        ).length,
+        resources.filter((item) =>
+          hasTierAccess(item.tier_restriction, { selected_tier: userTier })
+        ).length,
+        offers.filter((item) =>
+          hasTierAccess(item.tier_restriction, { selected_tier: userTier })
+        ).length,
+        marketIntel.filter((item) =>
+          hasTierAccess(item.tier_restriction, { selected_tier: userTier })
+        ).length,
+        updates.filter((item) =>
+          hasTierAccess(item.tier_restriction, { selected_tier: userTier })
+        ).length,
+      ];
 
+  const labels = isFreelancer
+    ? ["Active Opportunities", "Upcoming Events"]
+    : [
+        "Active Opportunities",
+        "Upcoming Events",
+        "New Resources",
+        "Available Offers",
+        "Market Intel",
+        "Updates",
+      ];
 
-  const labels = [
-    "Active Opportunities",
-    "Upcoming Events",
-    "New Resources",
-    "Available Offers",
-    "Market Intel",
-    "Updates",
-  ];
-
-  const colors = [
-    "#3B82F6", // Blue for Opportunities
-    "#10B981", // Green for Events
-    "#8B5CF6", // Purple for Resources
-    "#F59E0B", // Orange for Offers
-    "#FBBF24", // Amber for Market Intel
-    "#EC4899", // Pink for Updates
-  ];
+  const colors = isFreelancer
+    ? ["#3B82F6", "#10B981"] // Blue for Opportunities, Green for Events
+    : ["#3B82F6", "#10B981", "#8B5CF6", "#F59E0B", "#FBBF24", "#EC4899"]; // Full set for non-freelancers
 
   const options = {
     chart: {
       type: "polarArea",
       events: {
         dataPointSelection: (event, chartContext, config) => {
-          const sectionLinks = [
-            "/opportunities",
-            "/events",
-            "/resources",
-            "/offers",
-            "/market-intel",
-            "/updates",
-          ];
+          const sectionLinks = isFreelancer
+            ? ["/opportunities", "/events"]
+            : [
+                "/opportunities",
+                "/events",
+                "/resources",
+                "/offers",
+                "/market-intel",
+                "/updates",
+              ];
           router.push(sectionLinks[config.dataPointIndex]);
         },
       },
     },
-    labels: labels,
-    colors: colors,
+    labels,
+    colors,
     legend: {
       position: "bottom",
       labels: {
@@ -114,9 +120,11 @@ const StatsChart = ({
     },
     tooltip: {
       custom: ({ series, seriesIndex, w }) => {
-        const lastUpdated = getLastUpdatedForSection(labels[seriesIndex]);
+        const lastUpdated = getLastUpdatedForSection(
+          w.config.labels[seriesIndex]
+        );
         const value = series[seriesIndex];
-        const label = labels[seriesIndex];
+        const label = w.config.labels[seriesIndex];
         return `
           <div class="apexcharts-tooltip-custom" style="
             background: ${
@@ -147,26 +155,17 @@ const StatsChart = ({
       {
         breakpoint: 640,
         options: {
-          chart: {
-            height: 300,
-          },
-          legend: {
-            position: "bottom",
-          },
+          chart: { height: 300 },
+          legend: { position: "bottom" },
         },
       },
       {
         breakpoint: 1024,
-        options: {
-          chart: {
-            height: 350,
-          },
-        },
+        options: { chart: { height: 350 } },
       },
     ],
   };
 
-  // Check if series is empty
   const isSeriesEmpty = series.every((value) => value === 0);
 
   return (

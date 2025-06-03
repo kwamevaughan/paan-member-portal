@@ -54,7 +54,6 @@ export default async function handler(req, res) {
         id: userData.id,
         email: userData.primaryContactEmail,
         full_name: userData.primaryContactName,
-        role: "agency_member",
         agency_id: userData.agencyName, // Map to agency_id for compatibility
       },
     });

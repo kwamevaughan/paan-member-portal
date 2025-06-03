@@ -57,6 +57,7 @@ const TitleCard = ({
   };
 
   const descriptionParts = description.split("<br />");
+  const isFreelancer = user?.job_type?.toLowerCase() === "freelancer";
 
   return (
     <div className="relative mx-2 mb-10 group">
@@ -130,10 +131,12 @@ const TitleCard = ({
                     Your Membership
                   </div>
                   <div className="flex flex-wrap gap-2 capitalize">
-                    <TierBadge
-                      tier={user?.selected_tier || "Free Member"}
-                      mode={mode}
-                    />
+                    {!isFreelancer && (
+                      <TierBadge
+                        tier={user?.selected_tier || "Free Member"}
+                        mode={mode}
+                      />
+                    )}
                     <JobTypeBadge
                       jobType={user?.job_type || "N/A"}
                       mode={mode}

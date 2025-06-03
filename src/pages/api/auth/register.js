@@ -10,7 +10,6 @@ const handler = async (req, res) => {
     email,
     password,
     full_name,
-    role = "agency_member",
     agency_id,
   } = req.body;
 

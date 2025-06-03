@@ -1,36 +1,36 @@
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/router";
-import { useUser } from "@/hooks/useUser";
-import useLogout from "@/hooks/useLogout";
-import { useBusinessOpportunities } from "@/hooks/useBusinessOpportunities";
-import useEvents from "@/hooks/useEvents";
-import useResources from "@/hooks/useResources";
-import useUpdates from "@/hooks/useUpdates";
-import useMarketIntel from "@/hooks/useMarketIntel";
-import useOffers from "@/hooks/useOffers";
-import useFilters from "@/hooks/useFilters";
-import { useLatestUpdate } from "@/hooks/useLatestUpdate";
-import { TierBadge, JobTypeBadge } from "@/components/Badge";
-import HrHeader from "@/layouts/hrHeader";
-import HrSidebar from "@/layouts/hrSidebar";
-import SimpleFooter from "@/layouts/simpleFooter";
-import useSidebar from "@/hooks/useSidebar";
+import { useUser } from "../hooks/useUser";
+import useLogout from "../hooks/useLogout";
+import { useBusinessOpportunities } from "../hooks/useBusinessOpportunities";
+import useEvents from "../hooks/useEvents";
+import useResources from "../hooks/useResources";
+import useUpdates from "../hooks/useUpdates";
+import useMarketIntel from "../hooks/useMarketIntel";
+import useOffers from "../hooks/useOffers";
+import useFilters from "../hooks/useFilters";
+import { useLatestUpdate } from "../hooks/useLatestUpdate";
+import { TierBadge, JobTypeBadge } from "../components/Badge";
+import HrHeader from "../layouts/hrHeader";
+import HrSidebar from "../layouts/hrSidebar";
+import SimpleFooter from "../layouts/simpleFooter";
+import useSidebar from "../hooks/useSidebar";
 import toast from "react-hot-toast";
-import WelcomeCard from "@/components/WelcomeCard";
-import TabContentTransition from "@/components/TabContentTransition";
-import OpportunitiesSection from "@/components/OpportunitiesSection";
-import EventsSection from "@/components/EventsSection";
-import ResourcesSection from "@/components/ResourcesSection";
-import MarketIntelSection from "@/components/MarketIntelSection";
-import OffersSection from "@/components/OffersSection";
-import UpdatesSection from "@/components/UpdatesSection";
-import YouTubeVideo from "@/components/YouTubeVideo";
+import WelcomeCard from "../components/WelcomeCard";
+import TabContentTransition from "../components/TabContentTransition";
+import OpportunitiesSection from "../components/OpportunitiesSection";
+import EventsSection from "../components/EventsSection";
+import ResourcesSection from "../components/ResourcesSection";
+import MarketIntelSection from "../components/MarketIntelSection";
+import OffersSection from "../components/OffersSection";
+import UpdatesSection from "../components/UpdatesSection";
+import YouTubeVideo from "../components/YouTubeVideo";
 import { Icon } from "@iconify/react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 
 // Dynamically import StatsChart with SSR disabled
-const StatsChart = dynamic(() => import("@/components/StatsChart"), {
+const StatsChart = dynamic(() => import("../components/StatsChart"), {
   ssr: false,
 });
 
@@ -56,7 +56,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     error: opportunitiesError,
   } = useBusinessOpportunities(
     filters.opportunities,
-    user?.selected_tier || "Free Member"
+    user || { selected_tier: "Free Member", job_type: "" }
   );
 
   const {
@@ -186,6 +186,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
               setActiveTab={setActiveTab}
               mode={mode}
               Icon={Icon}
+              user={user}
             >
               {activeTab === "opportunities" && (
                 <OpportunitiesSection

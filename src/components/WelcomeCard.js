@@ -24,6 +24,12 @@ export default function WelcomeCard({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Debug user object to verify job_type
+  useEffect(() => {
+    console.log("[WelcomeCard] User object:", user);
+    console.log("[WelcomeCard] job_type:", user?.job_type);
+  }, [user]);
+
   // Find the most recent item across all sections
   const latestItem = Object.entries(latestItems).reduce(
     (latest, [section, item]) => {
@@ -36,9 +42,15 @@ export default function WelcomeCard({
     null
   );
 
+  // Case-insensitive check for Freelancer
+  const isFreelancer =
+    user?.job_type?.toLowerCase() === "freelancer" || !user?.job_type;
+
   const getSectionRoute = (section) => {
     const routes = {
-      "Business Opportunities": "business-opportunities",
+      "Business Opportunities": isFreelancer
+        ? "business-opportunities"
+        : "business-opportunities",
       Events: "events",
       Resources: "resources",
       "Market Intel": "market-intel",
@@ -187,7 +199,11 @@ export default function WelcomeCard({
                       }
                       aria-label={`View ${latestItem.section} section`}
                     >
-                      Posted under {latestItem.section}
+                      Posted under{" "}
+                      {isFreelancer &&
+                      latestItem.section === "Business Opportunities"
+                        ? "Gigs"
+                        : latestItem.section}
                     </Link>
                   </>
                 ) : (
@@ -229,7 +245,9 @@ export default function WelcomeCard({
                     Your Membership
                   </div>
                   <div className="flex flex-wrap gap-2 pb-2 capitalize">
-                    <TierBadge tier={user?.selected_tier} mode={mode} />
+                    {!isFreelancer && (
+                      <TierBadge tier={user?.selected_tier} mode={mode} />
+                    )}
                     <JobTypeBadge jobType={user?.job_type} mode={mode} />
                   </div>
                   <div className="text-xs sm:text-sm">

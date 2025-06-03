@@ -15,7 +15,10 @@ export const sidebarNav = [
       {
         href: "/business-opportunities",
         icon: "mdi:briefcase",
-        label: "View Opportunities",
+        label: (jobType) =>
+          jobType?.toLowerCase() === "freelancer"
+            ? "View Gigs"
+            : "View Opportunities",
       },
     ],
   },
@@ -29,7 +32,6 @@ export const sidebarNav = [
       },
     ],
   },
-
   {
     category: "Updates",
     items: [
@@ -101,3 +103,13 @@ export const sidebarNav = [
     ],
   },
 ];
+
+// Filter navigation for freelancers
+export const getFilteredNav = (jobType) => {
+  if (jobType?.toLowerCase() === "freelancer") {
+    return sidebarNav.filter((item) =>
+      ["Dashboard", "Business Opportunities"].includes(item.category)
+    );
+  }
+  return sidebarNav;
+};

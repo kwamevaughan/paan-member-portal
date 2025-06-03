@@ -120,72 +120,82 @@ const HrHeader = ({
             <FullscreenToggle mode={mode} />
             <LanguageSwitch mode={mode} />
 
-            <div
-              className="flex items-center gap-2 pl-2 relative group cursor-default"
-              ref={dropdownRef}
-              onMouseEnter={() => setDropdownOpen(true)}
-              onMouseLeave={() => setDropdownOpen(false)} // Added onMouseLeave to close the dropdown
-              onClick={() => setDropdownOpen(!dropdownOpen)}
+            <TooltipIconButton
+              label={
+                <span className={mode === "dark" ? "text-black" : "text-black"}>
+                  {dropdownOpen ? "Close Profile" : "Open Profile"}
+                </span>
+              }
+              mode={mode}
+              className="bg-white/50"
             >
-              <div className="flex items-center cursor-pointer">
-                <div className="overflow-hidden">
-                  <Image
-                    src={
-                      mode === "dark"
-                        ? "/assets/images/paan-logo-icon-white.svg"
-                        : "/assets/images/paan-logo-icon.svg"
-                    }
-                    alt="User Profile"
-                    width={35}
-                    height={35}
-                    className="object-cover"
-                  />
-                </div>
-              </div>
-
-              {dropdownOpen && (
-                <div
-                  className={`absolute top-full mt-2 right-0 w-80 rounded-2xl shadow-lg z-10 ${
-                    mode === "dark"
-                      ? "bg-gray-800 text-white"
-                      : "bg-white text-[#231812]"
-                  }`}
-                >
-                  <div className="p-8">
-                    <div className="flex items-center gap-2 border-b pb-6 w-full">
-                      <div className="overflow-hidden flex-shrink-0">
-                        <Image
-                          src={
-                            mode === "dark"
-                              ? "/assets/images/paan-logo-icon-white.svg"
-                              : "/assets/images/paan-logo-icon.svg"
-                          }
-                          alt="User Profile"
-                          width={40}
-                          height={40}
-                          className="object-cover"
-                        />
-                      </div>
-                      <div className="flex flex-col">
-                        <div className="flex gap-2">
-                          <span className="text-md font-bold">{user.name}</span>
-                          <span className="rounded-md capitalize bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-green-600/20 ring-inset">
-                            {user.job_type}
-                          </span>
-                        </div>
-                        <span className="text-sm">{user.agencyName}</span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={onLogout}
-                      className="block w-full text-center text-white px-4 py-2 bg-[#0088d2] rounded-full hover:bg-[#528fa7] transition duration-200 mt-4"
-                    >
-                      Logout
-                    </button>
+              <div
+                className="flex items-center gap-2 pl-2 relative cursor-pointer"
+                ref={dropdownRef}
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+              >
+                <div className="flex items-center cursor-pointer">
+                  <div className="overflow-hidden">
+                    <Image
+                      src={
+                        mode === "dark"
+                          ? "/assets/images/paan-logo-icon-white.svg"
+                          : "/assets/images/paan-logo-icon.svg"
+                      }
+                      alt="User Profile"
+                      width={35}
+                      height={35}
+                      className="object-cover"
+                    />
                   </div>
                 </div>
-              )}
-            </div>
+
+                {dropdownOpen && (
+                  <div
+                    className={`absolute top-full mt-2 right-0 w-80 rounded-2xl shadow-lg z-10 ${
+                      mode === "dark"
+                        ? "bg-gray-800 text-white"
+                        : "bg-white text-[#231812]"
+                    }`}
+                  >
+                    <div className="p-8">
+                      <div className="flex items-center gap-2 border-b pb-6 w-full">
+                        <div className="overflow-hidden flex-shrink-0">
+                          <Image
+                            src={
+                              mode === "dark"
+                                ? "/assets/images/paan-logo-icon-white.svg"
+                                : "/assets/images/paan-logo-icon.svg"
+                            }
+                            alt="User Profile"
+                            width={40}
+                            height={40}
+                            className="object-cover"
+                          />
+                        </div>
+                        <div className="flex flex-col">
+                          <div className="flex gap-2">
+                            <span className="text-md font-bold">
+                              {user.name}
+                            </span>
+                            <span className="rounded-md capitalize bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-green-600/20 ring-inset">
+                              {user.job_type}
+                            </span>
+                          </div>
+                          <span className="text-sm">{user.agencyName}</span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={onLogout}
+                        className="block w-full text-center text-white px-4 py-2 bg-[#0088d2] rounded-full hover:bg-[#528fa7] transition duration-200 mt-4"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </TooltipIconButton>
           </div>
         </div>
       </div>

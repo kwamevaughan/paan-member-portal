@@ -1,36 +1,164 @@
-import React, { useState } from "react";
+import React, {
+  useState,
+  useMemo,
+  useRef,
+  useEffect,
+  useCallback,
+} from "react";
 import SectionCard from "./SectionCard";
 import OpportunityCard from "./OpportunityCard";
 import FilterDropdown from "./FilterDropdown";
 import { hasTierAccess } from "@/utils/tierUtils";
 import { TierBadge } from "./Badge";
+import { Icon } from "@iconify/react";
+import debounce from "lodash.debounce";
 
 const OpportunitiesSection = ({
   opportunities,
   opportunitiesLoading,
   opportunitiesError,
-  opportunityFilters,
-  handleOpportunityFilterChange,
-  opportunityFilterOptions,
   user,
   handleRestrictedClick,
   mode,
   Icon,
 }) => {
-  const [viewMode, setViewMode] = useState("grid"); // grid or list
-  const [statsFilter, setStatsFilter] = useState("total"); // Track selected stat filter
-  const [selectedCategory, setSelectedCategory] = useState(""); // Track selected category for "Categories" filter
+  const [viewMode, setViewMode] = useState("grid");
+  const [statsFilter, setStatsFilter] = useState("total");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [inputValue, setInputValue] = useState(""); // Add separate input state
+  const renderCount = useRef(0);
+
+  const isFreelancer = user?.job_type?.toLowerCase() === "freelancer";
+  const sectionTitle = isFreelancer ? "Gigs" : "Business Opportunities";
+  const itemLabel = isFreelancer ? "Gigs" : "Opportunities";
+
+  // Track render count
+  useEffect(() => {
+    renderCount.current++;
+  });
+
+
+  // Create stable debounced function using useCallback with empty dependency array
+  const debouncedSearch = useCallback(
+    debounce((value) => {
+      setSearchQuery(value);
+    }, 300), // Increased debounce delay for better UX
+    []
+  );
+
+  // Handle input change - update input immediately, debounce search
+  const handleInputChange = useCallback(
+    (e) => {
+      const value = e.target.value;
+      setInputValue(value); // Update input immediately for responsive UI
+      debouncedSearch(value); // Debounce the search query update
+    },
+    [debouncedSearch]
+  );
+
+  // Cleanup debounced function on unmount
+  useEffect(() => {
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [debouncedSearch]);
 
   const handleStatsFilter = (filter) => {
     setStatsFilter(filter);
     if (filter !== "categories") {
-      setSelectedCategory(""); // Reset category selection unless "categories" is clicked
+      setSelectedCategory("");
     }
   };
 
+  // Debug input focus/blur
+  const handleInputFocus = () => {
+  };
+
+  const handleInputBlur = () => {
+  };
+
+  // Memoized computations
+  const searchedOpportunities = useMemo(
+    () =>
+      opportunities.filter((opp) =>
+        `${opp.title} ${opp.description}`
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase())
+      ),
+    [opportunities, searchQuery]
+  );
+
+  const accessibleOpportunities = useMemo(
+    () =>
+      searchedOpportunities.filter((opportunity) =>
+        hasTierAccess(
+          opportunity.tier_restriction,
+          user || { selected_tier: "Free Member" }
+        )
+      ),
+    [searchedOpportunities, user]
+  );
+
+  const restrictedOpportunities = useMemo(
+    () =>
+      searchedOpportunities.filter(
+        (opportunity) =>
+          !hasTierAccess(
+            opportunity.tier_restriction,
+            user || { selected_tier: "Free Member" }
+          )
+      ),
+    [searchedOpportunities, user]
+  );
+
+  const opportunitiesByType = useMemo(
+    () =>
+      searchedOpportunities.reduce((acc, opportunity) => {
+        const type = opportunity.job_type || "Uncategorized";
+        acc[type] = acc[type] || [];
+        acc[type].push(opportunity);
+        return acc;
+      }, {}),
+    [searchedOpportunities]
+  );
+
+  const displayOpportunities = useMemo(() => {
+    if (statsFilter === "available") return accessibleOpportunities;
+    if (statsFilter === "restricted") return restrictedOpportunities;
+    if (statsFilter === "categories" && selectedCategory)
+      return opportunitiesByType[selectedCategory] || [];
+    return searchedOpportunities;
+  }, [
+    statsFilter,
+    selectedCategory,
+    accessibleOpportunities,
+    restrictedOpportunities,
+    opportunitiesByType,
+    searchedOpportunities,
+  ]);
+
+  const sortedOpportunities = useMemo(
+    () =>
+      [...displayOpportunities].sort((a, b) => {
+        const aAccessible = hasTierAccess(
+          a.tier_restriction,
+          user || { selected_tier: "Free Member" }
+        );
+        const bAccessible = hasTierAccess(
+          b.tier_restriction,
+          user || { selected_tier: "Free Member" }
+        );
+        if (aAccessible === bAccessible) {
+          return a.title.localeCompare(b.title);
+        }
+        return aAccessible ? -1 : 1;
+      }),
+    [displayOpportunities, user]
+  );
+
   const renderLoadingState = () => (
     <div className="space-y-4">
-      {/* Loading skeleton */}
       {[1, 2, 3, 4].map((i) => (
         <div
           key={i}
@@ -79,8 +207,8 @@ const OpportunitiesSection = ({
     <div
       className={`text-center py-12 rounded-2xl ${
         mode === "dark"
-          ? "bg-gradient-to-br from-red-900/20 to-red-800/10 border border-red-800/30"
-          : "bg-gradient-to-br from-red-50 to-red-100/50 border border-red-200"
+          ? "bg-red-900/20 border border-red-800/30"
+          : "bg-red-50 border border-red-200"
       }`}
     >
       <div
@@ -97,7 +225,7 @@ const OpportunitiesSection = ({
           mode === "dark" ? "text-red-400" : "text-red-600"
         }`}
       >
-        Unable to Load Opportunities
+        Unable to Load {itemLabel}
       </h3>
       <p
         className={`text-sm ${
@@ -113,8 +241,8 @@ const OpportunitiesSection = ({
     <div
       className={`text-center py-16 rounded-2xl ${
         mode === "dark"
-          ? "bg-gradient-to-br from-gray-800/30 to-gray-900/20 border border-gray-700/30"
-          : "bg-gradient-to-br from-gray-50 to-white border border-gray-200/50"
+          ? "bg-gray-800/30 border border-gray-700/30"
+          : "bg-gray-50 border border-gray-200/50"
       }`}
     >
       <div
@@ -131,68 +259,43 @@ const OpportunitiesSection = ({
           mode === "dark" ? "text-gray-300" : "text-gray-700"
         }`}
       >
-        No Opportunities Available
+        {searchQuery
+          ? `No ${itemLabel} found for "${searchQuery}"`
+          : `No ${itemLabel} Available`}
       </h3>
       <p
         className={`text-sm ${
           mode === "dark" ? "text-gray-400" : "text-gray-500"
         }`}
       >
-        Check back later for new business opportunities
+        {searchQuery
+          ? `Try adjusting your search terms or browse all ${itemLabel.toLowerCase()}`
+          : `Check back later for new ${itemLabel.toLowerCase()}`}
       </p>
+      {searchQuery && (
+        <button
+          onClick={() => {
+            setInputValue("");
+            setSearchQuery("");
+          }}
+          className={`mt-4 px-4 py-2 rounded-lg transition-colors ${
+            mode === "dark"
+              ? "bg-blue-600 hover:bg-blue-700 text-white"
+              : "bg-blue-600 hover:bg-blue-700 text-white"
+          }`}
+        >
+          Clear Search
+        </button>
+      )}
     </div>
   );
 
-  const renderOpportunities = () => {
-    // Calculate access statistics
-    const accessibleOpportunities = opportunities.filter((opportunity) =>
-      hasTierAccess(
-        opportunity.tier_restriction,
-        user || { selected_tier: "Free Member" }
-      )
-    );
-    const restrictedOpportunities = opportunities.filter(
-      (opportunity) =>
-        !hasTierAccess(
-          opportunity.tier_restriction,
-          user || { selected_tier: "Free Member" }
-        )
-    );
+  const renderContent = () => {
+    if (opportunitiesLoading) return renderLoadingState();
+    if (opportunitiesError) return renderErrorState();
 
-    // Group opportunities by type for categories
-    const opportunitiesByType = opportunities.reduce((acc, opportunity) => {
-      const type = opportunity.opportunity_type || "Uncategorized";
-      if (!acc[type]) acc[type] = [];
-      acc[type].push(opportunity);
-      return acc;
-    }, {});
-
-    // Filter opportunities based on statsFilter
-    let filteredOpportunities = [...opportunities];
-    if (statsFilter === "available") {
-      filteredOpportunities = accessibleOpportunities;
-    } else if (statsFilter === "restricted") {
-      filteredOpportunities = restrictedOpportunities;
-    } else if (statsFilter === "categories" && selectedCategory) {
-      filteredOpportunities = opportunitiesByType[selectedCategory] || [];
-    }
-
-    // Sort filtered opportunities: accessible ones first, then by title
-    const sortedOpportunities = filteredOpportunities.sort((a, b) => {
-      const aAccessible = hasTierAccess(
-        a.tier_restriction,
-        user || { selected_tier: "Free Member" }
-      );
-      const bAccessible = hasTierAccess(
-        b.tier_restriction,
-        user || { selected_tier: "Free Member" }
-      );
-
-      if (aAccessible === bAccessible) {
-        return a.title.localeCompare(b.title);
-      }
-      return aAccessible ? -1 : 1;
-    });
+    const hasResults =
+      searchedOpportunities && searchedOpportunities.length > 0;
 
     const gridClass =
       viewMode === "grid"
@@ -201,174 +304,116 @@ const OpportunitiesSection = ({
 
     return (
       <div className="space-y-6">
+        {/* Header with Search and Filters - Always visible */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="relative flex-1 max-w-md">
+            <Icon
+              icon="mdi:magnify"
+              className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${
+                mode === "dark" ? "text-gray-400" : "text-gray-500"
+              }`}
+            />
+            <input
+              type="text"
+              placeholder={`Search ${itemLabel.toLowerCase()}...`}
+              value={inputValue}
+              onChange={handleInputChange}
+              onFocus={handleInputFocus}
+              onBlur={handleInputBlur}
+              className={`w-full pl-10 pr-4 py-2 rounded-lg border ${
+                mode === "dark"
+                  ? "bg-gray-700 border-gray-600 text-white"
+                  : "bg-white border-gray-200 text-gray-900"
+              } focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all z-10`}
+              aria-label={`Search ${itemLabel.toLowerCase()}`}
+            />
+          </div>
+        </div>
+
         {/* Stats dashboard */}
         <div
           className={`grid grid-cols-2 md:grid-cols-4 gap-4 p-6 rounded-2xl ${
             mode === "dark"
-              ? "bg-gradient-to-r from-blue-900/20 to-purple-900/20 border border-blue-800/30"
-              : "bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200/50"
+              ? "bg-blue-900/20 border border-blue-800/30"
+              : "bg-blue-50 border border-blue-200/50"
           }`}
         >
-          <div
-            className={`text-center cursor-pointer p-2 rounded-lg transition-all duration-200 ${
-              statsFilter === "total"
-                ? mode === "dark"
-                  ? "bg-blue-900/30 border border-blue-700"
-                  : "bg-blue-100/50 border border-blue-300"
-                : ""
-            } ${
-              mode === "dark"
-                ? "hover:bg-blue-900/30 hover:border hover:border-blue-700"
-                : "hover:bg-blue-100/50 hover:border hover:border-blue-300"
-            }`}
-            onClick={() => handleStatsFilter("total")}
-            role="button"
-            tabIndex={0}
-            aria-label="Filter by total opportunities"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                handleStatsFilter("total");
-              }
-            }}
-          >
+          {[
+            {
+              filter: "total",
+              label: `Total ${itemLabel}`,
+              count: searchedOpportunities.length,
+              color: "blue",
+            },
+            {
+              filter: "available",
+              label: "Available",
+              count: accessibleOpportunities.length,
+              color: "green",
+            },
+            {
+              filter: "restricted",
+              label: "Restricted",
+              count: restrictedOpportunities.length,
+              color: "orange",
+            },
+            {
+              filter: "categories",
+              label: "Categories",
+              count: Object.keys(opportunitiesByType).length,
+              color: "purple",
+            },
+          ].map(({ filter, label, count, color }) => (
             <div
-              className={`text-3xl font-bold ${
-                mode === "dark" ? "text-blue-400" : "text-blue-600"
+              key={filter}
+              className={`text-center cursor-pointer p-2 rounded-lg transition-all duration-200 ${
+                statsFilter === filter
+                  ? mode === "dark"
+                    ? `bg-${color}-900/30 border border-${color}-700`
+                    : `bg-${color}-100/50 border border-${color}-300`
+                  : ""
+              } ${
+                mode === "dark"
+                  ? `hover:bg-${color}-900/30 hover:border hover:border-${color}-700`
+                  : `hover:bg-${color}-100/50 hover:border hover:border-${color}-300`
               }`}
+              onClick={() => handleStatsFilter(filter)}
+              role="button"
+              tabIndex={0}
+              aria-label={`Filter by ${filter} ${itemLabel.toLowerCase()}`}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  handleStatsFilter(filter);
+                }
+              }}
             >
-              {opportunities.length}
+              <div
+                className={`text-3xl font-bold ${
+                  mode === "dark" ? `text-${color}-400` : `text-${color}-600`
+                }`}
+              >
+                {count}
+              </div>
+              <div
+                className={`text-sm font-medium ${
+                  mode === "dark" ? "text-gray-400" : "text-gray-600"
+                }`}
+              >
+                {label}
+              </div>
             </div>
-            <div
-              className={`text-sm font-medium ${
-                mode === "dark" ? "text-gray-400" : "text-gray-600"
-              }`}
-            >
-              Total Opportunities
-            </div>
-          </div>
-          <div
-            className={`text-center cursor-pointer p-2 rounded-lg transition-all duration-200 ${
-              statsFilter === "available"
-                ? mode === "dark"
-                  ? "bg-green-900/30 border border-green-700"
-                  : "bg-green-100/50 border border-green-300"
-                : ""
-            } ${
-              mode === "dark"
-                ? "hover:bg-green-900/30 hover:border hover:border-green-700"
-                : "hover:bg-green-100/50 hover:border hover:border-green-300"
-            }`}
-            onClick={() => handleStatsFilter("available")}
-            role="button"
-            tabIndex={0}
-            aria-label="Filter by available opportunities"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                handleStatsFilter("available");
-              }
-            }}
-          >
-            <div
-              className={`text-3xl font-bold ${
-                mode === "dark" ? "text-green-400" : "text-green-600"
-              }`}
-            >
-              {accessibleOpportunities.length}
-            </div>
-            <div
-              className={`text-sm font-medium ${
-                mode === "dark" ? "text-gray-400" : "text-gray-600"
-              }`}
-            >
-              Available
-            </div>
-          </div>
-          <div
-            className={`text-center cursor-pointer p-2 rounded-lg transition-all duration-200 ${
-              statsFilter === "restricted"
-                ? mode === "dark"
-                  ? "bg-orange-900/30 border border-orange-700"
-                  : "bg-orange-100/50 border border-orange-300"
-                : ""
-            } ${
-              mode === "dark"
-                ? "hover:bg-orange-900/30 hover:border hover:border-orange-700"
-                : "hover:bg-orange-100/50 hover:border hover:border-orange-300"
-            }`}
-            onClick={() => handleStatsFilter("restricted")}
-            role="button"
-            tabIndex={0}
-            aria-label="Filter by restricted opportunities"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                handleStatsFilter("restricted");
-              }
-            }}
-          >
-            <div
-              className={`text-3xl font-bold ${
-                mode === "dark" ? "text-orange-400" : "text-orange-600"
-              }`}
-            >
-              {restrictedOpportunities.length}
-            </div>
-            <div
-              className={`text-sm font-medium ${
-                mode === "dark" ? "text-gray-400" : "text-gray-600"
-              }`}
-            >
-              Restricted
-            </div>
-          </div>
-          <div
-            className={`text-center cursor-pointer p-2 rounded-lg transition-all duration-200 ${
-              statsFilter === "categories"
-                ? mode === "dark"
-                  ? "bg-purple-900/30 border border-purple-700"
-                  : "bg-purple-100/50 border border-purple-300"
-                : ""
-            } ${
-              mode === "dark"
-                ? "hover:bg-purple-900/30 hover:border hover:border-purple-700"
-                : "hover:bg-purple-100/50 hover:border hover:border-purple-300"
-            }`}
-            onClick={() => handleStatsFilter("categories")}
-            role="button"
-            tabIndex={0}
-            aria-label="Filter by opportunity categories"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                handleStatsFilter("categories");
-              }
-            }}
-          >
-            <div
-              className={`text-3xl font-bold ${
-                mode === "dark" ? "text-purple-400" : "text-purple-600"
-              }`}
-            >
-              {Object.keys(opportunitiesByType).length}
-            </div>
-            <div
-              className={`text-sm font-medium ${
-                mode === "dark" ? "text-gray-400" : "text-gray-600"
-              }`}
-            >
-              Categories
-            </div>
-          </div>
+          ))}
         </div>
 
-        {/* Category dropdown when "Categories" is selected */}
+        {/* Category dropdown */}
         {statsFilter === "categories" && (
           <div className="mb-4">
             <FilterDropdown
               value={selectedCategory}
-              onChange={(value) => setSelectedCategory(value)}
+              onChange={(value) => {
+                setSelectedCategory(value);
+              }}
               options={[
                 { value: "", label: "All Categories" },
                 ...Object.keys(opportunitiesByType).map((type) => ({
@@ -377,122 +422,52 @@ const OpportunitiesSection = ({
                 })),
               ]}
               mode={mode}
-              ariaLabel="Filter opportunities by category"
+              ariaLabel={`Filter ${itemLabel.toLowerCase()} by category`}
             />
           </div>
         )}
 
-        {/* Opportunities list */}
-        <div className={gridClass}>
-          {sortedOpportunities.map((opportunity, index) => (
-            <div
-              key={opportunity.id}
-              className="animate-fade-in-up"
-              style={{
-                animationDelay: `${index * 50}ms`,
-                animationFillMode: "both",
-              }}
-            >
-              <OpportunityCard
-                opportunity={opportunity}
-                mode={mode}
-                TierBadge={TierBadge}
-                isRestricted={
-                  !hasTierAccess(
-                    opportunity.tier_restriction,
-                    user || { selected_tier: "Free Member" }
-                  )
-                }
-                onRestrictedClick={() =>
-                  handleRestrictedClick(
-                    `Access restricted: ${opportunity.tier_restriction} tier required for "${opportunity.title}"`
-                  )
-                }
-              />
-            </div>
-          ))}
-        </div>
+        {/* Results section */}
+        {hasResults ? (
+          <div className={gridClass}>
+            {sortedOpportunities.map((opportunity, index) => (
+              <div
+                key={`${opportunity.id}-${index}`}
+                className="animate-fade-in-up"
+                style={{
+                  animationDelay: `${index * 50}ms`,
+                  animationFillMode: "both",
+                }}
+              >
+                <OpportunityCard
+                  opportunity={opportunity}
+                  mode={mode}
+                  TierBadge={TierBadge}
+                  isRestricted={
+                    !hasTierAccess(
+                      opportunity.tier_restriction,
+                      user || { selected_tier: "Free Member" }
+                    )
+                  }
+                  onRestrictedClick={() => handleRestrictedClick(opportunity)}
+                  isFreelancer={isFreelancer}
+                  showExpressInterestButton={true}
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          renderEmptyState()
+        )}
       </div>
     );
   };
 
-  const renderContent = () => {
-    if (opportunitiesLoading) return renderLoadingState();
-    if (opportunitiesError) return renderErrorState();
-    if (opportunities.length === 0) return renderEmptyState();
-    return renderOpportunities();
-  };
-
   return (
-    <SectionCard
-      title="Business Opportunities"
-      icon="mdi:briefcase"
-      mode={mode}
-      headerAction={
-        <div className="flex flex-wrap gap-3">
-          <div className="relative">
-            <FilterDropdown
-              value={opportunityFilters.country || ""}
-              onChange={(value) =>
-                handleOpportunityFilterChange("country", value)
-              }
-              options={[
-                { value: "", label: "All Countries" },
-                ...opportunityFilterOptions.countries
-                  .filter((c) => c !== "all")
-                  .map((c) => ({
-                    value: c,
-                    label: c,
-                  })),
-              ]}
-              mode={mode}
-              ariaLabel="Filter opportunities by country"
-            />
-          </div>
-          <div className="relative">
-            <FilterDropdown
-              value={opportunityFilters.serviceType || ""}
-              onChange={(value) =>
-                handleOpportunityFilterChange("serviceType", value)
-              }
-              options={[
-                { value: "", label: "All Service Types" },
-                ...opportunityFilterOptions.serviceTypes
-                  .filter((s) => s !== "all")
-                  .map((s) => ({
-                    value: s,
-                    label: s,
-                  })),
-              ]}
-              mode={mode}
-              ariaLabel="Filter opportunities by service type"
-            />
-          </div>
-          <div className="relative">
-            <FilterDropdown
-              value={opportunityFilters.tier_restriction || ""}
-              onChange={(value) =>
-                handleOpportunityFilterChange("tier_restriction", value)
-              }
-              options={[
-                { value: "", label: "All Tiers" },
-                ...opportunityFilterOptions.tiers
-                  .filter((t) => t !== "all")
-                  .map((tier) => ({
-                    value: tier,
-                    label: tier,
-                  })),
-              ]}
-              mode={mode}
-              ariaLabel="Filter opportunities by membership tier"
-            />
-          </div>
-        </div>
-      }
-    >
+    <SectionCard title={sectionTitle} icon="mdi:briefcase" mode={mode}>
       {renderContent()}
     </SectionCard>
   );
 };
 
-export default OpportunitiesSection;
+export default React.memo(OpportunitiesSection);

@@ -8,14 +8,15 @@ const OpportunityCard = ({
   isRestricted,
   onRestrictedClick,
   TierBadge,
+  isFreelancer,
+  showExpressInterestButton,
 }) => {
   const router = useRouter();
   const [isHovered, setIsHovered] = useState(false);
 
   const handleClick = () => {
-    if (isRestricted) {
-      onRestrictedClick();
-      return;
+    if (isRestricted || showExpressInterestButton) {
+      return; // Disable card click when restricted or button is present
     }
     if (opportunity.application_link) {
       window.location.href = opportunity.application_link;
@@ -24,12 +25,18 @@ const OpportunityCard = ({
     }
   };
 
+  const handleExpressInterest = (e) => {
+    e.stopPropagation(); // Prevent card click
+    onRestrictedClick(opportunity); // Trigger handleExpressInterest
+  };
+
   const daysUntilDeadline = Math.ceil(
     (new Date(opportunity.deadline) - new Date()) / (1000 * 60 * 60 * 24)
   );
 
   const isUrgent = daysUntilDeadline <= 7 && daysUntilDeadline > 0;
   const isExpired = daysUntilDeadline < 0;
+  const itemLabel = isFreelancer ? "gig" : "opportunity";
 
   return (
     <div
@@ -40,6 +47,8 @@ const OpportunityCard = ({
       } ${
         isRestricted
           ? "opacity-50 cursor-not-allowed"
+          : showExpressInterestButton
+          ? "hover:shadow-xl cursor-default"
           : "hover:shadow-2xl cursor-pointer hover:scale-[1.02] hover:translate-y-2"
       }`}
       onClick={handleClick}
@@ -47,11 +56,11 @@ const OpportunityCard = ({
       onMouseLeave={() => setIsHovered(false)}
       aria-disabled={isRestricted}
       role="button"
-      tabIndex={isRestricted ? -1 : 0}
+      tabIndex={isRestricted || showExpressInterestButton ? -1 : 0}
       aria-label={
         isRestricted
-          ? `Restricted opportunity: ${opportunity.title}`
-          : `View opportunity: ${opportunity.title}`
+          ? `Restricted ${itemLabel}: ${opportunity.title}`
+          : `View ${itemLabel}: ${opportunity.title}`
       }
     >
       {/* Background Gradient Overlay */}
@@ -119,10 +128,12 @@ const OpportunityCard = ({
             </div>
           </div>
 
-          <TierBadge
-            tier={opportunity.tier_restriction || "Free Member"}
-            mode={mode}
-          />
+          {!isFreelancer && (
+            <TierBadge
+              tier={opportunity.tier_restriction || "Free Member"}
+              mode={mode}
+            />
+          )}
         </div>
 
         {/* Description */}
@@ -232,29 +243,44 @@ const OpportunityCard = ({
             </div>
           )}
 
-          <div
-            className={`flex items-center space-x-2 text-sm font-medium transition-all duration-200 ${
-              isRestricted
-                ? "text-gray-400"
-                : mode === "dark"
-                ? "text-blue-400 group-hover:text-blue-300"
-                : "text-blue-600 group-hover:text-blue-700"
-            } ${isHovered ? "transform translate-x-1" : ""}`}
-          >
-            <span>
-              {opportunity.application_link ? "Apply Now" : "View Details"}
-            </span>
-            <Icon
-              icon={
-                opportunity.application_link
-                  ? "mdi:open-in-new"
-                  : "mdi:arrow-right"
-              }
-              className={`text-base transition-transform duration-200 ${
-                isHovered ? "transform translate-x-1" : ""
+          {showExpressInterestButton ? (
+            <button
+              onClick={handleExpressInterest}
+              className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
+                isRestricted
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400"
+                  : "bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
               }`}
-            />
-          </div>
+              disabled={isRestricted}
+              aria-label={`Express interest in ${opportunity.title}`}
+            >
+              Express Interest
+            </button>
+          ) : (
+            <div
+              className={`flex items-center space-x-2 text-sm font-medium transition-all duration-200 ${
+                isRestricted
+                  ? "text-gray-400"
+                  : mode === "dark"
+                  ? "text-blue-400 group-hover:text-blue-300"
+                  : "text-blue-600 group-hover:text-blue-700"
+              } ${isHovered ? "transform translate-x-1" : ""}`}
+            >
+              <span>
+                {opportunity.application_link ? "Apply Now" : "View Details"}
+              </span>
+              <Icon
+                icon={
+                  opportunity.application_link
+                    ? "mdi:open-in-new"
+                    : "mdi:arrow-right"
+                }
+                className={`text-base transition-transform duration-200 ${
+                  isHovered ? "transform translate-x-1" : ""
+                }`}
+              />
+            </div>
+          )}
         </div>
 
         {/* Hover Glow Effect */}

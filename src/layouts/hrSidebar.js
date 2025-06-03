@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { Icon } from "@iconify/react";
-import { sidebarNav } from "@/data/nav";
+import { sidebarNav, getFilteredNav } from "@/data/nav";
 
 const HrSidebar = ({
   isOpen,
@@ -18,26 +18,24 @@ const HrSidebar = ({
   const router = useRouter();
   const sidebarRef = useRef(null);
   const [showLogout, setShowLogout] = useState(false);
-
-  // State to track which categories are expanded
   const [expandedCategories, setExpandedCategories] = useState({});
 
-  // Initialize with all categories expanded
+  const filteredNav = getFilteredNav(user?.job_type);
+
   useEffect(() => {
     if (
-      sidebarNav &&
-      sidebarNav.length > 0 &&
+      filteredNav &&
+      filteredNav.length > 0 &&
       Object.keys(expandedCategories).length === 0
     ) {
       const allExpanded = {};
-      sidebarNav.forEach(({ category }) => {
+      filteredNav.forEach(({ category }) => {
         allExpanded[category] = true;
       });
       setExpandedCategories(allExpanded);
     }
-  }, []);
+  }, [filteredNav]);
 
-  // Toggle category expansion
   const toggleCategory = (category) => {
     setExpandedCategories((prev) => ({
       ...prev,
@@ -45,7 +43,6 @@ const HrSidebar = ({
     }));
   };
 
-  /* Custom scrollbar styling */
   useEffect(() => {
     const style = document.createElement("style");
     style.textContent = `
@@ -71,7 +68,6 @@ const HrSidebar = ({
     };
   }, []);
 
-  // Handle hover states for desktop
   const handleMouseEnter = () => {
     if (!isOpen && windowWidth >= 640) {
       setIsHovering(true);
@@ -92,7 +88,6 @@ const HrSidebar = ({
     return () => window.removeEventListener("resize", handleResize);
   }, [handleResize]);
 
-  // Close sidebar on mobile when clicking outside
   useEffect(() => {
     const handleOutsideClick = (e) => {
       if (
@@ -112,7 +107,6 @@ const HrSidebar = ({
     };
   }, [isOpen, windowWidth, toggleSidebar]);
 
-  // Define isActive function
   const isActive = (pathname) =>
     router.pathname === pathname
       ? mode === "dark"
@@ -121,6 +115,21 @@ const HrSidebar = ({
       : mode === "dark"
       ? "text-gray-200 hover:bg-gray-700 hover:text-white"
       : "text-[#231812] hover:bg-[#0B1215]";
+
+  const handleNavigation = async (href, label) => {
+    try {
+      console.log(
+        "[HrSidebar] Navigating to:",
+        href,
+        "Label:",
+        typeof label === "function" ? label(user?.job_type) : label
+      );
+      await router.push(href);
+      if (windowWidth < 640) toggleSidebar(false);
+    } catch (error) {
+      console.error("[HrSidebar] Navigation error:", error);
+    }
+  };
 
   if (windowWidth === null) return null;
 
@@ -136,7 +145,6 @@ const HrSidebar = ({
 
   return (
     <div className="relative z-[60]">
-      {/* Main sidebar */}
       <div
         ref={sidebarRef}
         onMouseEnter={handleMouseEnter}
@@ -151,7 +159,7 @@ const HrSidebar = ({
           }
           group shadow-lg shadow-black/20 custom-scrollbar`}
         style={{
-          width: isMobile ? (isOpen ? "100vw" : "0") : sidebarWidth,
+          width: sidebarWidth,
           height: isMobile ? "100vh" : "calc(100vh - 24px)",
           backgroundColor:
             isHovering && !isOpen && !isMobile ? "rgba(5, 5, 11, 0.7)" : "",
@@ -162,7 +170,6 @@ const HrSidebar = ({
         }}
       >
         <div className="flex flex-col h-full relative">
-          {/* Logo + Toggle/Close Button */}
           <div
             className={`flex items-center justify-${
               shouldAppearExpanded ? "between" : "center"
@@ -171,7 +178,7 @@ const HrSidebar = ({
             {shouldAppearExpanded ? (
               <>
                 <Image
-                  src={"/assets/images/paan-logo-white.svg"}
+                  src="/assets/images/paan-logo-white.svg"
                   alt="PAAN Logo"
                   width={120}
                   height={75}
@@ -213,9 +220,8 @@ const HrSidebar = ({
             )}
           </div>
 
-          {/* Navigation with collapsible categories */}
           <div className="flex-grow px-2 overflow-y-auto flex flex-col scrollbar-thin">
-            {sidebarNav.map(({ category, items }, index) => (
+            {filteredNav.map(({ category, items }, index) => (
               <div key={category} className="w-full mb-1">
                 {index !== 0 && (
                   <hr className="border-t border-gray-600 my-2" />
@@ -256,10 +262,7 @@ const HrSidebar = ({
                       items.map(({ href, icon, label }) => (
                         <li
                           key={href}
-                          onClick={() => {
-                            router.push(href);
-                            if (isMobile) toggleSidebar(false);
-                          }}
+                          onClick={() => handleNavigation(href, label)}
                           className={`relative py-3 px-2 flex items-center font-normal text-sm w-full text-white cursor-pointer rounded-lg hover:shadow-md transition-all duration-200 group mb-1 ${isActive(
                             href
                           )}`}
@@ -273,11 +276,17 @@ const HrSidebar = ({
                             } group-hover:scale-110 group-hover:text-white transition-all`}
                           />
                           {shouldAppearExpanded && (
-                            <span className="text-sm">{label}</span>
+                            <span className="text-sm">
+                              {typeof label === "function"
+                                ? label(user?.job_type)
+                                : label}
+                            </span>
                           )}
                           {!shouldAppearExpanded && (
                             <span className="absolute left-[100%] top-1/2 -translate-y-1/2 ml-3 bg-gray-800 text-white px-3 py-1 text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-200 whitespace-nowrap z-50">
-                              {label}
+                              {typeof label === "function"
+                                ? label(user?.job_type)
+                                : label}
                             </span>
                           )}
                         </li>
@@ -293,7 +302,6 @@ const HrSidebar = ({
             ))}
           </div>
 
-          {/* Profile/Logout */}
           {shouldAppearExpanded && (
             <div
               className={`px-4 py-2 mt-auto ${
@@ -323,9 +331,9 @@ const HrSidebar = ({
                 )}
               </div>
               <div
-                className={`transition-[max-height,opacity] duration-500 ease-in-out overflow-hidden ${
+                className={`transition-all duration-200 overflow-hidden ${
                   showLogout && shouldAppearExpanded
-                    ? "max-h-40 opacity-100"
+                    ? "max-h-60 opacity-100"
                     : "max-h-0 opacity-0"
                 }`}
               >
@@ -360,7 +368,7 @@ const HrSidebar = ({
                   <hr className="border-t border-gray-600" />
                   <button
                     onClick={onLogout}
-                    className="flex items-center gap-2 text-red-500 hover:text-red-600 transition-colors hover:bg-[#19191e] rounded-2xl p-2"
+                    className="flex items-center gap-2 text-red-500 hover:text-redentication600 transition-colors hover:bg-[#19191e] rounded-2xl p-2"
                   >
                     <Icon icon="mdi:logout" className="h-5 w-5" />
                     <span>Sign Out</span>

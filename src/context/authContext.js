@@ -78,7 +78,6 @@ export const AuthProvider = ({ children }) => {
             selected_tier: data.selected_tier,
             agencyName: data.agencyName,
             created_at: data.created_at,
-            role: "agency_member",
           };
           setUser(userData);
           localStorage.setItem("paan_user_data", JSON.stringify(userData));
@@ -189,7 +188,6 @@ export const AuthProvider = ({ children }) => {
         selected_tier: userData.selected_tier,
         agencyName: userData.agencyName,
         created_at: userData.created_at,
-        role: "agency_member",
       };
 
       setUser(user);
@@ -346,7 +344,6 @@ export const AuthProvider = ({ children }) => {
             selected_tier: existingUser.selected_tier,
             agencyName: existingUser.agencyName,
             created_at: existingUser.created_at,
-            role: "agency_member",
           });
 
           toast.success("Social login successful! Redirecting...");

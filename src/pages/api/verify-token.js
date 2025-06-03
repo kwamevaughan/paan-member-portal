@@ -26,7 +26,6 @@ export default async function handler(req, res) {
         id: data.id,
         email: data.primaryContactEmail,
         full_name: data.primaryContactName,
-        role: "agency_member",
         agency_id: data.agencyName,
       },
     });

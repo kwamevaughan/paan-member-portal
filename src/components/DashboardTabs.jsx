@@ -1,17 +1,6 @@
-const DashboardTabs = ({ activeTab, setActiveTab, mode, Icon }) => {
-  const tabs = [
-    {
-      id: "opportunities",
-      label: "Business Opportunities",
-      icon: "mdi:briefcase",
-    },
-    { id: "events", label: "Events & Workshops", icon: "mdi:calendar" },
-    { id: "resources", label: "Resources", icon: "mdi:book-open" },
-    { id: "marketIntel", label: "Market Intelligence", icon: "mdi:chart-bar" },
-    { id: "offers", label: "Offers", icon: "mdi:bullseye" },
-    { id: "updates", label: "Updates", icon: "mdi:bell" },
-  ];
+import React from "react";
 
+const DashboardTabs = ({ activeTab, setActiveTab, mode, Icon, tabs }) => {
   return (
     <div className="relative w-full">
       {/* Glassmorphism container */}
@@ -92,13 +81,6 @@ const DashboardTabs = ({ activeTab, setActiveTab, mode, Icon }) => {
             ))}
           </div>
         </div>
-      </div>
-
-      {/* Floating notification dots */}
-      <div className="absolute -top-1 right-4 flex gap-2">
-        {["offers", "updates"].includes(activeTab) && (
-          <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-lg shadow-red-500/50" />
-        )}
       </div>
     </div>
   );

@@ -11,6 +11,10 @@ export const useBusinessOpportunities = (
     industry: null,
     projectType: null,
     tier_restriction: null,
+    skills: null,
+    budgetRange: null,
+    remoteWork: null,
+    estimatedDuration: null,
   },
   user = null
 ) => {
@@ -21,6 +25,10 @@ export const useBusinessOpportunities = (
     industries: [],
     projectTypes: [],
     tiers: ["Associate Member", "Full Member", "Gold Member", "Free Member"],
+    skills: [],
+    budgetRanges: [],
+    remoteWorkOptions: ["true", "false"],
+    durations: [],
   });
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
@@ -31,18 +39,18 @@ export const useBusinessOpportunities = (
   const isFreelancer = jobType === "freelancer";
   const isAgency = jobType === "agency";
 
-  // Memoize the job type filter to prevent unnecessary re-renders
   const jobTypeFilter = useMemo(() => {
     if (isFreelancer) return "Freelancer";
     if (isAgency) return "Agency";
     return "Agency"; // Default to Agency
   }, [isFreelancer, isAgency]);
 
-  // Fetch filter options only when user job type changes
   useEffect(() => {
     const fetchFilterOptions = async () => {
       if (!user?.job_type) {
-        
+        console.log(
+          "[useBusinessOpportunities] No user job type, skipping filter fetch"
+        );
         return;
       }
 
@@ -51,44 +59,114 @@ export const useBusinessOpportunities = (
         let query = supabase
           .from("business_opportunities")
           .select(
-            "location, service_type, industry, project_type, tier_restriction, job_type"
+            "location, service_type, industry, project_type, tier_restriction, job_type, skills_required, budget_range, remote_work, estimated_duration"
           )
-          .ilike("job_type", jobTypeFilter);
+          .ilike("job_type", `%${jobTypeFilter}%`);
 
         const { data, error } = await query;
-        
 
         if (error) {
           console.error("[Supabase] Filter options error:", error);
           throw new Error(`Failed to fetch filter options: ${error.message}`);
         }
 
+        console.log("[useBusinessOpportunities] Raw filter data:", data);
+
+        // Process filter options, handling null/undefined values
         const newFilterOptions = {
           countries: [
-            ...new Set(data?.map((item) => item.location?.trim()) || []),
-            ...(isFreelancer ? ["Remote"] : []),
-          ].filter(Boolean),
+            ...new Set(
+              data
+                ?.map((item) =>
+                  typeof item.location === "string" ? item.location.trim() : null
+                )
+                .filter(Boolean)
+            ),
+          ].sort(),
           serviceTypes: [
-            ...new Set(data?.map((item) => item.service_type?.trim()) || []),
-          ].filter(Boolean),
+            ...new Set(
+              data
+                ?.map((item) =>
+                  typeof item.service_type === "string"
+                    ? item.service_type.trim()
+                    : null
+                )
+                .filter(Boolean)
+            ),
+          ].sort(),
           industries: [
-            ...new Set(data?.map((item) => item.industry?.trim()) || []),
-          ].filter(Boolean),
+            ...new Set(
+              data
+                ?.map((item) =>
+                  typeof item.industry === "string" ? item.industry.trim() : null
+                )
+                .filter(Boolean)
+            ),
+          ].sort(),
           projectTypes: [
-            ...new Set(data?.map((item) => item.project_type?.trim()) || []),
-            ...(isFreelancer ? ["Graphic Design Project"] : []),
-          ].filter(Boolean),
+            ...new Set(
+              data
+                ?.map((item) =>
+                  typeof item.project_type === "string"
+                    ? item.project_type.trim()
+                    : null
+                )
+                .filter(Boolean)
+            ),
+          ].sort(),
           tiers: [
             ...new Set(
-              data?.map((item) =>
-                normalizeTier(item.tier_restriction?.trim())
-              ) || []
+              data
+                ?.map((item) =>
+                  typeof item.tier_restriction === "string"
+                    ? normalizeTier(item.tier_restriction.trim())
+                    : null
+                )
+                .filter(Boolean)
             ),
             "Free Member",
-          ].filter(Boolean),
+          ].sort(),
+          skills: [
+            ...new Set(
+              data
+                ?.flatMap((item) =>
+                  Array.isArray(item.skills_required)
+                    ? item.skills_required.filter(Boolean)
+                    : []
+                )
+                .filter(Boolean)
+            ),
+          ].sort(),
+          budgetRanges: [
+            ...new Set(
+              data
+                ?.map((item) =>
+                  typeof item.budget_range === "string"
+                    ? item.budget_range.trim()
+                    : null
+                )
+                .filter(Boolean)
+            ),
+          ].sort(),
+          remoteWorkOptions: ["true", "false"],
+          durations: [
+            ...new Set(
+              data
+                ?.map((item) =>
+                  typeof item.estimated_duration === "string"
+                    ? item.estimated_duration.trim()
+                    : null
+                )
+                .filter(Boolean)
+            ),
+          ].sort(),
         };
 
-        
+        console.log(
+          "[useBusinessOpportunities] Processed filter options:",
+          newFilterOptions
+        );
+
         setFilterOptions(newFilterOptions);
       } catch (err) {
         console.error(
@@ -102,9 +180,8 @@ export const useBusinessOpportunities = (
     };
 
     fetchFilterOptions();
-  }, [jobTypeFilter, user?.job_type]); // Only depend on jobTypeFilter and user.job_type
+  }, [jobTypeFilter, user?.job_type]);
 
-  // Stable debounced fetch function
   const fetchOpportunities = useCallback(
     debounce(
       async (currentFilters, currentJobTypeFilter, isInitial = false) => {
@@ -115,7 +192,6 @@ export const useBusinessOpportunities = (
 
         try {
           setError(null);
-          
 
           let query = supabase
             .from("business_opportunities")
@@ -123,9 +199,9 @@ export const useBusinessOpportunities = (
               "id, title, description, tier_restriction, location, application_link, deadline, created_at, updated_at, service_type, industry, project_type, job_type, skills_required, estimated_duration, budget_range, remote_work"
             )
             .gte("deadline", new Date().toISOString().split("T")[0])
-            .ilike("job_type", currentJobTypeFilter);
+            .ilike("job_type", `%${currentJobTypeFilter}%`);
 
-          // Apply filters only if explicitly set
+          // Apply filters
           if (currentFilters.country) {
             query = query.eq("location", currentFilters.country);
           }
@@ -135,28 +211,38 @@ export const useBusinessOpportunities = (
           if (currentFilters.industry) {
             query = query.eq("industry", currentFilters.industry);
           }
-          if (currentFilters.projectType) {
+          if (currentFilters.projectType && isFreelancer) {
+            // Only apply projectType filter for freelancers
             query = query.eq("project_type", currentFilters.projectType);
           }
           if (currentFilters.tier_restriction) {
-            const normalizedFilter = normalizeTier(
-              currentFilters.tier_restriction
-            );
+            const normalizedFilter = normalizeTier(currentFilters.tier_restriction);
             const dbFilter = getDatabaseTier(normalizedFilter);
             query = query.eq("tier_restriction", dbFilter);
           }
+          if (currentFilters.skills && isFreelancer) {
+            query = query.contains("skills_required", [currentFilters.skills]);
+          }
+          if (currentFilters.budgetRange && isFreelancer) {
+            query = query.eq("budget_range", currentFilters.budgetRange);
+          }
+          if (currentFilters.remoteWork && isFreelancer) {
+            query = query.eq("remote_work", currentFilters.remoteWork === "true");
+          }
+          if (currentFilters.estimatedDuration && isFreelancer) {
+            query = query.eq("estimated_duration", currentFilters.estimatedDuration);
+          }
 
           const { data, error } = await query;
-          
 
           if (error) {
             console.error("[Supabase] Fetch opportunities error:", error);
             throw new Error(`Failed to fetch opportunities: ${error.message}`);
           }
 
-          const userTierNormalized = normalizeTier(
-            user?.selected_tier || "Free Member"
-          );
+          console.log("[useBusinessOpportunities] Fetched opportunities:", data);
+
+          const userTierNormalized = normalizeTier(user?.selected_tier || "Free Member");
           const tierHierarchy = [
             "Gold Member",
             "Full Member",
@@ -165,8 +251,7 @@ export const useBusinessOpportunities = (
           ];
 
           const transformedData = (data || []).map((opp) => {
-            const tierRestriction =
-              normalizeTier(opp.tier_restriction) || "Free Member";
+            const tierRestriction = normalizeTier(opp.tier_restriction) || "Free Member";
             const isAccessible = hasTierAccess(tierRestriction, user);
             return {
               ...opp,
@@ -199,7 +284,6 @@ export const useBusinessOpportunities = (
             return new Date(b.created_at) - new Date(a.created_at);
           });
 
-          
           setOpportunities(sortedData);
         } catch (err) {
           console.error("[useBusinessOpportunities] Unexpected error:", err);
@@ -212,23 +296,16 @@ export const useBusinessOpportunities = (
       },
       300
     ),
-    [user] // Only depend on user object
+    [user]
   );
 
-  // Fetch opportunities when filters or job type change
   useEffect(() => {
     if (!jobTypeFilter || !user?.job_type) {
-      console.log(
-        "[useBusinessOpportunities] Skipping fetch - no job type filter or user"
-      );
       return;
     }
 
-    
-
     fetchOpportunities(filters, jobTypeFilter, isInitialFetch);
 
-    // Cleanup function
     return () => {
       fetchOpportunities.cancel();
     };
@@ -238,6 +315,10 @@ export const useBusinessOpportunities = (
     filters.industry,
     filters.projectType,
     filters.tier_restriction,
+    filters.skills,
+    filters.budgetRange,
+    filters.remoteWork,
+    filters.estimatedDuration,
     jobTypeFilter,
     fetchOpportunities,
     isInitialFetch,

@@ -30,6 +30,10 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
     industry: "",
     projectType: "",
     tier_restriction: "",
+    skills: "",
+    budgetRange: "",
+    remoteWork: "",
+    estimatedDuration: "",
   });
   const [activeTab, setActiveTab] = useState("all");
 
@@ -42,15 +46,18 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
   const isFreelancer = user?.job_type?.toLowerCase() === "freelancer";
 
   useEffect(() => {
-    if (isFreelancer) {
-      setFilters({
-        country: "",
-        serviceType: "",
-        industry: "",
-        projectType: "",
-        tier_restriction: "",
-      });
-    }
+    // Reset filters based on user type
+    setFilters((prev) => ({
+      country: isFreelancer ? "" : prev.country,
+      serviceType: isFreelancer ? "" : prev.serviceType,
+      industry: isFreelancer ? "" : prev.industry,
+      projectType: prev.projectType, // Keep for both
+      tier_restriction: prev.tier_restriction, // Keep for both
+      skills: isFreelancer ? prev.skills : "",
+      budgetRange: isFreelancer ? prev.budgetRange : "",
+      remoteWork: isFreelancer ? prev.remoteWork : "",
+      estimatedDuration: isFreelancer ? prev.estimatedDuration : "",
+    }));
   }, [isFreelancer]);
 
   const title = useMemo(
@@ -97,9 +104,8 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
     [activeTab, opportunities, user]
   );
 
-  const handleFilterChange = useCallback((e) => {
-    e.preventDefault();
-    setFilters((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  const handleFilterChange = useCallback((key, value) => {
+    setFilters((prev) => ({ ...prev, [key]: value || "" }));
   }, []);
 
   const handleResetFilters = useCallback(() => {
@@ -109,6 +115,10 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
       industry: "",
       projectType: "",
       tier_restriction: "",
+      skills: "",
+      budgetRange: "",
+      remoteWork: "",
+      estimatedDuration: "",
     });
   }, []);
 
@@ -124,7 +134,6 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
       }
 
       try {
-        // Get authenticated user's ID
         const {
           data: { user: authUser },
           error: authError,
@@ -134,7 +143,6 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
           return;
         }
 
-        // Verify candidate record exists
         const { data: candidate, error: candidateError } = await supabase
           .from("candidates")
           .select("auth_user_id")
@@ -143,11 +151,10 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
 
         if (candidateError || !candidate) {
           toast.error("Please complete your profile to express interest.");
-          router.push("/profile"); // Adjust redirect path as needed
+          router.push("/profile");
           return;
         }
 
-        // Insert interest
         const { error: insertError } = await supabase
           .from("opportunity_interests")
           .insert({
@@ -183,6 +190,9 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
         Error: {error}
       </div>
     );
+
+  console.log("[BusinessOpportunities] filters:", filters);
+  console.log("[BusinessOpportunities] filterOptions:", filterOptions);
 
   return (
     <div
@@ -260,15 +270,15 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
             </div>
             <OpportunitiesSection
               opportunities={filteredByTab}
-              loading={loading}
-              error={error}
+              opportunitiesLoading={loading}
+              opportunitiesError={error}
               user={user}
               handleRestrictedClick={handleExpressInterest}
               mode={mode}
               Icon={Icon}
-              filterOptions={filterOptions}
-              filters={filters}
-              handleFilterChange={handleFilterChange}
+              opportunityFilterOptions={filterOptions}
+              opportunityFilters={filters}
+              handleOpportunityFilterChange={handleFilterChange}
               handleResetFilters={handleResetFilters}
               toast={toast}
             />

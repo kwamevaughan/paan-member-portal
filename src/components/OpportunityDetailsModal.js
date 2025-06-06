@@ -3,7 +3,6 @@ import { Icon } from "@iconify/react";
 import SimpleModal from "./SimpleModal";
 import { TierBadge } from "./Badge";
 import { supabase } from "@/lib/supabase";
-import toast from "react-hot-toast";
 
 const OpportunityDetailsModal = ({
   isOpen,
@@ -13,6 +12,7 @@ const OpportunityDetailsModal = ({
   user,
   onExpressInterest,
   isFreelancer,
+  toast,
 }) => {
   const [hasExpressedInterest, setHasExpressedInterest] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -103,7 +103,7 @@ const OpportunityDetailsModal = ({
       title={`${itemLabel} Details`}
       mode={mode}
     >
-      <div className="space-y-6">
+      <div className="space-y-9">
         {/* Header */}
         <div className="flex items-start justify-between">
           <div className="flex-1">

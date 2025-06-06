@@ -1,15 +1,18 @@
 import React, { useEffect, useRef } from "react";
 import { Icon } from "@iconify/react";
 
-const SimpleModal = ({ isOpen, onClose, title, children, mode }) => {
+const SimpleModal = ({ isOpen, onClose, title, children, mode = "light" }) => {
   const modalRef = useRef(null);
 
+  // Handle ESC key press to close modal
   useEffect(() => {
     if (isOpen) {
       modalRef.current?.focus();
+
       const handleEscape = (e) => {
         if (e.key === "Escape") onClose();
       };
+
       document.addEventListener("keydown", handleEscape);
       return () => document.removeEventListener("keydown", handleEscape);
     }
@@ -19,33 +22,33 @@ const SimpleModal = ({ isOpen, onClose, title, children, mode }) => {
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300 ${
-        isOpen ? "opacity-100" : "opacity-0"
-      }`}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity duration-300"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
       tabIndex={-1}
       ref={modalRef}
+      onClick={onClose} // Close on backdrop click
     >
       <div
-        className={`relative w-full max-w-2xl mx-4 rounded-2xl shadow-xl transform transition-all duration-300 ${
+        className={`relative w-full max-w-2xl mx-4 rounded-3xl border ${
           mode === "dark"
-            ? "bg-gray-800 border-gray-700 text-white"
-            : "bg-white border-gray-200 text-gray-900"
-        } max-h-[90vh] overflow-y-auto`}
+            ? "bg-white/10 backdrop-blur-lg border-white/20 text-white"
+            : "bg-white/80 backdrop-blur-lg border-gray-200 text-gray-900"
+        } shadow-2xl transform transition-all duration-300 p-6 max-h-[90vh] overflow-y-auto`}
+        onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside modal
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200/50 dark:border-gray-700/50">
+        <div className="flex items-center justify-between mb-4">
           <h2 id="modal-title" className="text-xl font-semibold">
             {title}
           </h2>
           <button
             onClick={onClose}
-            className={`p-2 rounded-full ${
+            className={`p-2 rounded-full transition-colors ${
               mode === "dark"
-                ? "text-gray-400 hover:bg-gray-700"
-                : "text-gray-500 hover:bg-gray-100"
+                ? "hover:bg-white/10 text-white"
+                : "hover:bg-gray-200 text-gray-600"
             }`}
             aria-label="Close modal"
           >
@@ -54,7 +57,7 @@ const SimpleModal = ({ isOpen, onClose, title, children, mode }) => {
         </div>
 
         {/* Content */}
-        <div className="p-6">{children}</div>
+        <div>{children}</div>
       </div>
     </div>
   );

@@ -39,11 +39,13 @@ export default function Dashboard({ mode = "light", toggleMode }) {
   const { user, loading: userLoading, LoadingComponent } = useUser();
   const { handleLogout } = useLogout();
   const [activeTab, setActiveTab] = useState("opportunities");
-  const { filters, handleFilterChange } = useFilters();
+  const { filters, handleFilterChange, handleResetFilters } = useFilters();
   const { latestItems, loading: latestUpdateLoading } = useLatestUpdate(
     user?.selected_tier || "Free Member"
   );
 
+  const isFreelancer = user?.job_type?.toLowerCase() === "freelancer";
+  
   const {
     opportunities = [],
     filterOptions: opportunityFilterOptions = {},
@@ -52,7 +54,19 @@ export default function Dashboard({ mode = "light", toggleMode }) {
   } = useBusinessOpportunities(
     filters.opportunities,
     user || { selected_tier: "Free Member", job_type: "" }
-  );
+    );
+  
+  useEffect(() => {
+    handleResetFilters("opportunities");
+    if (isFreelancer) {
+      handleFilterChange("opportunities", "country", "");
+      handleFilterChange("opportunities", "serviceType", "");
+      handleFilterChange("opportunities", "industry", "");
+      handleFilterChange("opportunities", "projectType", "");
+      handleFilterChange("opportunities", "tier_restriction", "");
+    }
+  }, [isFreelancer, handleFilterChange, handleResetFilters]);
+
   const {
     events = [],
     registeredEvents = [],
@@ -123,6 +137,11 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     return null;
   }
 
+  console.log(
+    "[Dashboard] opportunityFilterOptions:",
+    opportunityFilterOptions
+  );
+
   return (
     <div
       className={`min-h-screen flex flex-col ${
@@ -178,10 +197,12 @@ export default function Dashboard({ mode = "light", toggleMode }) {
                     handleFilterChange("opportunities", key, value)
                   }
                   opportunityFilterOptions={opportunityFilterOptions}
+                  handleResetFilters={() => handleResetFilters("opportunities")}
                   user={user}
                   handleRestrictedClick={handleRestrictedClick}
                   mode={mode}
                   Icon={Icon}
+                  toast={toast}
                 />
               )}
               {activeTab === "events" && (

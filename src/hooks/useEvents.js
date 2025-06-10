@@ -128,7 +128,8 @@ const useEvents = (
           events (
             id,
             title,
-            date,
+            start_date,
+            end_date,
             location,
             description,
             event_type,
@@ -151,6 +152,7 @@ const useEvents = (
         status: reg.status,
         registered_at: reg.registered_at,
         tier_restriction: normalizeTier(reg.events.tier_restriction) || "Free Member",
+        date: reg.events.start_date,
       }));
 
       setRegisteredEvents(registeredEventsData || []);
@@ -184,18 +186,17 @@ const useEvents = (
 
       const candidateId = candidate.id;
 
-      const { data: existingRegistration, error: checkError } = await supabase
+      const { data: existingRegistrations, error: checkError } = await supabase
         .from("event_registrations")
         .select("id")
         .eq("event_id", eventId)
-        .eq("user_id", candidateId)
-        .single();
+        .eq("user_id", candidateId);
 
-      if (checkError && !checkError.message.includes("0 rows")) {
+      if (checkError) {
         throw checkError;
       }
 
-      if (existingRegistration) {
+      if (existingRegistrations && existingRegistrations.length > 0) {
         toast.error("You are already registered for this event");
         return;
       }

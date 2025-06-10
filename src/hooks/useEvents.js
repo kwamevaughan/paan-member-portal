@@ -25,10 +25,10 @@ const useEvents = (
       let query = supabase
         .from("events")
         .select(
-          "id, title, description, date, location, event_type, tier_restriction, updated_at"
+          "id, title, description, start_date, end_date, location, event_type, tier_restriction, updated_at, is_virtual, registration_link, banner_image"
         )
-        .gte("date", new Date().toISOString())
-        .order("date", { ascending: true });
+        .gte("start_date", new Date().toISOString())
+        .order("start_date", { ascending: true });
 
       if (filters.eventType) {
         query = query.eq("event_type", filters.eventType);
@@ -53,6 +53,7 @@ const useEvents = (
           event.tier_restriction || "Free Member",
           user
         ),
+        date: event.start_date,
       }));
 
       const { data: allEvents, error: allEventsError } = await supabase

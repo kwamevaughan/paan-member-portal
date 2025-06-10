@@ -74,6 +74,19 @@ export default function Events({ mode = "light", toggleMode }) {
     return new Date(dateString).toLocaleString("en-US", options);
   };
 
+  const formatDateRange = (startDate, endDate) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    // If same day, just show start time
+    if (start.toDateString() === end.toDateString()) {
+      return `${formatDate(startDate)} - ${end.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
+    }
+    
+    // If different days, show both dates
+    return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+  };
+
   const getDaysRemaining = (date) => {
     const today = new Date();
     const eventDate = new Date(date);
@@ -449,7 +462,7 @@ export default function Events({ mode = "light", toggleMode }) {
                             icon="mdi:calendar-clock"
                             className="text-red-500"
                           />
-                          {formatDate(event.date)}
+                          {formatDateRange(event.start_date, event.end_date)}
                         </div>
                       </div>
                     </div>

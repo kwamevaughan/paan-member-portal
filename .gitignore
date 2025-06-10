@@ -41,5 +41,7 @@ build/
 # Editor history
 .history/
 
-
 scripts/align-users.js
+
+.cursor/rules/custom-rule.mdc
+.cursorignore

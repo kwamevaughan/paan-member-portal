@@ -11,7 +11,7 @@ class MyDocument extends Document {
             href="https://fonts.googleapis.com/css2?family=Questrial&display=swap"
             as="font"
             type="font/woff2"
-            crossorigin="anonymous"
+            crossOrigin="anonymous"
           />
 
           {/* Favicon Links */}

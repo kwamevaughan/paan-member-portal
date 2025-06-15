@@ -1,6 +1,21 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 
+// Function to get day-based greeting
+const getDayGreeting = () => {
+  const day = new Date().getDay();
+  const greetings = {
+    0: "Welcome to a Productive Sunday", // Sunday
+    1: "New Week, New Opportunities", // Monday
+    2: "Tuesday's Looking Bright", // Tuesday
+    3: "Midweek Momentum", // Wednesday
+    4: "Thursday's Almost Friday", // Thursday
+    5: "TGIF! Friday's Here", // Friday
+    6: "Weekend Mode Activated", // Saturday
+  };
+  return greetings[day];
+};
+
 export default function WelcomeCard({
   user,
   mode,
@@ -130,7 +145,7 @@ export default function WelcomeCard({
                   mode === "dark" ? "text-white" : "text-slate-900"
                 }`}
               >
-                Welcome back, {user.name}! 👋
+                {getDayGreeting()}, {user.name}! 👋
               </h2>
               <p
                 className={`text-sm sm:text-md leading-relaxed ${

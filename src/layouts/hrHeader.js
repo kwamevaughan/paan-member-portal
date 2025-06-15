@@ -51,7 +51,7 @@ const HrHeader = ({
   return (
     <header
       ref={headerRef}
-      className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-10 transition-transform duration-300 ${
         mode === "dark" ? "bg-[#101827]" : "bg-transparent"
       }`}
     >
@@ -59,7 +59,7 @@ const HrHeader = ({
         className={`
           p-2 m-4 transition-transform duration-300
           ${
-            isMobile ? "ml-0" : isSidebarOpen ? "md:ml-[200px]" : "md:ml-[80px]"
+            isMobile ? "ml-0" : isSidebarOpen ? "md:ml-[240px]" : "md:ml-[80px]"
           }
           ${
             mode === "dark"

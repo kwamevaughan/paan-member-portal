@@ -41,8 +41,6 @@ export default function WelcomeCard({
 
   // Debug user object to verify job_type
   useEffect(() => {
-    console.log("[WelcomeCard] User object:", user);
-    console.log("[WelcomeCard] job_type:", user?.job_type);
   }, [user]);
 
   // Find the most recent item across all sections
@@ -93,13 +91,13 @@ export default function WelcomeCard({
     <div className="relative mt-6 mb-10 group">
       {/* Glassmorphism background */}
       <div
-        className={`absolute inset-0 rounded-3xl backdrop-blur-xl ${
+        className={`absolute inset-0 rounded-lg backdrop-blur-xl ${
           mode === "dark"
             ? "bg-gradient-to-br from-slate-800/60 via-slate-900/40 to-slate-800/60"
             : "bg-gradient-to-br from-white/80 via-white/20 to-white/80"
         } border ${
           mode === "dark" ? "border-white/10" : "border-white/20"
-        } shadow-2xl group-hover:shadow-3xl transition-all duration-500`}
+        } shadow-lg hover:shadow-3xl transition-all duration-500`}
       ></div>
 
       <div
@@ -112,11 +110,6 @@ export default function WelcomeCard({
             {/* Animated icon container */}
             <div className="relative">
               <div
-                className={`absolute inset-0 rounded-2xl blur-md ${
-                  mode === "dark" ? "bg-amber-400/30" : "bg-amber-500/30"
-                } animate-pulse`}
-              ></div>
-              <div
                 className={`relative p-2 rounded-xl ${
                   mode === "dark"
                     ? "bg-gradient-to-br from-amber-400/20 to-orange-500/20 border border-amber-400/30"
@@ -128,7 +121,7 @@ export default function WelcomeCard({
                   width={isMobile ? 24 : 30}
                   height={isMobile ? 24 : 30}
                   className={`${
-                    mode === "dark" ? "text-amber-400" : "text-amber-600"
+                    mode === "dark" ? "text-amber-400" : "text-[#f25749]"
                   } animate-bounce`}
                   style={{
                     animationDuration: "2s",
@@ -141,7 +134,7 @@ export default function WelcomeCard({
             {/* Text content */}
             <div className="flex-1">
               <h2
-                className={`text-xl sm:text-2xl font-bold tracking-tight ${
+                className={`text-xl sm:text-2xl font-medium tracking-tight ${
                   mode === "dark" ? "text-white" : "text-slate-900"
                 }`}
               >
@@ -160,9 +153,7 @@ export default function WelcomeCard({
           {/* Recently Added Section */}
           <div
             className={`w-full sm:w-fit rounded-xl text-xs sm:text-sm ${
-              mode === "dark"
-                ? "bg-blue-500/20 border border-blue-400/30"
-                : "bg-blue-50 border border-blue-200"
+              mode === "dark" ? "bg-blue-500/20 border border-blue-400/30" : ""
             } sm:mt-2`}
           >
             <div
@@ -174,7 +165,7 @@ export default function WelcomeCard({
                 className={`px-2 py-1 sm:py-2 rounded-xl flex-shrink-0 ${
                   mode === "dark"
                     ? "bg-orange-500/20 border border-orange-400/30 text-orange-300"
-                    : "bg-orange-50 border border-orange-200 text-gray-700"
+                    : "bg-gradient-to-br from-amber-100 to-orange-100 border border-amber-200 text-gray-700"
                 }`}
               >
                 Recently Added:
@@ -210,7 +201,7 @@ export default function WelcomeCard({
                       className={
                         mode === "dark"
                           ? "text-blue-400 hover:underline"
-                          : "text-gray-600 hover:underline"
+                          : "text-gray-600 hover:underline underline"
                       }
                       aria-label={`View ${latestItem.section} section`}
                     >
@@ -244,78 +235,68 @@ export default function WelcomeCard({
 
             {/* Main card */}
             <div
-              className={`relative rounded-2xl p-4 sm:p-6 backdrop-blur-sm shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 w-full sm:min-w-[280px] 
+              className={`relative rounded-lg p-4 sm:p-6 backdrop-blur-sm shadow-xl hover:shadow-none transition-all duration-300 w-full sm:min-w-[280px] 
               border ${
-                mode === "dark" ? "border-blue-400/30" : "border-blue-200"
+                mode === "dark"
+                  ? "border-blue-400/30"
+                  : "border-sky-900 bg-[#d3e9f1]"
               }`}
             >
               {/* Membership info */}
-              <Link href="/profile/">
-                <div className="space-y-2 sm:space-y-3 mb-4">
-                  <div
-                    className={`text-xs sm:text-sm font-bold tracking-wide ${
-                      mode === "dark" ? "text-gray-400" : "text-gray-600"
-                    }`}
-                  >
-                    Your Membership
-                  </div>
-                  <div className="flex flex-wrap gap-2 pb-2 capitalize">
-                    {!isFreelancer && (
+              <div className="space-y-2 sm:space-y-3 mb-4">
+                <div
+                  className={`text-base font-semibold tracking-wide ${
+                    mode === "dark" ? "text-gray-400" : "text-gray-600"
+                  }`}
+                >
+                  Your Membership
+                </div>
+                <div className="flex flex-wrap gap-2 pb-2 capitalize">
+                  {!isFreelancer && (
+                    <div className="[&>span]:!bg-amber-100 [&>span]:!text-gray-900 [&>span]:!border-amber-200 [&>span>svg]:!text-[#F25849] dark:[&>span]:!bg-amber-500/30 dark:[&>span]:!text-amber-100 dark:[&>span]:!border-amber-400">
                       <TierBadge tier={user?.selected_tier} mode={mode} />
-                    )}
+                    </div>
+                  )}
+                  <div className="[&>span]:!bg-amber-100 [&>span]:!text-gray-900 [&>span]:!border-amber-200 [&>span>svg]:!text-[#F25849] dark:[&>span]:!bg-amber-500/30 dark:[&>span]:!text-amber-100 dark:[&>span]:!border-amber-400">
                     <JobTypeBadge jobType={user?.job_type} mode={mode} />
                   </div>
-                  <div className="text-xs sm:text-sm">
-                    <span
-                      className={`font-medium ${
-                        mode === "dark" ? "text-gray-200" : "text-gray-700"
-                      }`}
-                    >
-                      Member since:
-                    </span>{" "}
-                    <span
-                      className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${
-                        mode === "dark"
-                          ? "bg-blue-800 text-blue-100"
-                          : "bg-blue-100 text-blue-800"
-                      }`}
-                    >
-                      {formatJoinDate(user?.created_at)}
-                    </span>
-                  </div>
                 </div>
-              </Link>
+                <div className="text-xs sm:text-sm">
+                  <span
+                    className={`font-semibold pr-2 ${
+                      mode === "dark" ? "text-gray-200" : "text-gray-700"
+                    }`}
+                  >
+                    Member since:
+                  </span>{" "}
+                  <span
+                    className={`inline-block px-6 py-2 rounded-full text-xs font-normal ${
+                      mode === "dark"
+                        ? "bg-blue-800 text-blue-100"
+                        : "bg-[#172840] text-white"
+                    }`}
+                  >
+                    {formatJoinDate(user?.created_at)}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
-          <div
-            className={`absolute top-2 right-2 w-12 sm:w-16 h-12 sm:h-16 opacity-10`}
-          >
+          <div className={`absolute top-4 right-4 w-8 sm:w-10 h-8 sm:h-10`}>
             <div
               className={`w-full h-full rounded-full bg-gradient-to-br ${
                 mode === "dark"
                   ? "from-violet-500 to-purple-600"
-                  : "from-violet-400 to-purple-500"
+                  : "bg-[#f25749]"
               }`}
             ></div>
           </div>
         </div>
       </div>
 
-      {/* Bottom gradient accent */}
-      <div
-        className={`absolute bottom-0 left-0 right-0 h-1 ${
-          mode === "dark"
-            ? "bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500"
-            : "bg-gradient-to-r from-[#3c82f6] to-[#dbe9fe]"
-        }`}
-      ></div>
-
       {/* Floating elements */}
       <div
-        className={`absolute -top-1 sm:-top-2 -right-1 sm:-right-2 w-3 sm:w-4 h-3 sm:h-4 bg-[#85c2da] rounded-full opacity-60`}
-      ></div>
-      <div
-        className={`absolute -bottom-1 -left-1 w-2 sm:w-3 h-2 sm:h-3 bg-[#f3584a] rounded-full opacity-40 animate-pulse delay-1000`}
+        className={`absolute -top-1 sm:-top-2 -right-1 sm:-right-2 w-3 sm:w-4 h-3 sm:h-4 bg-amber-400 rounded-full opacity-60`}
       ></div>
     </div>
   );

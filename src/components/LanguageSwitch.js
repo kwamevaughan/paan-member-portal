@@ -139,7 +139,7 @@ const LanguageSwitch = ({ mode }) => {
       toast.error("Translation service initialization failed");
       setUseFallbackUI(true);
     }
-  }, [scriptLoaded, languages]);
+  }, [scriptLoaded]);
 
   // Detect select box from Google Translate
   useEffect(() => {
@@ -185,21 +185,24 @@ const LanguageSwitch = ({ mode }) => {
     const match = languages.find((lang) => lang.name === selectedLanguage);
     if (match) {
       try {
-        selectRef.current.value = match.code;
-        const event = new Event("change");
-        selectRef.current.dispatchEvent(event);
+        // Only update if the value is different to prevent loops
+        if (selectRef.current.value !== match.code) {
+          selectRef.current.value = match.code;
+          const event = new Event("change");
+          selectRef.current.dispatchEvent(event);
 
-        // Only show toast on user initiated language changes, not initial load
-        if (!initialLoadRef.current) {
-          toast.success(toastMessages[match.code]);
-        } else {
-          initialLoadRef.current = false;
+          // Only show toast on user initiated language changes, not initial load
+          if (!initialLoadRef.current) {
+            toast.success(toastMessages[match.code]);
+          } else {
+            initialLoadRef.current = false;
+          }
         }
       } catch (error) {
         console.error("Error applying language:", error);
       }
     }
-  }, [selectRef.current, selectedLanguage]);
+  }, [selectedLanguage, languages, toastMessages]);
 
   // Close dropdown when clicked outside
   useEffect(() => {
@@ -257,7 +260,7 @@ const LanguageSwitch = ({ mode }) => {
   };
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative group" ref={dropdownRef}>
       {/* Hidden Translate container */}
       <div
         id="google_translate_element"
@@ -275,7 +278,10 @@ const LanguageSwitch = ({ mode }) => {
       <TooltipIconButton
         label={<span className="text-black">Change Language</span>}
         mode={mode}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          setIsOpen(!isOpen);
+         
+        }}
         className="bg-white/50"
       >
         <Icon
@@ -298,7 +304,10 @@ const LanguageSwitch = ({ mode }) => {
           {languages.map((language) => (
             <button
               key={language.name}
-              onClick={() => handleLanguageSelect(language)}
+              onClick={() => {
+               
+                handleLanguageSelect(language);
+              }}
               className={`flex items-center w-full px-4 py-2 text-left hover:bg-opacity-10 hover:bg-gray-500 ${
                 selectedLanguage === language.name
                   ? "bg-opacity-5 bg-gray-500"

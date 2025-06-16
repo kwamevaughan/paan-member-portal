@@ -9,8 +9,18 @@ class MyDocument extends Document {
           <link
             rel="preload"
             href="https://fonts.googleapis.com/css2?family=Questrial&display=swap"
+            as="style"
+          />
+          <link
+            href="https://fonts.googleapis.com/css2?family=Questrial&display=swap"
+            rel="stylesheet"
+          />
+          {/* Preload Rokt Icons */}
+          <link
+            rel="preload"
+            href="https://apps.rokt.com/icons/rokt-icons.woff"
             as="font"
-            type="font/woff2"
+            type="font/woff"
             crossOrigin="anonymous"
           />
 

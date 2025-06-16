@@ -74,9 +74,6 @@ const OpportunitiesSection = ({
   handleResetFilters,
   toast,
 }) => {
-  console.log("[OpportunitiesSection] filterOptions:", filterOptions);
-  console.log("[OpportunitiesSection] filters:", filters);
-
   const [viewMode] = useState("grid");
   const [statsFilter, setStatsFilter] = useState("total");
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -179,25 +176,33 @@ const OpportunitiesSection = ({
       filter: "total",
       label: `Total ${itemLabel}`,
       count: searchedOpportunities.length,
-      color: "blue",
+      color: "#3B82F6", // Blue
+      bgColor: "#d3e9f1",
+      borderColor: "#85c1da"
     },
     {
       filter: "available",
       label: "Available",
       count: accessibleOpportunities.length,
-      color: "green",
+      color: "#10B981",
+      bgColor: "#e8e7ca",
+      borderColor: "#d4d3b0"
     },
     {
       filter: "restricted",
       label: "Restricted",
       count: restrictedOpportunities.length,
-      color: "orange",
+      color: "#F59E0B",
+      bgColor: "#bdc9d2",
+      borderColor: "#a8b4bd"
     },
     {
       filter: "categories",
       label: "Categories",
       count: Object.keys(opportunitiesByType).length,
-      color: "purple",
+      color: "#8B5CF6",
+      bgColor: "#e7d4d5",
+      borderColor: "#d4c1c2"
     },
   ];
 
@@ -418,7 +423,7 @@ const OpportunitiesSection = ({
           >
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2 text-lg font-semibold">
+                <div className="flex items-center gap-2 text-lg font-normal">
                   <Icon
                     icon="mdi:filter-variant"
                     className="h-5 w-5 text-blue-600"
@@ -472,26 +477,51 @@ const OpportunitiesSection = ({
         )}
 
         <div
-          className={`grid grid-cols-2 md:grid-cols-4 gap-4 p-6 rounded-2xl ${
+          className={`grid grid-cols-2 md:grid-cols-4 gap-4 p-6 rounded-lg ${
             mode === "dark"
               ? "bg-blue-900/20 border border-blue-800/30"
-              : "bg-blue-50 border border-blue-200/50"
+              : "bg-[#e5f3f6] border border-[#84C1D9]"
           }`}
         >
           {statsConfig.map(({ filter, label, count, color }) => (
             <div
               key={filter}
-              className={`text-center cursor-pointer p-2 rounded-lg transition-all ${
+              className={`text-center cursor-pointer p-5 rounded-lg transition-all ${
                 statsFilter === filter
                   ? mode === "dark"
-                    ? `bg-${color}-900/30 border border-${color}-700`
-                    : `bg-${color}-100/50 border border-${color}-300`
+                    ? "bg-opacity-30 border"
+                    : "bg-opacity-50 border"
                   : ""
               } ${
                 mode === "dark"
-                  ? `hover:bg-${color}-900/30 hover:border hover:border-${color}-700`
-                  : `hover:bg-${color}-100/50 hover:border hover:border-${color}-300`
+                  ? "hover:bg-opacity-30 hover:border"
+                  : "hover:bg-opacity-50 hover:border"
               }`}
+              style={{
+                backgroundColor:
+                  statsFilter === filter 
+                    ? filter === "total" 
+                      ? "#d3e9f1"
+                      : filter === "available"
+                        ? "#e8e7ca"
+                        : filter === "restricted"
+                          ? "#bdc9d2"
+                          : filter === "categories"
+                            ? "#e7d4d5"
+                            : `${color}20` 
+                    : "transparent",
+                borderColor: statsFilter === filter 
+                  ? filter === "total"
+                    ? "#85c1da"
+                    : filter === "available"
+                      ? "#d4d3b0"
+                      : filter === "restricted"
+                        ? "#a8b4bd"
+                        : filter === "categories"
+                          ? "#d4c1c2"
+                          : color 
+                  : "transparent",
+              }}
               onClick={() => {
                 setStatsFilter(filter);
                 if (filter !== "categories") setSelectedCategory("");
@@ -506,14 +536,13 @@ const OpportunitiesSection = ({
               }
             >
               <div
-                className={`text-3xl font-bold ${
-                  mode === "dark" ? `text-${color}-400` : `text-${color}-600`
-                }`}
+                className="text-3xl font-semibold"
+                style={{ color: "#f25749" }}
               >
                 {count}
               </div>
               <div
-                className={`text-sm font-medium ${
+                className={`text-sm font-normal ${
                   mode === "dark" ? "text-gray-400" : "text-gray-600"
                 }`}
               >

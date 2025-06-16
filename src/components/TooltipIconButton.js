@@ -11,15 +11,21 @@ const TooltipIconButton = ({
 }) => {
   return (
     <div className="relative group">
-      <button
+      <div
         onClick={onClick}
-        className={`p-2 rounded-full focus:outline-none ${
+        className={`p-2 rounded-full focus:outline-none cursor-pointer ${
           mode === "dark" ? "hover:bg-gray-700" : "hover:bg-sky-50"
         } ${className}`}
-        aria-label={label}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            onClick?.(e);
+          }
+        }}
       >
         {children || <Icon icon={icon} className="h-5 w-5" />}
-      </button>
+      </div>
       <div
         className={`
           absolute top-full left-1/2 -translate-x-1/2 mt-2 w-max

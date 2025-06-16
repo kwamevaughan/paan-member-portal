@@ -3,12 +3,14 @@ import { useRouter } from "next/router";
 import toast, { Toaster } from "react-hot-toast";
 import "../styles/globals.css";
 import { sidebarNav } from "@/data/nav";
-import { Questrial } from "next/font/google";
+import { Poppins } from "next/font/google";
 import { AuthProvider } from "@/context/authContext";
 
-const questrial = Questrial({
-  weight: "400",
+const poppins = Poppins({
+  weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
+  display: "swap",
+  variable: "--font-poppins",
 });
 
 function MyApp({ Component, pageProps }) {
@@ -66,10 +68,6 @@ function MyApp({ Component, pageProps }) {
       });
     };
 
-    const handleRouteChange = (url) => {
-      document.body.style.paddingTop = "0px";
-    };
-
     const routeChangeComplete = () => {
       toast.dismiss("route-loading");
     };
@@ -89,13 +87,11 @@ function MyApp({ Component, pageProps }) {
     });
 
     router.events.on("routeChangeStart", routeChangeStart);
-    router.events.on("routeChangeComplete", handleRouteChange);
     router.events.on("routeChangeComplete", routeChangeComplete);
     router.events.on("routeChangeError", routeChangeError);
 
     return () => {
       router.events.off("routeChangeStart", routeChangeStart);
-      router.events.off("routeChangeComplete", handleRouteChange);
       router.events.off("routeChangeComplete", routeChangeComplete);
       router.events.off("routeChangeError", routeChangeError);
     };
@@ -124,7 +120,7 @@ function MyApp({ Component, pageProps }) {
   })();
 
   return (
-    <div className={`${mode === "dark" ? "dark" : ""} ${questrial.className}`}>
+    <div className={`${mode === "dark" ? "dark" : ""} ${poppins.variable} font-sans`}>
       <Toaster position="top-center" reverseOrder={false} />
       <AuthProvider>
         <Component

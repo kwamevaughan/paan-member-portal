@@ -53,7 +53,7 @@ const SectionCard = ({
               className={`relative p-2 rounded-2xl ${
                 mode === "dark"
                   ? "bg-gradient-to-br from-amber-400/20 to-orange-500/20 border border-amber-400/30"
-                  : "bg-gradient-to-br from-amber-100 to-orange-100 border border-amber-200"
+                  : "bg-amber-400 border border-amber-200"
               }`}
             >
               <iconify-icon
@@ -70,7 +70,7 @@ const SectionCard = ({
           </div>
           {/* Title */}
           <h2
-            className={`text-xl font-semibold ${
+            className={`text-xl font-normal ${
               mode === "dark" ? "text-white" : "text-gray-900"
             }`}
           >

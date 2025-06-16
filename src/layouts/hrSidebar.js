@@ -151,7 +151,7 @@ const HrSidebar = ({
         onMouseLeave={handleMouseLeave}
         className={`fixed left-0 top-0 z-50 rounded-xl m-0 md:m-3 transition-all duration-300
           ${isMobile ? (isOpen ? "block" : "hidden") : "block"}
-          ${mode === "dark" ? "bg-[#05050a]" : "bg-[#101720]"}
+          ${mode === "dark" ? "bg-[#05050a]" : "bg-[#172840]"}
           ${
             isHovering && !isOpen && !isMobile
               ? "backdrop-blur-sm backdrop-filter border border-gray-700"
@@ -182,7 +182,7 @@ const HrSidebar = ({
                   alt="PAAN Logo"
                   width={120}
                   height={75}
-                  className="object-contain"
+                  className="object-contain w-auto"
                   priority
                 />
                 {isMobile ? (

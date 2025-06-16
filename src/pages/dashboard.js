@@ -137,11 +137,6 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     return null;
   }
 
-  console.log(
-    "[Dashboard] opportunityFilterOptions:",
-    opportunityFilterOptions
-  );
-
   return (
     <div
       className={`min-h-screen flex flex-col ${

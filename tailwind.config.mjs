@@ -1,8 +1,9 @@
 /** @type {import('tailwindcss').Config} */
-export default {
+const config = {
   content: [
-    "./src/**/*.{js,jsx,ts,tsx}",
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/layouts/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
@@ -38,7 +39,12 @@ export default {
         fadeIn: "fadeIn 300ms ease-out",
         fadeOut: "fadeOut 300ms ease-out",
       },
+      fontFamily: {
+        sans: ["var(--font-poppins)", "system-ui", "sans-serif"],
+      },
     },
   },
   plugins: [],
 };
+
+export default config;

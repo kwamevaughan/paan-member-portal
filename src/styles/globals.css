@@ -5,7 +5,7 @@
 @tailwind utilities;
 
 :root {
-  --font-questrial: "Questrial", sans-serif;
+  --font-poppins: "Poppins", sans-serif;
 }
 
 body {
@@ -13,6 +13,7 @@ body {
   background-color: #fafafa;
   font-size: 15px;
 }
+
 
 .observe {
   opacity: 0.2;

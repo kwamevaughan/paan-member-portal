@@ -1,5 +1,5 @@
 // useFilters.js
-import { useState } from "react";
+import { useState, useCallback } from "react";
 
 const useFilters = () => {
   const [filters, setFilters] = useState({
@@ -21,14 +21,14 @@ const useFilters = () => {
     updates: { tags: "" },
   });
 
-  const handleFilterChange = (section, key, value) => {
+  const handleFilterChange = useCallback((section, key, value) => {
     setFilters((prev) => ({
       ...prev,
       [section]: { ...prev[section], [key]: value || "" },
     }));
-  };
+  }, []);
 
-  const handleResetFilters = (section) => {
+  const handleResetFilters = useCallback((section) => {
     setFilters((prev) => ({
       ...prev,
       [section]:
@@ -54,7 +54,7 @@ const useFilters = () => {
           ? { tier_restriction: "" }
           : { tags: "" },
     }));
-  };
+  }, []);
 
   return { filters, handleFilterChange, handleResetFilters };
 };

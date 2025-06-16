@@ -39,13 +39,6 @@ const HrHeader = ({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  useEffect(() => {
-    if (headerRef.current) {
-      const headerHeight = headerRef.current.offsetHeight;
-      document.body.style.paddingTop = `${headerHeight}px`;
-    }
-  }, []);
-
   const isMobile = windowWidth !== null && windowWidth < 640;
 
   return (
@@ -130,7 +123,7 @@ const HrHeader = ({
               className="bg-white/50"
             >
               <div
-                className="flex items-center gap-2 pl-2 relative cursor-pointer"
+                className="flex items-center gap-2 relative cursor-pointer"
                 ref={dropdownRef}
                 onClick={() => setDropdownOpen(!dropdownOpen)}
               >

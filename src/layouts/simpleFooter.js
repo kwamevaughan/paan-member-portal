@@ -82,7 +82,7 @@ const SimpleFooter = ({ mode, isSidebarOpen }) => {
                 alt="Nairobi Flag"
                 width={30}
                 height={30}
-                className="absolute top-0 left-0"
+                className="absolute top-0 left-0 w-auto"
               />
             </div>
           </span>{" "}
@@ -95,7 +95,7 @@ const SimpleFooter = ({ mode, isSidebarOpen }) => {
                 alt="Accra Flag"
                 width={30}
                 height={30}
-                className="absolute top-0 left-0"
+                className="absolute top-0 left-0 w-auto"
               />
             </div>
           </span>{" "}

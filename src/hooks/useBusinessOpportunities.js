@@ -45,12 +45,13 @@ export const useBusinessOpportunities = (
     return "Agency"; // Default to Agency
   }, [isFreelancer, isAgency]);
 
+  // Memoize the user job type to prevent unnecessary effect triggers
+  const userJobType = useMemo(() => user?.job_type, [user?.job_type]);
+
   useEffect(() => {
     const fetchFilterOptions = async () => {
-      if (!user?.job_type) {
-        console.log(
-          "[useBusinessOpportunities] No user job type, skipping filter fetch"
-        );
+      if (!userJobType) {
+       
         return;
       }
 
@@ -70,7 +71,6 @@ export const useBusinessOpportunities = (
           throw new Error(`Failed to fetch filter options: ${error.message}`);
         }
 
-        console.log("[useBusinessOpportunities] Raw filter data:", data);
 
         // Process filter options, handling null/undefined values
         const newFilterOptions = {
@@ -162,11 +162,6 @@ export const useBusinessOpportunities = (
           ].sort(),
         };
 
-        console.log(
-          "[useBusinessOpportunities] Processed filter options:",
-          newFilterOptions
-        );
-
         setFilterOptions(newFilterOptions);
       } catch (err) {
         console.error(
@@ -180,7 +175,7 @@ export const useBusinessOpportunities = (
     };
 
     fetchFilterOptions();
-  }, [jobTypeFilter, user?.job_type]);
+  }, [jobTypeFilter, userJobType]);
 
   const fetchOpportunities = useCallback(
     debounce(
@@ -240,7 +235,7 @@ export const useBusinessOpportunities = (
             throw new Error(`Failed to fetch opportunities: ${error.message}`);
           }
 
-          console.log("[useBusinessOpportunities] Fetched opportunities:", data);
+         
 
           const userTierNormalized = normalizeTier(user?.selected_tier || "Free Member");
           const tierHierarchy = [

@@ -2,11 +2,10 @@ import React, { useState } from "react";
 import { TierBadge } from "./Badge";
 import { Icon } from "@iconify/react";
 
-const EventCard = ({
-  event,
+const ResourceCard = ({
+  resource,
   mode,
-  onRegister,
-  isRegistered,
+  onView,
   isRestricted,
   onRestrictedClick,
   Icon,
@@ -18,14 +17,17 @@ const EventCard = ({
       onRestrictedClick?.();
       return;
     }
-    onRegister?.(event.id);
+    onView?.(resource);
   };
 
-  const daysUntilEvent = Math.ceil(
-    (new Date(event.date) - new Date()) / (1000 * 60 * 60 * 24)
-  );
-  const isUpcoming = daysUntilEvent > 0;
-  const isPast = daysUntilEvent < 0;
+  const handleViewMoreInfo = (e) => {
+    e.stopPropagation(); // Prevent card click
+    if (isRestricted) {
+      onRestrictedClick?.();
+      return;
+    }
+    onView?.(resource);
+  };
 
   return (
     <div
@@ -46,8 +48,8 @@ const EventCard = ({
       tabIndex={isRestricted ? -1 : 0}
       aria-label={
         isRestricted
-          ? `Restricted event: ${event.title}`
-          : `Register for event: ${event.title}`
+          ? `Restricted resource: ${resource.title}`
+          : `View resource: ${resource.title}`
       }
     >
       {/* Background Gradient Overlay */}
@@ -78,7 +80,7 @@ const EventCard = ({
                   : "bg-white text-amber-400"
               } ${isHovered ? "scale-95 rotate-12" : ""}`}
             >
-              <Icon icon="mdi:calendar-star" className="text-3xl" />
+              <Icon icon="mdi:book-open" className="text-3xl" />
             </div>
 
             <div className="flex-1 min-w-0">
@@ -89,7 +91,7 @@ const EventCard = ({
                   isHovered ? "text-blue-600 dark:text-blue-400" : ""
                 }`}
               >
-                {event.title}
+                {resource.title}
                 {isRestricted && (
                   <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
                     <Icon icon="mdi:lock" className="text-sm mr-1" />
@@ -98,14 +100,14 @@ const EventCard = ({
                 )}
               </h3>
 
-              {/* Event Type */}
-              {event.event_type && (
+              {/* Resource Type */}
+              {resource.resource_type && (
                 <p
                   className={`text-sm font-medium ${
                     mode === "dark" ? "text-gray-300" : "text-gray-700"
                   } ${isRestricted ? "text-gray-400 dark:text-gray-500" : ""}`}
                 >
-                  {event.event_type}
+                  {resource.resource_type}
                 </p>
               )}
             </div>
@@ -113,21 +115,51 @@ const EventCard = ({
 
           <div className="[&>span]:!bg-white [&>span]:!text-gray-900 [&>span]:!border-gray-200 [&>span>svg]:!text-[#f25749]">
             <TierBadge
-              tier={event.tier_restriction || "Free Member"}
+              tier={resource.tier_restriction || "Free Member"}
               mode={mode}
             />
           </div>
         </div>
 
         {/* Description */}
-        {event.description && (
+        {resource.description && (
           <p
             className={`text-sm mb-4 line-clamp-3 leading-relaxed ${
               mode === "dark" ? "text-gray-400" : "text-white"
             } ${isRestricted ? "text-gray-400 dark:text-gray-500" : ""}`}
           >
-            {event.description}
+            {resource.description}
           </p>
+        )}
+
+        {/* Tags */}
+        {resource.tags && resource.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-4">
+            {resource.tags.slice(0, 3).map((tag, index) => (
+              <span
+                key={index}
+                className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
+                  mode === "dark"
+                    ? "bg-gray-700/60 text-gray-300 hover:bg-gray-600/60"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                } ${isHovered ? "scale-105" : ""}`}
+              >
+                <Icon icon="mdi:tag" className="text-teal-500 text-sm mr-1" />
+                {tag}
+              </span>
+            ))}
+            {resource.tags.length > 3 && (
+              <span
+                className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                  mode === "dark"
+                    ? "bg-gray-700/60 text-gray-400"
+                    : "bg-gray-100 text-gray-500"
+                }`}
+              >
+                +{resource.tags.length - 3} more
+              </span>
+            )}
+          </div>
         )}
 
         {/* Details Row */}
@@ -136,38 +168,35 @@ const EventCard = ({
             mode === "dark" ? "text-gray-400" : "text-gray-600"
           } ${isRestricted ? "text-gray-400 dark:text-gray-500" : ""}`}
         >
-          {/* Date */}
-          <div className="flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200 text-white">
-            <Icon
-              icon={isUpcoming ? "mdi:calendar" : "mdi:calendar-check"}
-              className={`text-lg ${
-                isUpcoming ? "text-[#f25749]" : "text-green-500"
-              }`}
-            />
-            <span>
-              {new Date(event.date).toLocaleDateString("en-US", {
-                weekday: "short",
-                month: "short",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </span>
-          </div>
-
-          {/* Location */}
-          {event.location && (
+          {/* Format */}
+          {resource.format && (
             <div className="flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200 text-white">
-              <Icon icon="mdi:map-marker" className="text-lg text-amber-400" />
-              <span>{event.location}</span>
+              <Icon icon="mdi:file-document" className="text-lg text-amber-400" />
+              <span>{resource.format}</span>
             </div>
           )}
 
-          {/* Registration Status */}
-          {isRegistered && (
+          {/* Duration */}
+          {resource.duration && (
             <div className="flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200 text-white">
-              <Icon icon="mdi:check-circle" className="text-lg text-green-500" />
-              <span>Registered</span>
+              <Icon icon="mdi:clock-outline" className="text-lg text-[#f25749]" />
+              <span>{resource.duration}</span>
+            </div>
+          )}
+
+          {/* Language */}
+          {resource.language && (
+            <div className="flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200 text-white">
+              <Icon icon="mdi:translate" className="text-lg text-green-500" />
+              <span>{resource.language}</span>
+            </div>
+          )}
+
+          {/* File Size */}
+          {resource.file_size && (
+            <div className="flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200 text-white">
+              <Icon icon="mdi:file-size" className="text-lg text-[#85c1da]" />
+              <span>{resource.file_size}</span>
             </div>
           )}
         </div>
@@ -175,22 +204,20 @@ const EventCard = ({
         {/* Footer */}
         <div className="flex items-center justify-between pt-4 mt-auto">
           <div className="flex items-center space-x-1.5 text-xs text-gray-500 dark:text-gray-400">
-            <Icon icon="mdi:account-group" className="text-sm" />
-            <span>{event.attendee_count || 0} attendees</span>
+            <Icon icon="mdi:download" className="text-sm" />
+            <span>{resource.download_count || 0} downloads</span>
           </div>
           <button
-            onClick={handleClick}
+            onClick={handleViewMoreInfo}
             className={`px-4 py-2 rounded-full font-normal text-xs transition-colors ${
               isRestricted
                 ? "bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400"
-                : isRegistered
-                ? "bg-green-400 hover:bg-green-500 dark:bg-green-400 dark:hover:bg-green-500"
                 : "bg-amber-400 hover:bg-amber-500 dark:bg-amber-400 dark:hover:bg-amber-500"
             }`}
             disabled={isRestricted}
-            aria-label={`${isRegistered ? "Unregister" : "Register"} for ${event.title}`}
+            aria-label={`View details for ${resource.title}`}
           >
-            {isRegistered ? "Registered" : "Register Now"}
+            View Details
           </button>
         </div>
 
@@ -204,20 +231,11 @@ const EventCard = ({
         )}
       </div>
 
-      {/* UPCOMING Badge */}
-      {isUpcoming && !isRestricted && (
-        <div className="absolute top-4 right-4">
-          <div className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
-            UPCOMING
-          </div>
-        </div>
-      )}
-
-      {/* PAST Badge */}
-      {isPast && !isRestricted && (
-        <div className="absolute top-4 right-4">
-          <div className="bg-gradient-to-r from-gray-500 to-gray-600 text-white text-xs font-semibold px-2 py-1 rounded-full">
-            PAST
+      {/* NEW Badge */}
+      {resource.is_new && !isRestricted && (
+        <div className="absolute top-4 left-4">
+          <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
+            NEW
           </div>
         </div>
       )}
@@ -225,4 +243,4 @@ const EventCard = ({
   );
 };
 
-export default EventCard;
+export default ResourceCard; 

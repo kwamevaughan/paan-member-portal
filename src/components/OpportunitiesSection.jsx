@@ -3,6 +3,7 @@ import SectionCard from "./SectionCard";
 import OpportunityCard from "./OpportunityCard";
 import FilterDropdown from "./FilterDropdown";
 import { hasTierAccess } from "@/utils/tierUtils";
+import { createStatsConfig } from "@/utils/statsConfig";
 import { TierBadge } from "./Badge";
 import { Icon } from "@iconify/react";
 import debounce from "lodash.debounce";
@@ -171,40 +172,13 @@ const OpportunitiesSection = ({
     [displayOpportunities, user]
   );
 
-  const statsConfig = [
-    {
-      filter: "total",
-      label: `Total ${itemLabel}`,
-      count: searchedOpportunities.length,
-      color: "#3B82F6", // Blue
-      bgColor: "#d3e9f1",
-      borderColor: "#85c1da"
-    },
-    {
-      filter: "available",
-      label: "Available",
-      count: accessibleOpportunities.length,
-      color: "#10B981",
-      bgColor: "#e8e7ca",
-      borderColor: "#d4d3b0"
-    },
-    {
-      filter: "restricted",
-      label: "Restricted",
-      count: restrictedOpportunities.length,
-      color: "#F59E0B",
-      bgColor: "#bdc9d2",
-      borderColor: "#a8b4bd"
-    },
-    {
-      filter: "categories",
-      label: "Categories",
-      count: Object.keys(opportunitiesByType).length,
-      color: "#8B5CF6",
-      bgColor: "#e7d4d5",
-      borderColor: "#d4c1c2"
-    },
-  ];
+  const statsConfig = createStatsConfig({
+    items: opportunities,
+    user,
+    hasTierAccess,
+    categories: filterOptions.jobTypes,
+    sectionName: itemLabel,
+  });
 
   const renderLoadingState = () => (
     <div className="space-y-4">

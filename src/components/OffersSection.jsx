@@ -1,11 +1,13 @@
 import React, { useState } from "react";
-import SectionCard from "./SectionCard";
-import OfferItem from "@/components/OfferItem";
-import FilterDropdown from "@/components/FilterDropdown";
+import { createStatsConfig } from "@/utils/statsConfig";
 import { hasTierAccess } from "@/utils/tierUtils";
+import SectionCard from "./SectionCard";
+import OfferCard from "./OfferCard";
+import FilterDropdown from "./FilterDropdown";
+import { Icon } from "@iconify/react";
 
 const OffersSection = ({
-  offers,
+  offers = [],
   // Changed from offerings
   offersLoading,
   // Changed from accessibleOfferings
@@ -23,12 +25,19 @@ const OffersSection = ({
 }) => {
   const [statsFilter, setStatsFilter] = useState("total");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedOffer, setSelectedOffer] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleFilter = (filter) => {
+  const statsConfig = createStatsConfig({
+    items: offers,
+    user,
+    hasTierAccess,
+    categories: offersFilterOptions.offerTypes,
+    sectionName: "Offers",
+  });
+
+  const handleStatsFilter = (filter) => {
     setStatsFilter(filter);
-    if (filter !== "categories") {
-      setSelectedCategory("");
-    }
   };
 
   const renderContent = () => {
@@ -211,156 +220,54 @@ const OffersSection = ({
       <div className="space-y-6">
         {/* Stats dashboard */}
         <div
-          className={`grid grid-cols-2 md:grid-cols-4 gap-4 p-6 rounded-xl ${
+          className={`grid grid-cols-2 md:grid-cols-4 gap-4 p-6 rounded-lg ${
             mode === "dark"
-              ? "bg-gradient-to-r from-blue-900/20 to-purple-900/20 border border-blue-800/30"
-              : "bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200/50"
+              ? "bg-blue-900/20 border border-blue-800/30"
+              : "bg-[#e5f3f6] border border-[#84C1D9]"
           }`}
         >
-          <div
-            className={`text-center cursor-pointer p-2 rounded-lg transition-all duration-200 ${
-              statsFilter === "total"
-                ? mode === "dark"
-                  ? "bg-blue-900/30 border border-blue-700"
-                  : "bg-blue-100/50 border border-blue-300"
-                : mode === "dark"
-                ? "hover:bg-blue-900/30 hover:border hover:border-blue-700"
-                : "hover:bg-blue-100/50 hover:border hover:border-blue-300"
-            }`}
-            onClick={() => handleFilter("total")}
-            role="button"
-            tabIndex={0}
-            aria-label="Filter by total offers"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                handleFilter("total");
+          {statsConfig.map(({ filter, label, count, color }) => (
+            <div
+              key={filter}
+              className={`text-center cursor-pointer p-5 rounded-lg transition-all ${
+                statsFilter === filter
+                  ? mode === "dark"
+                    ? "bg-opacity-30 border"
+                    : "bg-opacity-50 border"
+                  : ""
+              } ${
+                mode === "dark"
+                  ? "hover:bg-opacity-30 hover:border"
+                  : "hover:bg-opacity-50 hover:border"
+              }`}
+              style={{
+                backgroundColor:
+                  statsFilter === filter ? `${color}20` : "transparent",
+                borderColor: statsFilter === filter ? color : "transparent",
+              }}
+              onClick={() => handleStatsFilter(filter)}
+              role="button"
+              tabIndex={0}
+              aria-label={`Filter by ${filter} offers`}
+              onKeyDown={(e) =>
+                e.key === "Enter" && handleStatsFilter(filter)
               }
-            }}
-          >
-            <div
-              className={`text-3xl font-bold ${
-                mode === "dark" ? "text-blue-400" : "text-blue-600"
-              }`}
             >
-              {offers.length}
+              <div
+                className="text-3xl font-semibold"
+                style={{ color: "#f25749" }}
+              >
+                {count}
+              </div>
+              <div
+                className={`text-sm font-normal ${
+                  mode === "dark" ? "text-gray-400" : "text-gray-600"
+                }`}
+              >
+                {label}
+              </div>
             </div>
-            <div
-              className={`text-sm font-medium ${
-                mode === "dark" ? "text-gray-400" : "text-gray-600"
-              }`}
-            >
-              Total Offers
-            </div>
-          </div>
-          <div
-            className={`text-center cursor-pointer p-2 rounded-lg transition-all duration-200 ${
-              statsFilter === "available"
-                ? mode === "dark"
-                  ? "bg-green-900/30 border border-green-700"
-                  : "bg-blue-100/50 border border-blue-300"
-                : mode === "dark"
-                ? "hover:bg-green-900/30 hover:border hover:border-green-700"
-                : "hover:bg-blue-100/50 hover:border hover:border-blue-300"
-            }`}
-            onClick={() => handleFilter("available")}
-            role="button"
-            tabIndex={0}
-            aria-label="Filter by available offers"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                handleFilter("available");
-              }
-            }}
-          >
-            <div
-              className={`text-3xl font-bold ${
-                mode === "dark" ? "text-green-400" : "text-green-600"
-              }`}
-            >
-              {accessibleOffers.length}
-            </div>
-            <div
-              className={`text-sm font-medium ${
-                mode === "dark" ? "text-gray-400" : "text-gray-600"
-              }`}
-            >
-              Available
-            </div>
-          </div>
-          <div
-            className={`text-center cursor-pointer p-2 rounded-lg transition-all duration-200 ${
-              statsFilter === "restricted"
-                ? mode === "dark"
-                  ? "bg-orange-900/30 border border-orange-700"
-                  : "bg-blue-100/50 border border-blue-300"
-                : mode === "dark"
-                ? "hover:bg-orange-900/30 hover:border hover:border-orange-700"
-                : "hover:bg-blue-100/50 hover:border hover:border-blue-300"
-            }`}
-            onClick={() => handleFilter("restricted")}
-            role="button"
-            tabIndex={0}
-            aria-label="Filter by restricted offers"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                handleFilter("restricted");
-              }
-            }}
-          >
-            <div
-              className={`text-3xl font-bold ${
-                mode === "dark" ? "text-orange-400" : "text-orange-600"
-              }`}
-            >
-              {restrictedOffers.length}
-            </div>
-            <div
-              className={`text-sm font-medium ${
-                mode === "dark" ? "text-gray-400" : "text-gray-600"
-              }`}
-            >
-              Restricted
-            </div>
-          </div>
-          <div
-            className={`text-center cursor-pointer p-2 rounded-lg transition-all duration-200 ${
-              statsFilter === "categories"
-                ? mode === "dark"
-                  ? "bg-purple-900/30 border border-purple-700"
-                  : "bg-blue-100/50 border border-blue-300"
-                : mode === "dark"
-                ? "hover:bg-purple-900/30 hover:border hover:border-purple-700"
-                : "hover:bg-blue-100/50 hover:border hover:border-blue-300"
-            }`}
-            onClick={() => handleFilter("categories")}
-            role="button"
-            tabIndex={0}
-            aria-label="Filter by offer categories"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                handleFilter("categories");
-              }
-            }}
-          >
-            <div
-              className={`text-3xl font-bold ${
-                mode === "dark" ? "text-purple-400" : "text-purple-600"
-              }`}
-            >
-              {Object.keys(offerByType).length}
-            </div>
-            <div
-              className={`text-sm font-medium ${
-                mode === "dark" ? "text-gray-400" : "text-gray-600"
-              }`}
-            >
-              Categories
-            </div>
-          </div>
+          ))}
         </div>
 
         {/* Category dropdown when "Categories" is selected */}
@@ -384,24 +291,24 @@ const OffersSection = ({
           )}
 
         {/* Offers grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 auto-rows-fr">
           {sortedOffers.map((offer, index) => (
             <div
               key={offer.id}
-              className="animate-zoom-in"
+              className="animate-fade-in-up"
               style={{
                 animationDelay: `${index * 50}ms`,
                 animationFillMode: "both",
               }}
             >
-              <OfferItem
+              <OfferCard
                 offer={offer}
                 mode={mode}
                 isRestricted={
                   !hasTierAccess(offer.tier_restriction, user)
                 }
                 onRestrictedClick={() =>
-                  handleRestrictedClick?.(
+                  handleRestrictedClick(
                     `Access restricted: ${offer.tier_restriction} tier required for "${offer.title}"`
                   )
                 }

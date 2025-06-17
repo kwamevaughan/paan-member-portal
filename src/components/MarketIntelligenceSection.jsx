@@ -2,41 +2,45 @@ import React, { useState } from "react";
 import { createStatsConfig } from "@/utils/statsConfig";
 import { hasTierAccess } from "@/utils/tierUtils";
 import SectionCard from "./SectionCard";
-import ResourceCard from "./ResourceCard";
+import MarketIntelItem from "./MarketIntelItem";
 import FilterDropdown from "./FilterDropdown";
 import { Icon } from "@iconify/react";
 
-const ResourcesSection = ({
-  resources = [],
-  resourcesLoading,
-  resourcesError,
-  resourceFilters,
-  handleResourceFilterChange,
-  resourceFilterOptions,
+const MarketIntelligenceSection = ({
+  marketIntel = [],
+  marketIntelLoading,
+  marketIntelError,
+  marketIntelFilters,
+  handleMarketIntelFilterChange,
+  marketIntelFilterOptions,
   user,
   handleRestrictedClick,
   mode,
   Icon,
 }) => {
   const [statsFilter, setStatsFilter] = useState("total");
-  const [selectedResource, setSelectedResource] = useState(null);
+  const [selectedIntel, setSelectedIntel] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
 
   const statsConfig = createStatsConfig({
-    items: resources,
+    items: marketIntel,
     user,
     hasTierAccess,
-    categories: resourceFilterOptions.resourceTypes,
-    sectionName: "Resources",
+    categories: marketIntelFilterOptions.intelTypes,
+    sectionName: "Market Intelligence",
   });
 
   const handleStatsFilter = (filter) => {
     setStatsFilter(filter);
   };
 
+  const handleViewIntelligence = (item) => {
+    if (item.url) window.open(item.url, "_blank");
+  };
+
   const renderContent = () => {
-    if (resourcesLoading) {
+    if (marketIntelLoading) {
       return (
         <div className="space-y-4">
           {/* Loading skeleton */}
@@ -93,7 +97,7 @@ const ResourcesSection = ({
       );
     }
 
-    if (resourcesError) {
+    if (marketIntelError) {
       return (
         <div
           className={`text-center py-12 rounded-2xl ${
@@ -109,30 +113,27 @@ const ResourcesSection = ({
                 : "bg-red-100 text-red-600"
             }`}
           >
-            <iconify-icon
-              icon="mdi:folder-alert-outline"
-              className="text-2xl"
-            />
+            <Icon icon="mdi:chart-line" className="text-2xl" />
           </div>
           <h3
             className={`text-lg font-semibold mb-2 ${
               mode === "dark" ? "text-red-400" : "text-red-600"
             }`}
           >
-            Unable to Load Resources
+            Unable to Load Market Intelligence
           </h3>
           <p
             className={`text-sm ${
               mode === "dark" ? "text-red-300/80" : "text-red-600/80"
             }`}
           >
-            {resourcesError}
+            {marketIntelError}
           </p>
         </div>
       );
     }
 
-    if (resources.length === 0) {
+    if (marketIntel.length === 0) {
       return (
         <div
           className={`text-center py-16 rounded-2xl ${
@@ -148,62 +149,62 @@ const ResourcesSection = ({
                 : "bg-gray-100 text-gray-500"
             }`}
           >
-            <iconify-icon icon="mdi:folder-open-outline" className="text-3xl" />
+            <Icon icon="mdi:chart-line" className="text-3xl" />
           </div>
           <h3
             className={`text-xl font-semibold mb-2 ${
               mode === "dark" ? "text-gray-300" : "text-gray-700"
             }`}
           >
-            No Resources Available
+            No Market Intelligence Available
           </h3>
           <p
             className={`text-sm ${
               mode === "dark" ? "text-gray-400" : "text-gray-500"
             }`}
           >
-            Resources will appear here when they become available
+            Market intelligence reports will appear here when they become available
           </p>
         </div>
       );
     }
 
     // Calculate access statistics
-    const accessibleResources = resources.filter((resource) =>
-      hasTierAccess(resource.tier_restriction, user)
+    const accessibleIntelligence = marketIntel.filter((item) =>
+      hasTierAccess(item.tier_restriction, user)
     );
-    const restrictedResources = resources.filter(
-      (resource) => !hasTierAccess(resource.tier_restriction, user)
+    const restrictedIntelligence = marketIntel.filter(
+      (item) => !hasTierAccess(item.tier_restriction, user)
     );
 
-    // Group resources by type for categories
-    const resourcesByType = resources.reduce((acc, resource) => {
-      const type = resource.resource_type;
+    // Group intelligence by type for categories
+    const intelligenceByType = marketIntel.reduce((acc, item) => {
+      const type = item.intel_type;
       if (!acc[type]) acc[type] = [];
-      acc[type].push(resource);
+      acc[type].push(item);
       return acc;
     }, {});
 
-    // Filter resources based on statsFilter
-    let filteredResources = [...resources];
+    // Filter intelligence based on statsFilter
+    let filteredIntelligence = [...marketIntel];
     if (statsFilter === "available") {
-      filteredResources = accessibleResources;
+      filteredIntelligence = accessibleIntelligence;
     } else if (statsFilter === "restricted") {
-      filteredResources = restrictedResources;
+      filteredIntelligence = restrictedIntelligence;
     } else if (statsFilter === "categories" && selectedCategory) {
-      filteredResources = resourcesByType[selectedCategory] || [];
+      filteredIntelligence = intelligenceByType[selectedCategory] || [];
     }
 
-    // Sort resources: accessible ones first, then by type and title
-    const sortedResources = filteredResources.sort((a, b) => {
+    // Sort intelligence: accessible ones first, then by type and title
+    const sortedIntelligence = filteredIntelligence.sort((a, b) => {
       const aAccessible = hasTierAccess(a.tier_restriction, user);
       const bAccessible = hasTierAccess(b.tier_restriction, user);
 
       if (aAccessible === bAccessible) {
-        if (a.resource_type === b.resource_type) {
+        if (a.intel_type === b.intel_type) {
           return a.title.localeCompare(b.title);
         }
-        return a.resource_type.localeCompare(b.resource_type);
+        return a.intel_type.localeCompare(b.intel_type);
       }
       return aAccessible ? -1 : 1;
     });
@@ -240,7 +241,7 @@ const ResourcesSection = ({
               onClick={() => handleStatsFilter(filter)}
               role="button"
               tabIndex={0}
-              aria-label={`Filter by ${filter} resources`}
+              aria-label={`Filter by ${filter} market intelligence`}
               onKeyDown={(e) =>
                 e.key === "Enter" && handleStatsFilter(filter)
               }
@@ -270,43 +271,38 @@ const ResourcesSection = ({
               onChange={(value) => setSelectedCategory(value)}
               options={[
                 { value: "", label: "All Categories" },
-                ...Object.keys(resourcesByType).map((type) => ({
+                ...Object.keys(intelligenceByType).map((type) => ({
                   value: type,
                   label: type,
                 })),
               ]}
               mode={mode}
-              ariaLabel="Filter resources by category"
+              ariaLabel="Filter market intelligence by category"
             />
           </div>
         )}
 
-        {/* Resources grid */}
+        {/* Market Intelligence grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 auto-rows-fr">
-          {sortedResources.map((resource, index) => (
+          {sortedIntelligence.map((item, index) => (
             <div
-              key={resource.id}
+              key={item.id}
               className="animate-fade-in-up"
               style={{
                 animationDelay: `${index * 50}ms`,
                 animationFillMode: "both",
               }}
             >
-              <ResourceCard
-                resource={resource}
+              <MarketIntelItem
+                intel={item}
                 mode={mode}
                 Icon={Icon}
-                isRestricted={
-                  !hasTierAccess(resource.tier_restriction, user)
-                }
+                isRestricted={!hasTierAccess(item.tier_restriction, user)}
                 onRestrictedClick={() =>
                   handleRestrictedClick(
-                    `Access restricted: ${resource.tier_restriction} tier required for "${resource.title}"`
+                    `Access restricted: ${item.tier_restriction} tier required for "${item.title}"`
                   )
                 }
-                onView={(resource) => {
-                  if (resource.url) window.open(resource.url, "_blank");
-                }}
               />
             </div>
           ))}
@@ -317,43 +313,43 @@ const ResourcesSection = ({
 
   return (
     <SectionCard
-      title="Resources Library"
-      icon="mdi:library-shelves"
+      title="Market Intelligence"
+      icon="mdi:chart-line"
       mode={mode}
       headerAction={
         <div className="flex flex-wrap gap-3">
           <div className="relative">
             <FilterDropdown
-              value={resourceFilters.resource_type || ""}
+              value={marketIntelFilters.intel_type || ""}
               onChange={(value) =>
-                handleResourceFilterChange("resource_type", value)
+                handleMarketIntelFilterChange("intel_type", value)
               }
               options={[
                 { value: "", label: "All Types" },
-                ...resourceFilterOptions.resource_types.map((t) => ({
+                ...marketIntelFilterOptions.intel_types.map((t) => ({
                   value: t,
                   label: t,
                 })),
               ]}
               mode={mode}
-              ariaLabel="Filter resources by type"
+              ariaLabel="Filter market intelligence by type"
             />
           </div>
           <div className="relative">
             <FilterDropdown
-              value={resourceFilters.tier_restriction || ""}
+              value={marketIntelFilters.tier_restriction || ""}
               onChange={(value) =>
-                handleResourceFilterChange("tier_restriction", value)
+                handleMarketIntelFilterChange("tier_restriction", value)
               }
               options={[
                 { value: "", label: "All Tiers" },
-                ...resourceFilterOptions.tier_restrictions.map((t) => ({
+                ...marketIntelFilterOptions.tier_restrictions.map((t) => ({
                   value: t,
                   label: t,
                 })),
               ]}
               mode={mode}
-              ariaLabel="Filter resources by membership tier"
+              ariaLabel="Filter market intelligence by membership tier"
             />
           </div>
         </div>
@@ -364,4 +360,4 @@ const ResourcesSection = ({
   );
 };
 
-export default ResourcesSection;
+export default MarketIntelligenceSection; 

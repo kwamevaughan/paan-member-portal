@@ -311,12 +311,12 @@ const HrSidebar = ({
               } shadow-inner`}
             >
               <div
-                className="flex items-center space-x-4 cursor-pointer bg-[#0a1215] rounded-2xl p-2"
+                className="flex items-center space-x-4 cursor-pointer bg-[#d2d3d4] rounded-lg p-2"
                 onClick={() => setShowLogout((prev) => !prev)}
               >
-                <div className="w-10 h-10 overflow-hidden rounded-full">
+                <div className="overflow-hidden rounded-full">
                   <Image
-                    src="/assets/images/paan-logo-icon-white.svg"
+                    src="/assets/images/paan-logo-icon.svg"
                     alt="Profile"
                     width={38}
                     height={38}
@@ -325,9 +325,12 @@ const HrSidebar = ({
                   />
                 </div>
                 {shouldAppearExpanded && (
-                  <span className="text-xs font-medium text-white">
-                    {user.name}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium text-black">
+                      {user.name}
+                    </span>
+                    <div className="w-4 h-4 bg-green-500 rounded-full border border-green-400 flex items-center justify-center aspect-square"></div>
+                  </div>
                 )}
               </div>
               <div

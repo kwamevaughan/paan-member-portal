@@ -1,12 +1,14 @@
 import React, { useState } from "react";
+import { createStatsConfig } from "@/utils/statsConfig";
+import { hasTierAccess } from "@/utils/tierUtils";
 import SectionCard from "./SectionCard";
 import EventCard from "./EventCard";
 import FilterDropdown from "./FilterDropdown";
-import { hasTierAccess } from "@/utils/tierUtils";
+import { Icon } from "@iconify/react";
 
 const EventsSection = ({
-  events,
-  registeredEvents,
+  events = [],
+  registeredEvents = [],
   eventsLoading,
   eventsError,
   eventFilters,
@@ -18,7 +20,18 @@ const EventsSection = ({
   mode,
   Icon,
 }) => {
-  const [statsFilter, setStatsFilter] = useState("total"); // Track selected stat filter
+  const [statsFilter, setStatsFilter] = useState("total");
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const statsConfig = createStatsConfig({
+    items: events,
+    user,
+    hasTierAccess,
+    categories: eventFilterOptions.eventTypes,
+    sectionName: "Events",
+    registeredItems: registeredEvents,
+  });
 
   const handleStatsFilter = (filter) => {
     setStatsFilter(filter);
@@ -27,98 +40,45 @@ const EventsSection = ({
   const renderContent = () => {
     if (eventsLoading) {
       return (
-        <div className="space-y-4">
-          {/* Loading skeleton */}
-          {[1, 2, 3, 4].map((i) => (
-            <div
-              key={i}
-              className={`animate-pulse rounded-2xl p-6 ${
-                mode === "dark" ? "bg-gray-800/50" : "bg-gray-100"
-              }`}
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div
-                  className={`w-16 h-16 rounded-xl ${
-                    mode === "dark" ? "bg-gray-700" : "bg-gray-200"
-                  }`}
-                />
-                <div
-                  className={`w-20 h-6 rounded-full ${
-                    mode === "dark" ? "bg-gray-700" : "bg-gray-200"
-                  }`}
-                />
-              </div>
-              <div className="space-y-3">
-                <div
-                  className={`h-6 rounded-lg ${
-                    mode === "dark" ? "bg-gray-700" : "bg-gray-200"
-                  }`}
-                  style={{ width: "70%" }}
-                />
-                <div
-                  className={`h-4 rounded ${
-                    mode === "dark" ? "bg-gray-700" : "bg-gray-200"
-                  }`}
-                  style={{ width: "50%" }}
-                />
-                <div
-                  className={`h-4 rounded ${
-                    mode === "dark" ? "bg-gray-700" : "bg-gray-200"
-                  }`}
-                  style={{ width: "60%" }}
-                />
-              </div>
-            </div>
-          ))}
+        <div className="flex items-center justify-center p-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
         </div>
       );
     }
 
     if (eventsError) {
       return (
-        <div
-          className={`text-center py-12 rounded-2xl ${
-            mode === "dark"
-              ? "bg-gradient-to-br from-red-900/20 to-red-800/10 border border-red-800/30"
-              : "bg-gradient-to-br from-red-50 to-red-100/50 border border-red-200"
-          }`}
-        >
+        <div className="text-center p-8">
           <div
-            className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${
+            className={`w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center ${
               mode === "dark"
-                ? "bg-red-900/50 text-red-400"
-                : "bg-red-100 text-red-600"
+                ? "bg-gray-700/50 text-gray-400"
+                : "bg-gray-100 text-gray-500"
             }`}
           >
-            <Icon icon="mdi:alert-circle-outline" className="text-2xl" />
+            <Icon icon="mdi:alert-circle-outline" className="text-3xl" />
           </div>
           <h3
-            className={`text-lg font-semibold mb-2 ${
-              mode === "dark" ? "text-red-400" : "text-red-600"
+            className={`text-xl font-semibold mb-2 ${
+              mode === "dark" ? "text-gray-300" : "text-gray-700"
             }`}
           >
-            Unable to Load Events
+            Error Loading Events
           </h3>
           <p
             className={`text-sm ${
-              mode === "dark" ? "text-red-300/80" : "text-red-600/80"
+              mode === "dark" ? "text-gray-400" : "text-gray-500"
             }`}
           >
-            {eventsError}
+            {eventsError.message || "Please try again later"}
           </p>
         </div>
       );
     }
 
-    if (events.length === 0) {
+    if (!events.length) {
       return (
-        <div
-          className={`text-center py-16 rounded-2xl ${
-            mode === "dark"
-              ? "bg-gradient-to-br from-gray-800/30 to-gray-900/20 border border-gray-700/30"
-              : "bg-gradient-to-br from-gray-50 to-white border border-gray-200/50"
-          }`}
-        >
+        <div className="text-center p-8">
           <div
             className={`w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center ${
               mode === "dark"
@@ -177,180 +137,64 @@ const EventsSection = ({
       <div className="space-y-6">
         {/* Stats bar */}
         <div
-          className={`grid grid-cols-2 md:grid-cols-4 gap-4 p-6 rounded-2xl ${
+          className={`grid grid-cols-2 md:grid-cols-4 gap-4 p-6 rounded-lg ${
             mode === "dark"
-              ? "bg-gradient-to-r from-blue-900/20 to-purple-900/20 border border-blue-800/30"
-              : "bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200/50"
+              ? "bg-blue-900/20 border border-blue-800/30"
+              : "bg-[#e5f3f6] border border-[#84C1D9]"
           }`}
         >
-          <div
-            className={`text-center cursor-pointer p-2 rounded-lg transition-all duration-200 ${
-              statsFilter === "total"
-                ? mode === "dark"
-                  ? "bg-blue-900/30 border border-blue-700"
-                  : "bg-blue-100/50 border border-blue-300"
-                : ""
-            } ${
-              mode === "dark"
-                ? "hover:bg-blue-900/30 hover:border hover:border-blue-700"
-                : "hover:bg-blue-100/50 hover:border hover:border-blue-300"
-            }`}
-            onClick={() => handleStatsFilter("total")}
-            role="button"
-            tabIndex={0}
-            aria-label="Filter by total events"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                handleStatsFilter("total");
+          {statsConfig.map(({ filter, label, count, color }) => (
+            <div
+              key={filter}
+              className={`text-center cursor-pointer p-5 rounded-lg transition-all ${
+                statsFilter === filter
+                  ? mode === "dark"
+                    ? "bg-opacity-30 border"
+                    : "bg-opacity-50 border"
+                  : ""
+              } ${
+                mode === "dark"
+                  ? "hover:bg-opacity-30 hover:border"
+                  : "hover:bg-opacity-50 hover:border"
+              }`}
+              style={{
+                backgroundColor:
+                  statsFilter === filter ? `${color}20` : "transparent",
+                borderColor: statsFilter === filter ? color : "transparent",
+              }}
+              onClick={() => handleStatsFilter(filter)}
+              role="button"
+              tabIndex={0}
+              aria-label={`Filter by ${filter} events`}
+              onKeyDown={(e) =>
+                e.key === "Enter" && handleStatsFilter(filter)
               }
-            }}
-          >
-            <div
-              className={`text-3xl font-bold ${
-                mode === "dark" ? "text-blue-400" : "text-blue-600"
-              }`}
             >
-              {events.length}
+              <div
+                className="text-3xl font-semibold"
+                style={{ color: "#f25749" }}
+              >
+                {count}
+              </div>
+              <div
+                className={`text-sm font-normal ${
+                  mode === "dark" ? "text-gray-400" : "text-gray-600"
+                }`}
+              >
+                {label}
+              </div>
             </div>
-            <div
-              className={`text-sm font-medium ${
-                mode === "dark" ? "text-gray-400" : "text-gray-600"
-              }`}
-            >
-              Total Events
-            </div>
-          </div>
-          <div
-            className={`text-center cursor-pointer p-2 rounded-lg transition-all duration-200 ${
-              statsFilter === "available"
-                ? mode === "dark"
-                  ? "bg-green-900/30 border border-green-700"
-                  : "bg-green-100/50 border border-green-300"
-                : ""
-            } ${
-              mode === "dark"
-                ? "hover:bg-green-900/30 hover:border hover:border-green-700"
-                : "hover:bg-green-100/50 hover:border hover:border-green-300"
-            }`}
-            onClick={() => handleStatsFilter("available")}
-            role="button"
-            tabIndex={0}
-            aria-label="Filter by available events"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                handleStatsFilter("available");
-              }
-            }}
-          >
-            <div
-              className={`text-3xl font-bold ${
-                mode === "dark" ? "text-green-400" : "text-green-600"
-              }`}
-            >
-              {
-                events.filter((e) => hasTierAccess(e.tier_restriction, user))
-                  .length
-              }
-            </div>
-            <div
-              className={`text-sm font-medium ${
-                mode === "dark" ? "text-gray-400" : "text-gray-600"
-              }`}
-            >
-              Available
-            </div>
-          </div>
-          <div
-            className={`text-center cursor-pointer p-2 rounded-lg transition-all duration-200 ${
-              statsFilter === "registered"
-                ? mode === "dark"
-                  ? "bg-purple-900/30 border border-purple-700"
-                  : "bg-purple-100/50 border border-purple-300"
-                : ""
-            } ${
-              mode === "dark"
-                ? "hover:bg-purple-900/30 hover:border hover:border-purple-700"
-                : "hover:bg-purple-100/50 hover:border hover:border-purple-300"
-            }`}
-            onClick={() => handleStatsFilter("registered")}
-            role="button"
-            tabIndex={0}
-            aria-label="Filter by registered events"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                handleStatsFilter("registered");
-              }
-            }}
-          >
-            <div
-              className={`text-3xl font-bold ${
-                mode === "dark" ? "text-purple-400" : "text-purple-600"
-              }`}
-            >
-              {registeredEvents.length}
-            </div>
-            <div
-              className={`text-sm font-medium ${
-                mode === "dark" ? "text-gray-400" : "text-gray-600"
-              }`}
-            >
-              Registered
-            </div>
-          </div>
-          <div
-            className={`text-center cursor-pointer p-2 rounded-lg transition-all duration-200 ${
-              statsFilter === "restricted"
-                ? mode === "dark"
-                  ? "bg-orange-900/30 border border-orange-700"
-                  : "bg-orange-100/50 border border-orange-300"
-                : ""
-            } ${
-              mode === "dark"
-                ? "hover:bg-orange-900/30 hover:border hover:border-orange-700"
-                : "hover:bg-orange-100/50 hover:border hover:border-orange-300"
-            }`}
-            onClick={() => handleStatsFilter("restricted")}
-            role="button"
-            tabIndex={0}
-            aria-label="Filter by restricted events"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                handleStatsFilter("restricted");
-              }
-            }}
-          >
-            <div
-              className={`text-3xl font-bold ${
-                mode === "dark" ? "text-orange-400" : "text-orange-600"
-              }`}
-            >
-              {
-                events.filter((e) => !hasTierAccess(e.tier_restriction, user))
-                  .length
-              }
-            </div>
-            <div
-              className={`text-sm font-medium ${
-                mode === "dark" ? "text-gray-400" : "text-gray-600"
-              }`}
-            >
-              Restricted
-            </div>
-          </div>
+          ))}
         </div>
 
         {/* Events grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 auto-rows-fr">
           {sortedEvents.map((event, index) => (
             <div
               key={event.id}
               className="animate-fade-in-up"
               style={{
-                animationDelay: `${index * 100}ms`,
+                animationDelay: `${index * 50}ms`,
                 animationFillMode: "both",
               }}
             >

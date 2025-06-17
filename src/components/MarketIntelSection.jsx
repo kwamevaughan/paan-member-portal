@@ -1,8 +1,10 @@
 import React, { useState } from "react";
+import { createStatsConfig } from "@/utils/statsConfig";
+import { hasTierAccess } from "@/utils/tierUtils";
 import SectionCard from "./SectionCard";
 import MarketIntelItem from "./MarketIntelItem";
 import FilterDropdown from "./FilterDropdown";
-import { hasTierAccess } from "@/utils/tierUtils";
+import { Icon } from "@iconify/react";
 
 const MarketIntelSection = ({
   marketIntel,
@@ -18,6 +20,14 @@ const MarketIntelSection = ({
 }) => {
   const [statsFilter, setStatsFilter] = useState("total");
   const [selectedCategory, setSelectedCategory] = useState("");
+
+  const statsConfig = createStatsConfig({
+    items: marketIntel,
+    user,
+    hasTierAccess,
+    categories: marketIntelFilterOptions.types,
+    sectionName: "Market Intelligence",
+  });
 
   const handleStatsFilter = (filter) => {
     setStatsFilter(filter);
@@ -170,164 +180,54 @@ const MarketIntelSection = ({
     return (
       <div className="space-y-6">
         <div
-          className={`grid grid-cols-2 md:grid-cols-4 gap-4 p-6 rounded-2xl ${
+          className={`grid grid-cols-2 md:grid-cols-4 gap-4 p-6 rounded-lg ${
             mode === "dark"
-              ? "bg-gradient-to-r from-blue-900/20 to-purple-900/20 border border-blue-800/30"
-              : "bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200/50"
+              ? "bg-blue-900/20 border border-blue-800/30"
+              : "bg-[#e5f3f6] border border-[#84C1D9]"
           }`}
         >
-          <div
-            className={`text-center cursor-pointer p-2 rounded-lg transition-all duration-200 ${
-              statsFilter === "total"
-                ? mode === "dark"
-                  ? "bg-blue-900/30 border border-blue-700"
-                  : "bg-blue-100/50 border border-blue-300"
-                : ""
-            } ${
-              mode === "dark"
-                ? "hover:bg-blue-900/30 hover:border hover:border-blue-700"
-                : "hover:bg-blue-100/50 hover:border hover:border-blue-300"
-            }`}
-            onClick={() => handleStatsFilter("total")}
-            role="button"
-            tabIndex={0}
-            aria-label="Filter by total reports"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                handleStatsFilter("total");
+          {statsConfig.map(({ filter, label, count, color }) => (
+            <div
+              key={filter}
+              className={`text-center cursor-pointer p-5 rounded-lg transition-all ${
+                statsFilter === filter
+                  ? mode === "dark"
+                    ? "bg-opacity-30 border"
+                    : "bg-opacity-50 border"
+                  : ""
+              } ${
+                mode === "dark"
+                  ? "hover:bg-opacity-30 hover:border"
+                  : "hover:bg-opacity-50 hover:border"
+              }`}
+              style={{
+                backgroundColor:
+                  statsFilter === filter ? `${color}20` : "transparent",
+                borderColor: statsFilter === filter ? color : "transparent",
+              }}
+              onClick={() => handleStatsFilter(filter)}
+              role="button"
+              tabIndex={0}
+              aria-label={`Filter by ${filter} market intelligence`}
+              onKeyDown={(e) =>
+                e.key === "Enter" && handleStatsFilter(filter)
               }
-            }}
-          >
-            <div
-              className={`text-3xl font-bold ${
-                mode === "dark" ? "text-blue-400" : "text-blue-600"
-              }`}
             >
-              {marketIntel.length}
+              <div
+                className="text-3xl font-semibold"
+                style={{ color: "#f25749" }}
+              >
+                {count}
+              </div>
+              <div
+                className={`text-sm font-normal ${
+                  mode === "dark" ? "text-gray-400" : "text-gray-600"
+                }`}
+              >
+                {label}
+              </div>
             </div>
-            <div
-              className={`text-sm font-medium ${
-                mode === "dark" ? "text-gray-400" : "text-gray-600"
-              }`}
-            >
-              Total Reports
-            </div>
-          </div>
-          <div
-            className={`text-center cursor-pointer p-2 rounded-lg transition-all duration-200 ${
-              statsFilter === "available"
-                ? mode === "dark"
-                  ? "bg-green-900/30 border border-green-700"
-                  : "bg-green-100/50 border border-green-300"
-                : ""
-            } ${
-              mode === "dark"
-                ? "hover:bg-green-900/30 hover:border hover:border-green-700"
-                : "hover:bg-green-100/50 hover:border hover:border-green-300"
-            }`}
-            onClick={() => handleStatsFilter("available")}
-            role="button"
-            tabIndex={0}
-            aria-label="Filter by available reports"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                handleStatsFilter("available");
-              }
-            }}
-          >
-            <div
-              className={`text-3xl font-bold ${
-                mode === "dark" ? "text-green-400" : "text-green-600"
-              }`}
-            >
-              {accessibleIntel.length}
-            </div>
-            <div
-              className={`text-sm font-medium ${
-                mode === "dark" ? "text-gray-400" : "text-gray-600"
-              }`}
-            >
-              Available
-            </div>
-          </div>
-          <div
-            className={`text-center cursor-pointer p-2 rounded-lg transition-all duration-200 ${
-              statsFilter === "restricted"
-                ? mode === "dark"
-                  ? "bg-orange-900/30 border border-orange-700"
-                  : "bg-orange-100/50 border border-orange-300"
-                : ""
-            } ${
-              mode === "dark"
-                ? "hover:bg-orange-900/30 hover:border hover:border-orange-700"
-                : "hover:bg-orange-100/50 hover:border hover:border-orange-300"
-            }`}
-            onClick={() => handleStatsFilter("restricted")}
-            role="button"
-            tabIndex={0}
-            aria-label="Filter by restricted reports"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                handleStatsFilter("restricted");
-              }
-            }}
-          >
-            <div
-              className={`text-3xl font-bold ${
-                mode === "dark" ? "text-orange-400" : "text-orange-600"
-              }`}
-            >
-              {restrictedIntel.length}
-            </div>
-            <div
-              className={`text-sm font-medium ${
-                mode === "dark" ? "text-gray-400" : "text-gray-600"
-              }`}
-            >
-              Restricted
-            </div>
-          </div>
-          <div
-            className={`text-center cursor-pointer p-2 rounded-lg transition-all duration-200 ${
-              statsFilter === "categories"
-                ? mode === "dark"
-                  ? "bg-purple-900/30 border border-purple-700"
-                  : "bg-purple-100/50 border border-purple-300"
-                : ""
-            } ${
-              mode === "dark"
-                ? "hover:bg-purple-900/30 hover:border hover:border-purple-700"
-                : "hover:bg-purple-100/50 hover:border hover:border-purple-300"
-            }`}
-            onClick={() => handleStatsFilter("categories")}
-            role="button"
-            tabIndex={0}
-            aria-label="Filter by report categories"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                handleStatsFilter("categories");
-              }
-            }}
-          >
-            <div
-              className={`text-3xl font-bold ${
-                mode === "dark" ? "text-purple-400" : "text-purple-600"
-              }`}
-            >
-              {Object.keys(intelByType).length}
-            </div>
-            <div
-              className={`text-sm font-medium ${
-                mode === "dark" ? "text-gray-400" : "text-gray-600"
-              }`}
-            >
-              Categories
-            </div>
-          </div>
+          ))}
         </div>
 
         {statsFilter === "categories" && (

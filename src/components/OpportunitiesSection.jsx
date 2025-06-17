@@ -374,45 +374,6 @@ const OpportunitiesSection = ({
 
     return (
       <div className="">
-        <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
-          <div className="relative flex-1 max-w-md ">
-            <Icon
-              icon="mdi:magnify"
-              className={`absolute left-3 top-1/2 -translate-y-1/2 ${
-                mode === "dark" ? "text-gray-400" : "text-gray-500"
-              }`}
-            />
-            <input
-              type="text"
-              placeholder={`Search ${itemLabel.toLowerCase()}...`}
-              value={inputValue}
-              onChange={handleInputChange}
-              className={`w-full pl-10 pr-4 py-2 rounded-xl border ${
-                mode === "dark"
-                  ? "bg-gray-700 border-gray-600 text-white"
-                  : "bg-white border-gray-200 text-gray-900"
-              } focus:ring-2 focus:ring-blue-500 z-10`}
-              aria-label={`Search ${itemLabel.toLowerCase()}`}
-            />
-          </div>
-          <button
-            onClick={() => setShowFilterPanel(!showFilterPanel)}
-            className={`md:ml-auto flex items-center gap-2 px-4 py-2 rounded-full transition-all shadow-lg ${
-              mode === "dark"
-                ? "bg-gray-800 hover:bg-gray-700 text-white"
-                : "bg-white hover:bg-gray-100 text-gray-900"
-            } ${showFilterPanel ? "ring-2 ring-blue-600" : ""}`}
-          >
-            <Icon icon="mdi:filter" />
-            <span>Filters</span>
-            {filters && Object.values(filters).some((val) => val !== "") && (
-              <span className="flex items-center justify-center w-5 h-5 text-xs font-medium rounded-full bg-blue-600 text-white">
-                {Object.values(filters).filter((val) => val !== "").length}
-              </span>
-            )}
-          </button>
-        </div>
-
         {showFilterPanel && (
           <div
             className={`rounded-2xl shadow-md mb-6 ${
@@ -438,6 +399,29 @@ const OpportunitiesSection = ({
                   Reset All
                 </button>
               </div>
+
+              {/* Search Input */}
+              <div className="relative mb-6">
+                <Icon
+                  icon="mdi:magnify"
+                  className={`absolute left-3 top-1/2 -translate-y-1/2 ${
+                    mode === "dark" ? "text-gray-400" : "text-gray-500"
+                  }`}
+                />
+                <input
+                  type="text"
+                  placeholder={`Search ${itemLabel.toLowerCase()}...`}
+                  value={inputValue}
+                  onChange={handleInputChange}
+                  className={`w-full pl-10 pr-4 py-2 rounded-xl border ${
+                    mode === "dark"
+                      ? "bg-gray-700 border-gray-600 text-white"
+                      : "bg-white border-gray-200 text-gray-900"
+                  } focus:ring-2 focus:ring-blue-500 z-10`}
+                  aria-label={`Search ${itemLabel.toLowerCase()}`}
+                />
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 {filterFields.map(({ key, icon, label, isArrayFilter }) => (
                   <FilterField
@@ -477,7 +461,7 @@ const OpportunitiesSection = ({
         )}
 
         <div
-          className={`grid grid-cols-2 md:grid-cols-4 gap-4 p-6 rounded-lg ${
+          className={`grid grid-cols-2 md:grid-cols-4 gap-4 p-6 rounded-lg mb-6 ${
             mode === "dark"
               ? "bg-blue-900/20 border border-blue-800/30"
               : "bg-[#e5f3f6] border border-[#84C1D9]"
@@ -571,11 +555,11 @@ const OpportunitiesSection = ({
         )}
 
         {sortedOpportunities.length > 0 ? (
-          <div className={gridClass}>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {sortedOpportunities.map((opportunity, index) => (
               <div
                 key={`${opportunity.id}-${index}`}
-                className="animate-fade-in-up py-8"
+                className="animate-fade-in-up h-full"
                 style={{
                   animationDelay: `${index * 50}ms`,
                   animationFillMode: "both",
@@ -618,7 +602,29 @@ const OpportunitiesSection = ({
   };
 
   return (
-    <SectionCard title={itemLabel} icon="mdi:briefcase" mode={mode}>
+    <SectionCard 
+      title={itemLabel} 
+      icon="mdi:briefcase" 
+      mode={mode}
+      headerAction={
+        <button
+          onClick={() => setShowFilterPanel(!showFilterPanel)}
+          className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all shadow-lg ${
+            mode === "dark"
+              ? "bg-gray-800 hover:bg-gray-700 text-white"
+              : "bg-white hover:bg-gray-100 text-gray-900"
+          } ${showFilterPanel ? "ring-2 ring-blue-600" : ""}`}
+        >
+          <Icon icon="mdi:filter" />
+          <span>Filters</span>
+          {filters && Object.values(filters).some((val) => val !== "") && (
+            <span className="flex items-center justify-center w-5 h-5 text-xs font-medium rounded-full bg-blue-600 text-white">
+              {Object.values(filters).filter((val) => val !== "").length}
+            </span>
+          )}
+        </button>
+      }
+    >
       {renderContent()}
     </SectionCard>
   );

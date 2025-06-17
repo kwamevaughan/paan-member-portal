@@ -177,7 +177,7 @@ const StatsChart = ({
       } border shadow-lg w-full min-h-[400px]`}
     >
       <h2
-        className={`text-xl font-semibold mb-4 ${
+        className={`text-xl font-normal mb-4 ${
           mode === "dark" ? "text-white" : "text-gray-800"
         }`}
       >

@@ -103,12 +103,12 @@ const OpportunityDetailsModal = ({
       title={`${itemLabel} Details`}
       mode={mode}
     >
-      <div className="space-y-9">
+      <div className="space-y-4">
         {/* Header */}
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <h3
-              className={`text-2xl font-semibold mb-2 ${
+              className={`text-2xl font-medium mb-2 ${
                 mode === "dark" ? "text-white" : "text-gray-900"
               }`}
             >
@@ -125,10 +125,12 @@ const OpportunityDetailsModal = ({
             )}
           </div>
           {!isFreelancer && (
-            <TierBadge
-              tier={opportunity.tier_restriction || "Free Member"}
-              mode={mode}
-            />
+            <div className="[&>span]:!bg-white [&>span]:!text-gray-900 [&>span]:!border-gray-200 [&>span>svg]:!text-[#f25749]">
+              <TierBadge
+                tier={opportunity.tier_restriction || "Free Member"}
+                mode={mode}
+              />
+            </div>
           )}
         </div>
 
@@ -180,7 +182,7 @@ const OpportunityDetailsModal = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {opportunity.location && (
             <div className="flex items-center space-x-2">
-              <Icon icon="mdi:map-marker" className="text-blue-500 text-lg" />
+              <Icon icon="mdi:map-marker" className="text-amber-500 text-lg" />
               <span
                 className={`text-sm ${
                   mode === "dark" ? "text-gray-400" : "text-gray-600"
@@ -195,7 +197,7 @@ const OpportunityDetailsModal = ({
               <Icon
                 icon={isUrgent ? "mdi:clock-alert" : "mdi:calendar"}
                 className={`text-lg ${
-                  isUrgent ? "text-orange-500" : "text-green-500"
+                  isUrgent ? "text-orange-500" : "text-amber-500"
                 }`}
               />
               <span
@@ -209,7 +211,7 @@ const OpportunityDetailsModal = ({
           )}
           {opportunity.budget_range && (
             <div className="flex items-center space-x-2">
-              <Icon icon="mdi:cash" className="text-green-500 text-lg" />
+              <Icon icon="mdi:cash" className="text-amber-500 text-lg" />
               <span
                 className={`text-sm font-semibold ${
                   mode === "dark" ? "text-green-400" : "text-green-600"
@@ -221,7 +223,7 @@ const OpportunityDetailsModal = ({
           )}
           {opportunity.job_type && (
             <div className="flex items-center space-x-2">
-              <Icon icon="mdi:briefcase" className="text-purple-500 text-lg" />
+              <Icon icon="mdi:briefcase" className="text-amber-500 text-lg" />
               <span
                 className={`text-sm ${
                   mode === "dark" ? "text-gray-400" : "text-gray-600"
@@ -248,7 +250,7 @@ const OpportunityDetailsModal = ({
           )}
           {opportunity.service_type && (
             <div className="flex items-center space-x-2">
-              <Icon icon="mdi:cog" className="text-teal-500 text-lg" />
+              <Icon icon="mdi:cog" className="text-amber-500 text-lg" />
               <span
                 className={`text-sm ${
                   mode === "dark" ? "text-gray-400" : "text-gray-600"
@@ -260,7 +262,7 @@ const OpportunityDetailsModal = ({
           )}
           {opportunity.industry && (
             <div className="flex items-center space-x-2">
-              <Icon icon="mdi:industry" className="text-indigo-500 text-lg" />
+              <Icon icon="mdi:industry" className="text-amber-500 text-lg" />
               <span
                 className={`text-sm ${
                   mode === "dark" ? "text-gray-400" : "text-gray-600"
@@ -284,7 +286,7 @@ const OpportunityDetailsModal = ({
           )}
           {opportunity.estimated_duration && (
             <div className="flex items-center space-x-2">
-              <Icon icon="mdi:timer" className="text-yellow-500 text-lg" />
+              <Icon icon="mdi:timer" className="text-amber-500 text-lg" />
               <span
                 className={`text-sm ${
                   mode === "dark" ? "text-gray-400" : "text-gray-600"
@@ -299,7 +301,7 @@ const OpportunityDetailsModal = ({
               <Icon
                 icon="mdi:home"
                 className={`text-lg ${
-                  opportunity.remote_work ? "text-blue-500" : "text-red-500"
+                  opportunity.remote_work ? "text-amber-500" : "text-amber-500"
                 }`}
               />
               <span
@@ -359,7 +361,7 @@ const OpportunityDetailsModal = ({
               className={`inline-flex items-center text-sm font-medium ${
                 mode === "dark"
                   ? "text-blue-400 hover:text-blue-300"
-                  : "text-blue-600 hover:text-blue-700"
+                  : "text-[#172840] hover:text-blue-700"
               }`}
               aria-label={`Apply for ${opportunity.title} (opens in new tab)`}
             >
@@ -373,7 +375,7 @@ const OpportunityDetailsModal = ({
         <div className="flex justify-end gap-4 pt-4 border-t border-gray-200/50 dark:border-gray-700/50">
           <button
             onClick={onClose}
-            className={`px-4 py-2 rounded-lg font-semibold ${
+            className={`px-4 py-2 rounded-full font-normal ${
               mode === "dark"
                 ? "bg-gray-700 text-gray-300 hover:bg-gray-600"
                 : "bg-gray-200 text-gray-700 hover:bg-gray-300"
@@ -384,10 +386,10 @@ const OpportunityDetailsModal = ({
           </button>
           <button
             onClick={handleExpressInterestClick}
-            className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
+            className={`px-4 py-2 rounded-full font-normal transition-colors ${
               isButtonDisabled
                 ? "bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400"
-                : "bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
+                : "bg-amber-500 text-white hover:bg-amber-700 dark:bg-amber-700 dark:hover:bg-amber-600"
             }`}
             aria-disabled={isButtonDisabled}
             aria-label={

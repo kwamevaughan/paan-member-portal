@@ -18,7 +18,7 @@ const SectionCard = ({
           : "bg-gradient-to-br from-white/80 via-white/20 to-white/80"
       } border ${
         mode === "dark" ? "border-white/10" : "border-white/20"
-      } shadow-2xl group-hover:shadow-3xl transition-all duration-500`}
+      } shadow-lg group-hover:shadow-3xl transition-all duration-500`}
     ></div>
 
     {/* Main content */}
@@ -92,18 +92,8 @@ const SectionCard = ({
       <div className="space-y-4">{children}</div>
     </div>
 
-    {/* Bottom gradient accent */}
-    <div
-      className={`absolute bottom-0 left-0 right-0 h-1 ${
-        mode === "dark"
-          ? "bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500"
-          : "bg-gradient-to-r from-[#3c82f6] to-[#dbe9fe]"
-      }`}
-    ></div>
 
-    {/* Floating dot elements */}
-    <div className="absolute -top-2 -right-2 w-4 h-4 bg-[#85c2da] rounded-full opacity-60"></div>
-    <div className="absolute -bottom-1 -left-1 w-3 h-3 bg-[#f3584a] rounded-full opacity-40 animate-pulse delay-1000"></div>
+
   </div>
 );
 

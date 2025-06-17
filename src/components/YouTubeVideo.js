@@ -11,7 +11,7 @@ const YouTubeVideo = ({ mode }) => {
     >
       <Link href="https://www.paan.africa/" target="_blank">
         <h2
-          className={`text-xl font-semibold mb-4 ${
+          className={`text-xl font-normal mb-4 ${
             mode === "dark" ? "text-white" : "text-gray-800"
           }`}
         >

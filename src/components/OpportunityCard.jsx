@@ -14,12 +14,41 @@ const OpportunityCard = ({
   const [isHovered, setIsHovered] = useState(false);
 
   const handleClick = () => {
-    if (isRestricted) return; // Disable card click when restricted
+    if (isRestricted) {
+      toast.error(
+        `This ${isFreelancer ? "gig" : "opportunity"} requires ${opportunity.tier_restriction} membership. Upgrade your membership to access it.`,
+        {
+          duration: 4000,
+          position: "top-center",
+          style: {
+            background: mode === "dark" ? "#1F2937" : "#fff",
+            color: mode === "dark" ? "#fff" : "#1F2937",
+            border: mode === "dark" ? "1px solid #374151" : "1px solid #E5E7EB",
+          },
+        }
+      );
+      return;
+    }
     onRestrictedClick(opportunity); // Trigger modal
   };
 
   const handleViewMoreInfo = (e) => {
     e.stopPropagation(); // Prevent card click
+    if (isRestricted) {
+      toast.error(
+        `This ${isFreelancer ? "gig" : "opportunity"} requires ${opportunity.tier_restriction} membership. Upgrade your membership to access it.`,
+        {
+          duration: 4000,
+          position: "top-center",
+          style: {
+            background: mode === "dark" ? "#1F2937" : "#fff",
+            color: mode === "dark" ? "#fff" : "#1F2937",
+            border: mode === "dark" ? "1px solid #374151" : "1px solid #E5E7EB",
+          },
+        }
+      );
+      return;
+    }
     onRestrictedClick(opportunity); // Trigger modal
   };
 
@@ -33,10 +62,10 @@ const OpportunityCard = ({
 
   return (
     <div
-      className={`group relative overflow-hidden rounded-2xl border backdrop-blur-lg transition-all duration-300 transform ${
+      className={`group relative overflow-hidden rounded-lg border backdrop-blur-lg transition-all duration-300 transform h-full flex flex-col ${
         mode === "dark"
-          ? "bg-gray-800/80 border-gray-700/60 hover:border-gray-600/80"
-          : "bg-white/90 border-gray-200/70 hover:border-gray-300/80"
+          ? "bg-[#172840] border-gray-700/60 hover:border-gray-600/80"
+          : "bg-[#172840] border-gray-200/70 hover:border-gray-300/80"
       } ${
         isRestricted
           ? "opacity-50 cursor-not-allowed"
@@ -56,43 +85,39 @@ const OpportunityCard = ({
     >
       {/* Background Gradient Overlay */}
       <div
-        className={`absolute inset-0 bg-gradient-to-br opacity-5 transition-opacity duration-300 ${
+        className={`absolute inset-0 bg-[#172840] opacity-5 transition-opacity duration-300 ${
           isHovered ? "opacity-10" : "opacity-5"
-        } ${
-          isRestricted
-            ? "from-gray-500 to-gray-600"
-            : "from-blue-500 via-purple-500 to-pink-500"
-        }`}
+        } ${isRestricted ? "bg-[#172840]" : ""}`}
       ></div>
 
       {/* Animated Border */}
       {!isRestricted && (
         <div
-          className={`absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/30 via-purple-500/30 to-pink-500/30 opacity-0 transition-opacity duration-300 ${
+          className={`absolute inset-0 rounded-2xl bg-[#172840] opacity-0 transition-opacity duration-300 ${
             isHovered ? "opacity-100" : "opacity-0"
           }`}
         ></div>
       )}
 
-      <div className="relative p-6">
+      <div className="relative p-6 flex-1 flex flex-col">
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-start space-x-3 flex-1">
             {/* Type Icon */}
             <div
-              className={`flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 ${
+              className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300 ${
                 mode === "dark"
                   ? "bg-gray-700/50 text-blue-400"
-                  : "bg-blue-50 text-blue-600"
-              } ${isHovered ? "scale-110 rotate-12" : ""}`}
+                  : "bg-white text-amber-400"
+              } ${isHovered ? "scale-95 rotate-12" : ""}`}
             >
-              <Icon icon="mdi:star-circle" className="text-2xl" />
+              <Icon icon="material-symbols:star" className="text-3xl" />
             </div>
 
             <div className="flex-1 min-w-0">
               <h3
-                className={`font-semibold text-lg leading-tight mb-1 transition-colors duration-200 ${
-                  mode === "dark" ? "text-white" : "text-gray-900"
+                className={`font-normal text-lg leading-tight mb-1 transition-colors duration-200 ${
+                  mode === "dark" ? "text-white" : "text-white"
                 } ${isRestricted ? "text-gray-500 dark:text-gray-400" : ""} ${
                   isHovered ? "text-blue-600 dark:text-blue-400" : ""
                 }`}
@@ -120,10 +145,12 @@ const OpportunityCard = ({
           </div>
 
           {!isFreelancer && (
-            <TierBadge
-              tier={opportunity.tier_restriction || "Free Member"}
-              mode={mode}
-            />
+            <div className="[&>span]:!bg-white [&>span]:!text-gray-900 [&>span]:!border-gray-200 [&>span>svg]:!text-[#f25749]">
+              <TierBadge
+                tier={opportunity.tier_restriction || "Free Member"}
+                mode={mode}
+              />
+            </div>
           )}
         </div>
 
@@ -131,7 +158,7 @@ const OpportunityCard = ({
         {opportunity.description && (
           <p
             className={`text-sm mb-4 line-clamp-3 leading-relaxed ${
-              mode === "dark" ? "text-gray-400" : "text-gray-600"
+              mode === "dark" ? "text-gray-400" : "text-white"
             } ${isRestricted ? "text-gray-400 dark:text-gray-500" : ""}`}
           >
             {opportunity.description}
@@ -177,15 +204,17 @@ const OpportunityCard = ({
           {/* Location */}
           {opportunity.location && (
             <div className="flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200">
-              <Icon icon="mdi:map-marker" className="text-lg text-blue-500" />
-              <span className="truncate">{opportunity.location}</span>
+              <Icon icon="mdi:map-marker" className="text-lg text-amber-400" />
+              <span className="truncate text-white">
+                {opportunity.location}
+              </span>
             </div>
           )}
 
           {/* Deadline */}
           {opportunity.deadline && (
             <div
-              className={`flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200 ${
+              className={`flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200 text-white ${
                 isUrgent
                   ? "text-orange-500 font-semibold"
                   : isExpired
@@ -206,7 +235,7 @@ const OpportunityCard = ({
                     ? "text-orange-500"
                     : isExpired
                     ? "text-red-500"
-                    : "text-green-500"
+                    : "text-[#f25749]"
                 }`}
               />
               <span>
@@ -231,19 +260,19 @@ const OpportunityCard = ({
 
           {/* Job Type */}
           {opportunity.job_type && (
-            <div className="flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200">
-              <Icon icon="mdi:briefcase" className="text-lg text-purple-500" />
+            <div className="flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200 text-white">
+              <Icon icon="mdi:briefcase" className="text-lg text-[#85c1da]" />
               <span>{opportunity.job_type}</span>
             </div>
           )}
 
           {/* Remote Work */}
           {opportunity.remote_work !== null && (
-            <div className="flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200">
+            <div className="flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200 text-white">
               <Icon
                 icon="mdi:home"
                 className={`text-lg ${
-                  opportunity.remote_work ? "text-blue-500" : "text-red-500"
+                  opportunity.remote_work ? "text-blue-500" : "text-amber-400"
                 }`}
               />
               <span>{opportunity.remote_work ? "Remote" : "On-site"}</span>
@@ -252,7 +281,7 @@ const OpportunityCard = ({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between pt-4 border-t border-gray-200/50 dark:border-gray-700/50">
+        <div className="flex items-center justify-between pt-4 mt-auto">
           {opportunity.applicant_count && (
             <div className="flex items-center space-x-1.5 text-xs text-gray-500 dark:text-gray-400">
               <Icon icon="mdi:account-group" className="text-sm" />
@@ -261,10 +290,10 @@ const OpportunityCard = ({
           )}
           <button
             onClick={handleViewMoreInfo}
-            className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
+            className={`px-4 py-2 rounded-full font-normal text-xs transition-colors ${
               isRestricted
                 ? "bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400"
-                : "bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
+                : "bg-amber-400  hover:bg-amber-500 dark:bg-amber-400 dark:hover:bg-amber-500"
             }`}
             disabled={isRestricted}
             aria-label={`View details for ${opportunity.title}`}

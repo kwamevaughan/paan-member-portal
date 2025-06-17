@@ -159,7 +159,7 @@ const Search = ({ mode = "light", onSearchModalToggle, user }) => {
   // Memoized styles
   const styles = useMemo(() => ({
     input: `pl-14 pr-4 py-2 text-sm w-full focus:outline-none rounded-lg bg-transparent transition-colors duration-200 ${
-      mode === "dark" ? "text-white placeholder-white" : "text-black placeholder-black"
+      mode === "dark" ? "text-white placeholder-white" : ""
     } placeholder:font-bold`,
     searchIcon: `absolute left-3 top-1/2 -translate-y-1/2 h-6 w-6 ${
       mode === "dark" ? "text-gray-400" : "text-indigo-800"

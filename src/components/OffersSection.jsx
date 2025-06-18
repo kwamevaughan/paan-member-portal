@@ -22,6 +22,7 @@ const OffersSection = ({
   handleRestrictedClick,
   mode,
   Icon,
+  toast,
 }) => {
   const [statsFilter, setStatsFilter] = useState("total");
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -313,6 +314,7 @@ const OffersSection = ({
                   )
                 }
                 Icon={Icon}
+                toast={toast}
               />
             </div>
           ))}

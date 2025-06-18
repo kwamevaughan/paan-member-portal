@@ -265,6 +265,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
                   handleRestrictedClick={handleRestrictedClick}
                   mode={mode}
                   Icon={Icon}
+                  toast={toast}
                 />
               )}
               {activeTab === "updates" && (

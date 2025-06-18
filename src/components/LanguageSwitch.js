@@ -5,9 +5,7 @@ import TooltipIconButton from "@/components/TooltipIconButton";
 
 const LanguageSwitch = ({ mode }) => {
   const dropdownRef = useRef(null);
-  const selectRef = useRef(null);
-  const initialLoadRef = useRef(true);
-  const googleTranslateElRef = useRef(null);
+  const [isTranslating, setIsTranslating] = useState(false);
 
   const languages = [
     { name: "English", flag: "flag:us-1x1", code: "en" },
@@ -19,22 +17,20 @@ const LanguageSwitch = ({ mode }) => {
   ];
 
   const toastMessages = {
-    en: "Translated to English",
-    fr: "Traduit en Français",
-    sw: "Umetafsiriwa kwa Kiswahili",
-    ar: "تمت الترجمة إلى العربية",
-    ha: "An fassara zuwa Hausa",
-    ak: "Wɔakyerɛ aseɛ kɔ Akan",
+    en: "Language set to English",
+    fr: "Langue définie en Français",
+    sw: "Lugha imewekwa kwa Kiswahili",
+    ar: "تم تعيين اللغة إلى العربية",
+    ha: "An saita harshe zuwa Hausa",
+    ak: "Wɔasiesie kasa kɔ Akan",
   };
 
   const detectInitialLanguage = () => {
-    // Safe check for browser environment
     if (typeof window === "undefined") return "English";
 
     const saved = window.localStorage.getItem("selectedLanguage");
     if (saved) return saved;
 
-    // Only access navigator in browser environment
     const browserLang = window.navigator.language.toLowerCase();
     const match = languages.find((lang) => browserLang.startsWith(lang.code));
     const defaultLang = match ? match.name : "English";
@@ -43,166 +39,12 @@ const LanguageSwitch = ({ mode }) => {
     return defaultLang;
   };
 
-  // Initialize state with a function to prevent execution during SSR
   const [selectedLanguage, setSelectedLanguage] = useState("English");
   const [isOpen, setIsOpen] = useState(false);
-  const [widgetInitialized, setWidgetInitialized] = useState(false);
-  const [useFallbackUI, setUseFallbackUI] = useState(false);
-  const [scriptLoaded, setScriptLoaded] = useState(false);
 
-  // Set the initial language after component mounts (client-side only)
   useEffect(() => {
     setSelectedLanguage(detectInitialLanguage());
   }, []);
-
-  // Load Google Translate script safely
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    // Cleanup any previous initialization
-    if (window.googleTranslateElementInit) {
-      delete window.googleTranslateElementInit;
-    }
-
-    // Check if script already exists
-    const existingScript = document.querySelector(
-      'script[src="//translate.google.com/translate_a/element.js"]'
-    );
-
-    if (existingScript) {
-      setScriptLoaded(true);
-      return;
-    }
-
-    // Create a new script element
-    const script = document.createElement("script");
-    script.src =
-      "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
-    script.async = true;
-    script.onerror = () => {
-      console.error("Failed to load translation script");
-      toast.error("Failed to load translation service");
-      setUseFallbackUI(true);
-    };
-
-    // Define the callback before adding the script
-    window.googleTranslateElementInit = () => {
-      try {
-        setScriptLoaded(true);
-      } catch (error) {
-        console.error("Script initialization error:", error);
-      }
-    };
-
-    // Add script to document
-    document.body.appendChild(script);
-
-    return () => {
-      // Cleanup on unmount
-      if (window.googleTranslateElementInit) {
-        delete window.googleTranslateElementInit;
-      }
-    };
-  }, []);
-
-  // Initialize Google Translate Widget
-  useEffect(() => {
-    if (
-      typeof window === "undefined" ||
-      !scriptLoaded ||
-      !googleTranslateElRef.current
-    )
-      return;
-
-    try {
-      // Make sure we don't initialize twice
-      if (googleTranslateElRef.current.childNodes.length > 0) {
-        setWidgetInitialized(true);
-        return;
-      }
-
-      // Initialize the widget
-      new window.google.translate.TranslateElement(
-        {
-          pageLanguage: "en",
-          includedLanguages: languages.map((l) => l.code).join(","),
-          layout:
-            window.google.translate.TranslateElement.InlineLayout.HORIZONTAL,
-          autoDisplay: false,
-        },
-        googleTranslateElRef.current.id
-      );
-
-      setWidgetInitialized(true);
-    } catch (error) {
-      console.error("Widget initialization error:", error);
-      toast.error("Translation service initialization failed");
-      setUseFallbackUI(true);
-    }
-  }, [scriptLoaded]);
-
-  // Detect select box from Google Translate
-  useEffect(() => {
-    if (
-      typeof window === "undefined" ||
-      !widgetInitialized ||
-      !googleTranslateElRef.current
-    )
-      return;
-
-    const observer = new MutationObserver(() => {
-      const select = googleTranslateElRef.current.querySelector("select");
-      if (select) {
-        selectRef.current = select;
-        observer.disconnect();
-      }
-    });
-
-    observer.observe(googleTranslateElRef.current, {
-      childList: true,
-      subtree: true,
-    });
-
-    const timeout = setTimeout(() => {
-      if (!selectRef.current) {
-        console.warn("Translation service select not found");
-        toast.error("Translation service unavailable. Using default UI.");
-        setUseFallbackUI(true);
-        observer.disconnect();
-      }
-    }, 5000);
-
-    return () => {
-      observer.disconnect();
-      clearTimeout(timeout);
-    };
-  }, [widgetInitialized]);
-
-  // Apply selected language
-  useEffect(() => {
-    if (typeof window === "undefined" || !selectRef.current) return;
-
-    const match = languages.find((lang) => lang.name === selectedLanguage);
-    if (match) {
-      try {
-        // Only update if the value is different to prevent loops
-        if (selectRef.current.value !== match.code) {
-          selectRef.current.value = match.code;
-          const event = new Event("change");
-          selectRef.current.dispatchEvent(event);
-
-          // Only show toast on user initiated language changes, not initial load
-          if (!initialLoadRef.current) {
-            toast.success(toastMessages[match.code]);
-          } else {
-            initialLoadRef.current = false;
-          }
-        }
-      } catch (error) {
-        console.error("Error applying language:", error);
-      }
-    }
-  }, [selectedLanguage, languages, toastMessages]);
 
   // Close dropdown when clicked outside
   useEffect(() => {
@@ -217,79 +59,116 @@ const LanguageSwitch = ({ mode }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Hide Google Translate banner
-  useEffect(() => {
+  // Simple translation function using Google Translate API
+  const translatePage = async (targetLang) => {
     if (typeof window === "undefined") return;
 
-    const style = document.createElement("style");
-    style.textContent = `
-      .goog-te-banner-frame {
-        display: none !important;
+    setIsTranslating(true);
+    
+    try {
+      // Use Google Translate widget if available
+      if (window.google && window.google.translate) {
+        const selectBox = document.querySelector(".goog-te-combo");
+        if (selectBox) {
+          selectBox.value = targetLang;
+          selectBox.dispatchEvent(new Event("change"));
+          return;
+        }
       }
-      #goog-gt-tt {
-        display: none !important;
-      }
-      .goog-te-gadget {
-        font-size: 0 !important;
-      }
-      .goog-te-menu-value span:first-child {
-        display: none;
-      }
-      .goog-te-menu-frame {
-        box-shadow: none !important;
-      }
-    `;
-    document.head.appendChild(style);
-    return () => {
-      if (document.head.contains(style)) {
-        document.head.removeChild(style);
-      }
-    };
-  }, []);
 
-  const handleLanguageSelect = (language) => {
+      // Fallback: Load Google Translate script dynamically
+      if (!document.querySelector('script[src*="translate.google.com"]')) {
+        const script = document.createElement("script");
+        script.src = "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+        script.async = true;
+        
+        window.googleTranslateElementInit = () => {
+          if (window.google && window.google.translate) {
+            const translateElement = new window.google.translate.TranslateElement({
+              pageLanguage: "en",
+              includedLanguages: languages.map(lang => lang.code).join(","),
+              layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
+              autoDisplay: false,
+            }, document.createElement("div"));
+            
+            // Apply translation after initialization
+            setTimeout(() => {
+              const selectBox = document.querySelector(".goog-te-combo");
+              if (selectBox) {
+                selectBox.value = targetLang;
+                selectBox.dispatchEvent(new Event("change"));
+              }
+            }, 1000);
+          }
+        };
+        
+        document.head.appendChild(script);
+      } else {
+        // Script already exists, just apply translation
+        setTimeout(() => {
+          const selectBox = document.querySelector(".goog-te-combo");
+          if (selectBox) {
+            selectBox.value = targetLang;
+            selectBox.dispatchEvent(new Event("change"));
+          }
+        }, 500);
+      }
+
+      // Hide Google Translate banner
+      const hideBanner = () => {
+        const banner = document.querySelector(".goog-te-banner-frame");
+        if (banner) {
+          banner.style.display = "none";
+          banner.style.visibility = "hidden";
+        }
+        
+        const skipLink = document.querySelector(".goog-te-banner-frame-skiplink");
+        if (skipLink) {
+          skipLink.style.display = "none";
+        }
+      };
+
+      // Hide banner periodically
+      const bannerInterval = setInterval(hideBanner, 100);
+      setTimeout(() => clearInterval(bannerInterval), 5000);
+
+    } catch (error) {
+      console.warn("Translation error:", error);
+      toast.error("Translation failed. Please try again.");
+    } finally {
+      setIsTranslating(false);
+    }
+  };
+
+  const handleLanguageSelect = async (language) => {
     setSelectedLanguage(language.name);
     if (typeof window !== "undefined") {
       window.localStorage.setItem("selectedLanguage", language.name);
     }
     setIsOpen(false);
 
-    if (useFallbackUI) {
-      toast.success(toastMessages[language.code]);
-    }
+    // Show toast immediately
+    toast.success(toastMessages[language.code]);
+
+    // Apply translation
+    await translatePage(language.code);
   };
 
   return (
     <div className="relative group" ref={dropdownRef}>
-      {/* Hidden Translate container */}
-      <div
-        id="google_translate_element"
-        ref={googleTranslateElRef}
-        style={{
-          position: "absolute",
-          visibility: "hidden",
-          height: "0",
-          overflow: "hidden",
-          top: "-9999px",
-          left: "-9999px",
-        }}
-      />
-
       <TooltipIconButton
         label={<span className="text-black">Change Language</span>}
         mode={mode}
-        onClick={() => {
-          setIsOpen(!isOpen);
-         
-        }}
+        onClick={() => setIsOpen(!isOpen)}
         className="bg-white/50"
+        disabled={isTranslating}
       >
         <Icon
           icon={
             languages.find((lang) => lang.name === selectedLanguage)?.flag ||
             languages[0].flag
           }
-          className="h-6 w-6 rounded-full"
+          className={`h-6 w-6 rounded-full ${isTranslating ? "opacity-50" : ""}`}
         />
       </TooltipIconButton>
 
@@ -304,11 +183,9 @@ const LanguageSwitch = ({ mode }) => {
           {languages.map((language) => (
             <button
               key={language.name}
-              onClick={() => {
-               
-                handleLanguageSelect(language);
-              }}
-              className={`flex items-center w-full px-4 py-2 text-left hover:bg-opacity-10 hover:bg-gray-500 ${
+              onClick={() => handleLanguageSelect(language)}
+              disabled={isTranslating}
+              className={`flex items-center w-full px-4 py-2 text-left hover:bg-opacity-10 hover:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed ${
                 selectedLanguage === language.name
                   ? "bg-opacity-5 bg-gray-500"
                   : ""
@@ -316,6 +193,9 @@ const LanguageSwitch = ({ mode }) => {
             >
               <Icon icon={language.flag} className="h-6 w-6 mr-2 rounded-full" />
               {language.name}
+              {isTranslating && selectedLanguage === language.name && (
+                <Icon icon="mdi:loading" className="ml-auto animate-spin" />
+              )}
             </button>
           ))}
         </div>

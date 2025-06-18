@@ -9,6 +9,8 @@ const HrSidebar = ({
   toggleMode,
   onLogout,
   user,
+  isOpen,
+  toggleSidebar,
 }) => {
   const [windowWidth, setWindowWidth] = useState(null);
   const router = useRouter();

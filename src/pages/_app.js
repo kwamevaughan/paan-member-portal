@@ -157,14 +157,15 @@ function MyApp({ Component, pageProps }) {
   return (
     <div className={`${mode === "dark" ? "dark" : ""} ${poppins.variable} font-sans`}>
       <Toaster position="top-center" reverseOrder={false} />
-      <AuthProvider>
-        <Component
-          {...pageProps}
-          mode={mode}
-          toggleMode={toggleMode}
-          breadcrumbs={breadcrumbs}
-        />
-      </AuthProvider>
+        <AuthProvider>
+          <Component
+            {...pageProps}
+            mode={mode}
+            toggleMode={toggleMode}
+            breadcrumbs={breadcrumbs}
+          />
+
+        </AuthProvider>
     </div>
   );
 }

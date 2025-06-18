@@ -17,6 +17,7 @@ const MarketIntelSection = ({
   handleRestrictedClick,
   mode,
   Icon,
+  toast,
 }) => {
   const [statsFilter, setStatsFilter] = useState("total");
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -268,6 +269,7 @@ const MarketIntelSection = ({
                     `Access restricted: ${intel.tier_restriction} tier required for "${intel.title}"`
                   )
                 }
+                toast={toast}
               />
             </div>
           ))}

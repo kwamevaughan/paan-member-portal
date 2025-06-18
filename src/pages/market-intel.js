@@ -152,6 +152,7 @@ export default function MarketIntel({ mode = "light", toggleMode }) {
               handleRestrictedClick={handleRestrictedClick}
               mode={mode}
               Icon={Icon}
+              toast={toast}
             />
           </div>
           <SimpleFooter mode={mode} isSidebarOpen={isSidebarOpen} />

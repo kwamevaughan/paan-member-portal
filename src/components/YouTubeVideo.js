@@ -1,6 +1,38 @@
 import Link from "next/link";
+import { useState, useEffect } from "react";
 
 const YouTubeVideo = ({ mode }) => {
+  const [isClient, setIsClient] = useState(false);
+
+  // Ensure component only renders on client side
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Don't render iframe on server side
+  if (!isClient) {
+    return (
+      <div
+        className={`p-6 rounded-2xl border shadow-lg ${
+          mode === "dark"
+            ? "bg-gray-900/60 border-gray-700"
+            : "bg-white border-gray-200"
+        }`}
+      >
+        <Link href="https://www.paan.africa/" target="_blank">
+          <h2
+            className={`text-xl font-normal mb-4 ${
+              mode === "dark" ? "text-white" : "text-gray-800"
+            }`}
+          >
+            Pan African Agency Network - (PAAN)
+          </h2>
+        </Link>
+        <div className="text-gray-500">Loading video...</div>
+      </div>
+    );
+  }
+
   return (
     <div
       className={`p-6 rounded-2xl border shadow-lg ${

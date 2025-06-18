@@ -1,6 +1,7 @@
 import Chart from "react-apexcharts";
 import { format } from "date-fns";
 import { hasTierAccess } from "@/utils/tierUtils";
+import { useState, useEffect } from "react";
 
 const StatsChart = ({
   opportunities = [],
@@ -14,9 +15,30 @@ const StatsChart = ({
   getLastUpdatedForSection = () => null,
   useRouter,
 }) => {
+  const [isClient, setIsClient] = useState(false);
   const router = useRouter();
   const userTier = user?.selected_tier || "Free Member";
   const isFreelancer = user?.job_type?.toLowerCase() === "freelancer";
+
+  // Ensure component only renders on client side
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Don't render chart on server side
+  if (!isClient) {
+    return (
+      <div
+        className={`p-6 rounded-2xl ${
+          mode === "dark"
+            ? "bg-gray-900/60 border-gray-700"
+            : "bg-white border-gray-200"
+        } border shadow-lg w-full min-h-[400px] flex items-center justify-center`}
+      >
+        <div className="text-gray-500">Loading chart...</div>
+      </div>
+    );
+  }
 
   // Data for the chart, filtered for freelancers
   const series = isFreelancer

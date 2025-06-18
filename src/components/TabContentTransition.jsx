@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import DashboardTabs from "./DashboardTabs";
 
 const TabContentTransition = ({
@@ -9,6 +9,13 @@ const TabContentTransition = ({
   Icon,
   user,
 }) => {
+  const [isClient, setIsClient] = useState(false);
+
+  // Ensure component only renders on client side
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   // Define tabs dynamically based on user.job_type
   const tabs =
     user?.job_type?.toLowerCase() === "freelancer"
@@ -35,6 +42,11 @@ const TabContentTransition = ({
           { id: "offers", label: "Offers", icon: "mdi:bullseye" },
           { id: "updates", label: "Updates", icon: "mdi:bell" },
         ];
+
+  // Don't render tabs on server side
+  if (!isClient) {
+    return <div className="min-h-[200px] flex items-center justify-center text-gray-500">Loading...</div>;
+  }
 
   return (
     <div>

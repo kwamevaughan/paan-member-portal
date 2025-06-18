@@ -1,17 +1,20 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 
 const useSidebar = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(null); // Initial state is null
   const [isLoading, setIsLoading] = useState(true); // Loading state
-    const [windowWidth, setWindowWidth] = useState(null);
+  const [windowWidth, setWindowWidth] = useState(null);
 
   const [sidebarState, setSidebarState] = useState({
     hidden: false,
     offset: 0,
   });
 
-    const isMobile = windowWidth < 640;
-
+  // Fix: Move isMobile calculation inside useMemo to prevent hydration mismatches
+  const isMobile = useMemo(() => {
+    if (windowWidth === null) return false; // Default to false during SSR
+    return windowWidth < 640;
+  }, [windowWidth]);
 
   const getInitialSidebarState = () => {
     if (typeof window === "undefined") return false; // SSR default

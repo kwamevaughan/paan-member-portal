@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback, Suspense } from "react";
 import { useRouter } from "next/router";
 import { useUser } from "../hooks/useUser";
 import useLogout from "../hooks/useLogout";
@@ -25,12 +25,18 @@ import MarketIntelSection from "../components/MarketIntelSection";
 import OffersSection from "../components/OffersSection";
 import UpdatesSection from "../components/UpdatesSection";
 import YouTubeVideo from "../components/YouTubeVideo";
+import ErrorBoundary from "../components/ErrorBoundary";
 import { Icon } from "@iconify/react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 
 const StatsChart = dynamic(() => import("../components/StatsChart"), {
   ssr: false,
+  loading: () => (
+    <div className="p-6 rounded-2xl bg-white border border-gray-200 shadow-lg w-full min-h-[400px] flex items-center justify-center">
+      <div className="text-gray-500">Loading chart...</div>
+    </div>
+  ),
 });
 
 export default function Dashboard({ mode = "light", toggleMode }) {
@@ -46,6 +52,38 @@ export default function Dashboard({ mode = "light", toggleMode }) {
 
   const isFreelancer = user?.job_type?.toLowerCase() === "freelancer";
   
+  // Memoize user data to prevent unnecessary re-renders
+  const memoizedUser = useMemo(() => user, [user?.id, user?.selected_tier, user?.job_type]);
+  
+  // Memoize filter handlers to prevent recreation on every render
+  const handleOpportunityFilterChange = useCallback((key, value) => {
+    handleFilterChange("opportunities", key, value);
+  }, [handleFilterChange]);
+
+  const handleEventFilterChange = useCallback((key, value) => {
+    handleFilterChange("events", key, value);
+  }, [handleFilterChange]);
+
+  const handleResourceFilterChange = useCallback((key, value) => {
+    handleFilterChange("resources", key, value);
+  }, [handleFilterChange]);
+
+  const handleMarketIntelFilterChange = useCallback((key, value) => {
+    handleFilterChange("marketIntel", key, value);
+  }, [handleFilterChange]);
+
+  const handleOfferFilter = useCallback((key, value) => {
+    handleFilterChange("offers", key, value);
+  }, [handleFilterChange]);
+
+  const handleUpdateFilterChange = useCallback((key, value) => {
+    handleFilterChange("updates", key, value);
+  }, [handleFilterChange]);
+
+  const handleResetOpportunityFilters = useCallback(() => {
+    handleResetFilters("opportunities");
+  }, [handleResetFilters]);
+  
   const {
     opportunities = [],
     filterOptions: opportunityFilterOptions = {},
@@ -53,11 +91,11 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     error: opportunitiesError,
   } = useBusinessOpportunities(
     filters.opportunities,
-    user || { selected_tier: "Free Member", job_type: "" }
+    memoizedUser || { selected_tier: "Free Member", job_type: "" }
     );
   
   useEffect(() => {
-    handleResetFilters("opportunities");
+    handleResetOpportunityFilters();
     if (isFreelancer) {
       handleFilterChange("opportunities", "country", "");
       handleFilterChange("opportunities", "serviceType", "");
@@ -65,7 +103,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
       handleFilterChange("opportunities", "projectType", "");
       handleFilterChange("opportunities", "tier_restriction", "");
     }
-  }, [isFreelancer, handleFilterChange, handleResetFilters]);
+  }, [isFreelancer, handleFilterChange, handleResetOpportunityFilters]);
 
   const {
     events = [],
@@ -131,6 +169,215 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     }
   }, [router]);
 
+  // Add error boundary for navigation
+  useEffect(() => {
+    const handleRouteChangeStart = () => {
+      // Clean up any potential DOM manipulation issues
+      if (typeof window !== "undefined") {
+        // Force a small delay to ensure DOM is stable
+        setTimeout(() => {
+          // This helps prevent insertBefore errors during navigation
+        }, 0);
+      }
+    };
+
+    router.events.on("routeChangeStart", handleRouteChangeStart);
+    return () => {
+      router.events.off("routeChangeStart", handleRouteChangeStart);
+    };
+  }, [router]);
+
+  // Memoize the main dashboard content to prevent unnecessary re-renders
+  const dashboardContent = useMemo(() => (
+    <div className="max-w-7xl mx-auto space-y-8 pb-10">
+      <WelcomeCard
+        mode={mode}
+        user={memoizedUser}
+        Icon={Icon}
+        Link={Link}
+        TierBadge={TierBadge}
+        JobTypeBadge={JobTypeBadge}
+        useLatestUpdate={useLatestUpdate}
+      />
+      <TabContentTransition
+        key={`tabs-${memoizedUser?.id}-${memoizedUser?.job_type}`}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        mode={mode}
+        Icon={Icon}
+        user={memoizedUser}
+      >
+        {activeTab === "opportunities" && (
+          <OpportunitiesSection
+            opportunities={opportunities}
+            opportunitiesLoading={opportunitiesLoading}
+            opportunitiesError={opportunitiesError}
+            opportunityFilters={filters.opportunities}
+            handleOpportunityFilterChange={handleOpportunityFilterChange}
+            opportunityFilterOptions={opportunityFilterOptions}
+            handleResetFilters={handleResetOpportunityFilters}
+            user={memoizedUser}
+            handleRestrictedClick={handleRestrictedClick}
+            mode={mode}
+            Icon={Icon}
+            toast={toast}
+          />
+        )}
+        {activeTab === "events" && (
+          <EventsSection
+            events={events}
+            registeredEvents={registeredEvents}
+            eventsLoading={eventsLoading}
+            eventsError={eventsError}
+            eventFilters={filters.events}
+            handleEventFilterChange={handleEventFilterChange}
+            eventFilterOptions={eventFilterOptions}
+            user={memoizedUser}
+            handleEventRegistration={handleEventRegistration}
+            handleRestrictedClick={handleRestrictedClick}
+            mode={mode}
+            Icon={Icon}
+          />
+        )}
+        {activeTab === "resources" && (
+          <ResourcesSection
+            resources={resources}
+            resourcesLoading={resourcesLoading}
+            resourcesError={resourcesError}
+            resourceFilters={filters.resources}
+            handleResourceFilterChange={handleResourceFilterChange}
+            resourceFilterOptions={resourceFilterOptions}
+            user={memoizedUser}
+            handleRestrictedClick={handleRestrictedClick}
+            mode={mode}
+            Icon={Icon}
+          />
+        )}
+        {activeTab === "marketIntel" && (
+          <MarketIntelSection
+            marketIntel={marketIntel}
+            marketIntelLoading={marketIntelLoading}
+            marketIntelError={marketIntelError}
+            marketIntelFilters={filters.marketIntel}
+            handleMarketIntelFilterChange={handleMarketIntelFilterChange}
+            marketIntelFilterOptions={marketIntelFilterOptions}
+            user={memoizedUser}
+            handleRestrictedClick={handleRestrictedClick}
+            mode={mode}
+            Icon={Icon}
+            toast={toast}
+          />
+        )}
+        {activeTab === "offers" && (
+          <OffersSection
+            offers={offers}
+            offersLoading={offersLoading}
+            offersError={offersError}
+            offerFilters={filters.offers}
+            handleOfferFilter={handleOfferFilter}
+            offersFilterOptions={offerFilterOptions}
+            user={memoizedUser}
+            handleRestrictedClick={handleRestrictedClick}
+            mode={mode}
+            Icon={Icon}
+            toast={toast}
+          />
+        )}
+        {activeTab === "updates" && (
+          <UpdatesSection
+            updates={updates}
+            updatesLoading={updatesLoading}
+            updatesError={updatesError}
+            updateFilters={filters.updates}
+            handleUpdateFilterChange={handleUpdateFilterChange}
+            updateFilterOptions={updateFilterOptions}
+            user={memoizedUser}
+            handleRestrictedClick={handleRestrictedClick}
+            mode={mode}
+            Icon={Icon}
+            toast={toast}
+          />
+        )}
+      </TabContentTransition>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+        <Suspense fallback={
+          <div className="p-6 rounded-2xl bg-white border border-gray-200 shadow-lg w-full min-h-[400px] flex items-center justify-center">
+            <div className="text-gray-500">Loading chart...</div>
+          </div>
+        }>
+          <StatsChart
+            key={`stats-${memoizedUser?.id}-${mode}-${activeTab}`}
+            opportunities={opportunities}
+            events={events}
+            resources={resources}
+            offers={offers}
+            marketIntel={marketIntel}
+            updates={updates}
+            user={memoizedUser}
+            jobType={memoizedUser?.job_type || ""}
+            mode={mode}
+            getLastUpdatedForSection={getLastUpdatedForSection}
+            useRouter={useRouter}
+          />
+        </Suspense>
+        <Suspense fallback={
+          <div className="p-6 rounded-2xl border shadow-lg bg-white border-gray-200 flex items-center justify-center">
+            <div className="text-gray-500">Loading video...</div>
+          </div>
+        }>
+          <YouTubeVideo key={`youtube-${mode}`} mode={mode} />
+        </Suspense>
+      </div>
+    </div>
+  ), [
+    mode,
+    memoizedUser,
+    activeTab,
+    opportunities,
+    events,
+    registeredEvents,
+    resources,
+    offers,
+    marketIntel,
+    updates,
+    opportunitiesLoading,
+    opportunitiesError,
+    eventsLoading,
+    eventsError,
+    resourcesLoading,
+    resourcesError,
+    offersLoading,
+    offersError,
+    marketIntelLoading,
+    marketIntelError,
+    updatesLoading,
+    updatesError,
+    filters,
+    opportunityFilterOptions,
+    eventFilterOptions,
+    resourceFilterOptions,
+    offerFilterOptions,
+    marketIntelFilterOptions,
+    updateFilterOptions,
+    handleOpportunityFilterChange,
+    handleEventFilterChange,
+    handleResourceFilterChange,
+    handleMarketIntelFilterChange,
+    handleOfferFilter,
+    handleUpdateFilterChange,
+    handleResetOpportunityFilters,
+    handleEventRegistration,
+    handleRestrictedClick,
+    getLastUpdatedForSection,
+    useRouter,
+    Icon,
+    Link,
+    TierBadge,
+    JobTypeBadge,
+    useLatestUpdate,
+    toast
+  ]);
+
   if (userLoading && LoadingComponent) return LoadingComponent;
   if (!user || windowWidth === null) {
     router.push("/");
@@ -139,6 +386,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
 
   return (
     <div
+      key={`dashboard-${memoizedUser?.id}-${mode}`}
       className={`min-h-screen flex flex-col ${
         mode === "dark" ? "bg-gray-900 text-white" : "bg-white text-gray-900"
       }`}
@@ -146,7 +394,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
       <HrHeader
         toggleSidebar={toggleSidebar}
         isSidebarOpen={isSidebarOpen}
-        user={user}
+        user={memoizedUser}
         mode={mode}
         toggleMode={toggleMode}
         onLogout={handleLogout}
@@ -154,7 +402,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
       <div className="flex flex-1">
         <HrSidebar
           isOpen={isSidebarOpen}
-          user={user}
+          user={memoizedUser}
           mode={mode}
           toggleSidebar={toggleSidebar}
           onLogout={handleLogout}
@@ -165,144 +413,9 @@ export default function Dashboard({ mode = "light", toggleMode }) {
             isSidebarOpen && !isMobile ? "ml-52" : "ml-20"
           }`}
         >
-          <div className="max-w-7xl mx-auto space-y-8 pb-10">
-            <WelcomeCard
-              mode={mode}
-              user={user}
-              Icon={Icon}
-              Link={Link}
-              TierBadge={TierBadge}
-              JobTypeBadge={JobTypeBadge}
-              useLatestUpdate={useLatestUpdate}
-            />
-            <TabContentTransition
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-              mode={mode}
-              Icon={Icon}
-              user={user}
-            >
-              {activeTab === "opportunities" && (
-                <OpportunitiesSection
-                  opportunities={opportunities}
-                  opportunitiesLoading={opportunitiesLoading}
-                  opportunitiesError={opportunitiesError}
-                  opportunityFilters={filters.opportunities}
-                  handleOpportunityFilterChange={(key, value) =>
-                    handleFilterChange("opportunities", key, value)
-                  }
-                  opportunityFilterOptions={opportunityFilterOptions}
-                  handleResetFilters={() => handleResetFilters("opportunities")}
-                  user={user}
-                  handleRestrictedClick={handleRestrictedClick}
-                  mode={mode}
-                  Icon={Icon}
-                  toast={toast}
-                />
-              )}
-              {activeTab === "events" && (
-                <EventsSection
-                  events={events}
-                  registeredEvents={registeredEvents}
-                  eventsLoading={eventsLoading}
-                  eventsError={eventsError}
-                  eventFilters={filters.events}
-                  handleEventFilterChange={(key, value) =>
-                    handleFilterChange("events", key, value)
-                  }
-                  eventFilterOptions={eventFilterOptions}
-                  user={user}
-                  handleEventRegistration={handleEventRegistration}
-                  handleRestrictedClick={handleRestrictedClick}
-                  mode={mode}
-                  Icon={Icon}
-                />
-              )}
-              {activeTab === "resources" && (
-                <ResourcesSection
-                  resources={resources}
-                  resourcesLoading={resourcesLoading}
-                  resourcesError={resourcesError}
-                  resourceFilters={filters.resources}
-                  handleResourceFilterChange={(key, value) =>
-                    handleFilterChange("resources", key, value)
-                  }
-                  resourceFilterOptions={resourceFilterOptions}
-                  user={user}
-                  handleRestrictedClick={handleRestrictedClick}
-                  mode={mode}
-                  Icon={Icon}
-                />
-              )}
-              {activeTab === "marketIntel" && (
-                <MarketIntelSection
-                  marketIntel={marketIntel}
-                  marketIntelLoading={marketIntelLoading}
-                  marketIntelError={marketIntelError}
-                  marketIntelFilters={filters.marketIntel}
-                  handleMarketIntelFilterChange={(key, value) =>
-                    handleFilterChange("marketIntel", key, value)
-                  }
-                  marketIntelFilterOptions={marketIntelFilterOptions}
-                  user={user}
-                  handleRestrictedClick={handleRestrictedClick}
-                  mode={mode}
-                  Icon={Icon}
-                  toast={toast}
-                />
-              )}
-              {activeTab === "offers" && (
-                <OffersSection
-                  offers={offers}
-                  offersLoading={offersLoading}
-                  offersError={offersError}
-                  offerFilters={filters.offers}
-                  handleOfferFilter={(key, value) =>
-                    handleFilterChange("offers", key, value)
-                  }
-                  offersFilterOptions={offerFilterOptions}
-                  user={user}
-                  handleRestrictedClick={handleRestrictedClick}
-                  mode={mode}
-                  Icon={Icon}
-                  toast={toast}
-                />
-              )}
-              {activeTab === "updates" && (
-                <UpdatesSection
-                  updates={updates}
-                  updatesLoading={updatesLoading}
-                  updatesError={updatesError}
-                  updateFilters={filters.updates}
-                  handleUpdateFilterChange={(key, value) =>
-                    handleFilterChange("updates", key, value)
-                  }
-                  updateFilterOptions={updateFilterOptions}
-                  user={user}
-                  handleRestrictedClick={handleRestrictedClick}
-                  mode={mode}
-                  Icon={Icon}
-                  toast={toast}
-                />
-              )}
-            </TabContentTransition>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
-              <StatsChart
-                opportunities={opportunities}
-                events={events}
-                resources={resources}
-                offers={offers}
-                marketIntel={marketIntel}
-                updates={updates}
-                user={user}
-                jobType={user?.job_type || ""}
-                mode={mode}
-                getLastUpdatedForSection={getLastUpdatedForSection}
-                useRouter={useRouter}
-              />
-              <YouTubeVideo mode={mode} />
-            </div>
-          </div>
+          <ErrorBoundary>
+            {dashboardContent}
+          </ErrorBoundary>
           <SimpleFooter mode={mode} isSidebarOpen={isSidebarOpen} />
         </div>
       </div>

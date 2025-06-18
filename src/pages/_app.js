@@ -52,6 +52,41 @@ function MyApp({ Component, pageProps }) {
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
+  // Add global error handler for DOM manipulation errors
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleError = (event) => {
+      if (event.error && event.error.message && event.error.message.includes('insertBefore')) {
+        console.warn('Global error handler caught DOM manipulation error:', event.error);
+        event.preventDefault();
+        // Optionally show a user-friendly message
+        toast.error('A display error occurred. Please refresh the page if the issue persists.', {
+          duration: 5000,
+        });
+      }
+    };
+
+    const handleUnhandledRejection = (event) => {
+      if (event.reason && event.reason.message && event.reason.message.includes('insertBefore')) {
+        console.warn('Global error handler caught unhandled DOM manipulation error:', event.reason);
+        event.preventDefault();
+        // Optionally show a user-friendly message
+        toast.error('A display error occurred. Please refresh the page if the issue persists.', {
+          duration: 5000,
+        });
+      }
+    };
+
+    window.addEventListener('error', handleError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+    return () => {
+      window.removeEventListener('error', handleError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, []);
+
   useEffect(() => {
     const routeChangeStart = (url) => {
       const pageSlug = url.split("/").pop() || "overview";

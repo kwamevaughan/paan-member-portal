@@ -21,4 +21,7 @@ module.exports = {
     IMAGEKIT_URL_ENDPOINT: process.env.IMAGEKIT_URL_ENDPOINT,
   },
   devIndicators: false,
+  experimental: {
+    optimizeCss: true,
+  },
 };

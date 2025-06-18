@@ -212,7 +212,7 @@ const HrSidebar = ({
                 <span className="text-xs font-medium text-black">
                   {user.name}
                 </span>
-                <div className="w-4 h-4 bg-green-500 rounded-full border border-green-400 flex items-center justify-center aspect-square"></div>
+                <div className="w-3 h-3 bg-green-500 rounded-full border border-green-400 flex items-center justify-center aspect-square"></div>
               </div>
             </div>
             <div

@@ -57,7 +57,7 @@ const HrHeader = ({
           ${
             mode === "dark"
               ? "bg-[#101827]/50 text-white"
-              : "bg-white/50 text-black"
+              : "bg-white/20 text-black"
           }
           backdrop-blur-sm shadow-lg rounded-2xl
         `}
@@ -148,11 +148,11 @@ const HrHeader = ({
                     className={`absolute top-full mt-2 right-0 w-80 rounded-2xl shadow-lg z-10 ${
                       mode === "dark"
                         ? "bg-gray-800 text-white"
-                        : "bg-white text-[#231812]"
+                        : "bg-white/95 text-black"
                     }`}
                   >
-                    <div className="p-8">
-                      <div className="flex items-center gap-2 border-b pb-6 w-full">
+                    <div className="p-4">
+                      <div className="flex items-center gap-2 w-full">
                         <div className="overflow-hidden flex-shrink-0">
                           <Image
                             src={
@@ -168,21 +168,38 @@ const HrHeader = ({
                         </div>
                         <div className="flex flex-col">
                           <div className="flex gap-2">
-                            <span className="text-md font-bold">
+                            <span className="text-md font-semibold">
                               {user.name}
                             </span>
                             <span className="rounded-md capitalize bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-green-600/20 ring-inset">
                               {user.job_type}
                             </span>
                           </div>
-                          <span className="text-sm">{user.agencyName}</span>
+                          <span className="text-xs">{user.agencyName}</span>
                         </div>
                       </div>
                       <button
-                        onClick={onLogout}
-                        className="block w-full text-center text-white px-4 py-2 bg-[#0088d2] rounded-full hover:bg-[#528fa7] transition duration-200 mt-4"
+                        onClick={() => {
+                          const badgeUrl = "/assets/images/paan-member-badge.png";
+                          const link = document.createElement("a");
+                          link.href = badgeUrl;
+                          link.download = "paan-member-badge.png";
+                          link.click();
+                        }}
+                        className="flex items-center w-full gap-2 font-thin text-sm text-gray-500 hover:text-gray-600 transition-colors hover:bg-gray-100 rounded-lg p-2 mt-4"
                       >
-                        Logout
+                        <Icon
+                          icon="hugeicons:image-download"
+                          className="h-5 w-5"
+                        />
+                        <span>Download Member Badge</span>
+                      </button>
+                      <button
+                        onClick={onLogout}
+                        className="flex items-center w-full gap-2 border-t h-10 mt-4 font-thin text-sm text-red-500 hover:text-red-600 transition-colors hover:bg-gray-100 rounded-lg p-2"
+                      >
+                        <Icon icon="mdi:logout" className="h-5 w-5" />
+                        <span>Sign Out</span>
                       </button>
                     </div>
                   </div>

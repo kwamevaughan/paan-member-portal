@@ -41,30 +41,7 @@ const HrSidebar = ({
     }));
   };
 
-  useEffect(() => {
-    const style = document.createElement("style");
-    style.textContent = `
-      .custom-scrollbar::-webkit-scrollbar {
-        width: 4px;
-      }
-      .custom-scrollbar::-webkit-scrollbar-track {
-        background: rgba(0, 0, 0, 0.1);
-        border-radius: 10px;
-      }
-      .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 10px;
-      }
-      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: rgba(255, 255, 255, 0.3);
-      }
-    `;
-    document.head.appendChild(style);
-
-    return () => {
-      document.head.removeChild(style);
-    };
-  }, []);
+  
 
   const handleResize = useCallback(() => {
     setWindowWidth(window.innerWidth);
@@ -119,7 +96,7 @@ const HrSidebar = ({
         <div className="flex flex-col h-full relative">
           <div className="flex items-center justify-between py-8 px-4">
             <Image
-              src="/assets/images/paan-logo-white.svg"
+              src="/assets/images/logo-white.svg"
               alt="PAAN Logo"
               width={120}
               height={75}

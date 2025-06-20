@@ -189,7 +189,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
 
   // Memoize the main dashboard content to prevent unnecessary re-renders
   const dashboardContent = useMemo(() => (
-    <div className="max-w-7xl mx-auto space-y-8 pb-10">
+    <div className="max-w-7xl mx-auto space-y-8 pb-10 pt-14">
       <WelcomeCard
         mode={mode}
         user={memoizedUser}

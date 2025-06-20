@@ -60,7 +60,7 @@ const TitleCard = ({
   const isFreelancer = user?.job_type?.toLowerCase() === "freelancer";
 
   return (
-    <div className="relative mx-2 mb-10 group">
+    <div className="relative mx-2 mb-10 group mt-20">
       <div
         className={`absolute inset-0 rounded-3xl backdrop-blur-xl ${
           mode === "dark"
@@ -76,7 +76,7 @@ const TitleCard = ({
           {/* Text content */}
           <div className="flex-1 space-y-2 sm:space-y-3">
             <h2
-              className={`text-xl sm:text-2xl font-bold tracking-tight ${
+              className={`text-xl sm:text-2xl font-medium tracking-tight ${
                 mode === "dark" ? "text-white" : "text-slate-900"
               }`}
             >
@@ -97,8 +97,8 @@ const TitleCard = ({
               <div
                 className={`rounded-full text-xs sm:text-sm px-2 py-1 border ${
                   mode === "dark"
-                    ? "bg-blue-500/20 border-blue-400/30 text-orange-300"
-                    : "bg-blue-100 border-blue-200 text-gray-700"
+                    ? "bg-paan-blue/20 border-paan-blue/30 text-paan-yellow"
+                    : "bg-paan-blue/10 border-paan-blue/20 text-paan-blue"
                 }`}
               >
                 <span className="mr-1">Last Updated:</span>
@@ -118,7 +118,7 @@ const TitleCard = ({
             <div className="group-hover/card:opacity-40 transition duration-300" />
             <div
               className={`relative rounded-2xl p-4 sm:p-6 backdrop-blur-sm shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 border ${
-                mode === "dark" ? "border-blue-400/30" : "border-blue-200"
+                mode === "dark" ? "border-paan-blue/30" : "border-paan-blue/20"
               }`}
             >
               <Link href="/profile">
@@ -154,12 +154,12 @@ const TitleCard = ({
       <div
         className={`absolute bottom-0 left-0 right-0 h-1 rounded-b-3xl ${
           mode === "dark"
-            ? "bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800"
-            : "bg-gradient-to-r from-blue-200 to-purple-400"
+            ? "bg-gradient-to-r from-paan-blue via-paan-red to-paan-yellow"
+            : "bg-gradient-to-r from-paan-blue to-paan-blue"
         }`}
       />
-      <div className="absolute -top-1 sm:-top-2 -right-1 sm:-right-2 w-3 sm:w-4 h-3 sm:h-4 bg-blue-200 rounded-full opacity-60" />
-      <div className="absolute -bottom-1 sm:-bottom-2 -left-1 sm:-left-2 w-2 sm:w-3 h-2 sm:h-3 bg-purple-300 rounded-full opacity-40 animate-pulse" />
+      <div className="absolute -top-1 sm:-top-2 -right-1 sm:-right-2 w-3 sm:w-4 h-3 sm:h-4 bg-paan-blue rounded-full opacity-60" />
+      <div className="absolute -bottom-1 sm:-bottom-2 -left-1 sm:-left-2 w-2 sm:w-3 h-2 sm:h-3 bg-paan-red rounded-full opacity-40 animate-pulse" />
     </div>
   );
 };

@@ -11,8 +11,9 @@ const config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
-        "paan-blue": "#172840",
-        "paan-orange": "#F2B706",
+        "paan-yellow": "#F2B706",
+        "paan-blue": "#84C1D9",
+        "paan-dark-blue": "#172840",
         "paan-red": "#F25849",
       },
       keyframes: {

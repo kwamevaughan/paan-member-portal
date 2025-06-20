@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import Image from "next/image";
 
 // Function to get day-based greeting
 const getDayGreeting = () => {
@@ -101,11 +102,11 @@ export default function WelcomeCard({
       ></div>
 
       <div
-        className={`relative p-4 sm:p-6 md:p-8 flex ${
+        className={`relative p-4 sm:p-6 md:p-8 flex items-center ${
           isMobile ? "flex-col" : "flex-row"
         } items-start justify-between gap-4`}
       >
-        <div className="flex-1 space-y-2 sm:space-y-3">
+        <div className=" space-y-2 sm:space-y-3">
           <div className="flex items-start space-x-4 sm:space-x-6">
             {/* Animated icon container */}
             <div className="relative">
@@ -224,6 +225,15 @@ export default function WelcomeCard({
               </div>
             </div>
           </div>
+        </div>
+
+        <div className="">
+          <Image
+            src="/assets/images/paan-member-badge.png"
+            alt="Paan Member Badge"
+            width={100}
+            height={100}
+          />
         </div>
 
         {/* Enhanced Action Card (Membership Info) */}

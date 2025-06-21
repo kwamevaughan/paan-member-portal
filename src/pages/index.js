@@ -54,8 +54,10 @@ const LoginPage = () => {
         <div className="flex-grow flex flex-col justify-center items-center">
           <div className="w-full max-w-md py-4">
             <div className="pb-6 space-y-2">
-              <p className="text-3xl text-paan-blue font-bold">Welcome back!</p>
-              <p className="text-paan-blue font-light">
+              <p className="text-3xl text-paan-dark-blue font-semibold">
+                Welcome back!
+              </p>
+              <p className="text-paan-dark-blue font-light">
                 PAAN portal offers members business, co-bidding, PR, revenue,
                 events, news, templates, and freelancer access across Africa.
               </p>
@@ -74,9 +76,9 @@ const LoginPage = () => {
                     value={loginData.email}
                     placeholder="Enter your email"
                     onChange={handleLoginChange}
-                    className="w-full bg-transparent text-paan-blue font-light border-b-2 border-gray-700 rounded-none py-2.5 md:py-3 px-2 focus:outline-none focus:border-blue-500"
+                    className="w-full bg-transparent text-paan-dark-blue font-light border-b-2 border-gray-700 rounded-none py-2.5 md:py-3 px-2 focus:outline-none focus:border-blue-500"
                   />
-                  <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-paan-blue">
+                  <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-paan-dark-blue">
                     <Icon icon="heroicons:envelope" className="w-5 h-5" />
                   </span>
                 </div>
@@ -97,11 +99,11 @@ const LoginPage = () => {
                     value={loginData.password}
                     placeholder="Enter your password"
                     onChange={handleLoginChange}
-                    className="w-full bg-transparent text-paan-blue font-light border-b-2 border-gray-700 rounded-none py-2.5 md:py-3 px-2 focus:outline-none focus:border-blue-500"
+                    className="w-full bg-transparent text-paan-dark-blue font-light border-b-2 border-gray-700 rounded-none py-2.5 md:py-3 px-2 focus:outline-none focus:border-blue-500"
                   />
                   <span
                     onClick={togglePasswordVisibility}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-paan-blue cursor-pointer"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-paan-dark-blue cursor-pointer"
                   >
                     {showPassword ? (
                       <Icon icon="heroicons:eye-slash" className="w-5 h-5" />
@@ -121,20 +123,20 @@ const LoginPage = () => {
                         rememberMe: !prev.rememberMe,
                       }))
                     }
-                    className={`w-5 h-5 flex items-center justify-center border-2 border-paan-blue rounded-full cursor-pointer transition-all duration-200 ease-in-out ${
+                    className={`w-5 h-5 flex items-center justify-center border-2 border-paan-dark-blue rounded-full cursor-pointer transition-all duration-200 ease-in-out ${
                       loginData.rememberMe ? "bg-transparent" : "bg-transparent"
                     }`}
                   >
                     {loginData.rememberMe && (
                       <Icon
                         icon="ic:baseline-check"
-                        className="w-4 h-4 text-paan-blue"
+                        className="w-4 h-4 text-paan-dark-blue"
                       />
                     )}
                   </div>
 
                   <label
-                    className="ml-2 text-paan-blue font-light text-sm md:text-base cursor-pointer"
+                    className="ml-2 text-paan-dark-blue font-light text-sm md:text-base cursor-pointer"
                     onClick={() =>
                       setLoginData((prev) => ({
                         ...prev,
@@ -150,7 +152,7 @@ const LoginPage = () => {
                   <button
                     type="button"
                     onClick={() => setShowForgotPasswordModal(true)}
-                    className="text-paan-blue font-light text-sm md:text-base hover:underline hover:text-paan-red"
+                    className="text-paan-dark-blue font-light text-sm md:text-base hover:underline hover:text-paan-red"
                   >
                     Forgot Password?
                   </button>
@@ -197,7 +199,7 @@ const LoginPage = () => {
         <div className="w-full bg-login-footer"></div>
       </div>
 
-      <div className="hidden md:block w-full md:w-3/5 bg-login bg-[#172840]">
+      <div className="hidden md:block w-full md:w-3/5 bg-login bg-paan-dark-blue">
         <CustomSlider />
       </div>
 

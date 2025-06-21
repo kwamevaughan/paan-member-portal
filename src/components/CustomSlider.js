@@ -245,13 +245,13 @@ const CustomSlider = () => {
       }}
     >
       {/* Background */}
-      <div className="absolute inset-0 bg-black/10 z-10"></div>
+      <div className="absolute inset-0 bg-paan-dark-blue/10 z-10"></div>
 
       {/* Content Container */}
       <div className="relative z-10 flex flex-col items-start justify-end px-10 w-3/4">
         <div className="relative w-2/3 overflow-hidden ">
           <div
-            className="flex relative bg-[#84C1D9] rounded-lg mb-10"
+            className="flex relative bg-paan-blue rounded-lg mb-10"
             style={{ height: "170px" }}
             ref={slidesRef}
           >
@@ -261,10 +261,10 @@ const CustomSlider = () => {
                 className="absolute top-0 left-0 flex flex-col p-8"
                 style={getSlideStyle(index)}
               >
-                  <h2 className="text-2xl font-bold paan-text-color">
+                  <h2 className="text-2xl font-semibold text-paan-dark-blue">
                     {slide.title}
                   </h2>
-                  <p className="paan-text-color">{slide.description}</p>
+                  <p className="text-paan-dark-blue">{slide.description}</p>
               </div>
             ))}
           </div>

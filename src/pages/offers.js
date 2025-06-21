@@ -20,6 +20,9 @@ import Link from "next/link";
 import { hasTierAccess } from "@/utils/tierUtils";
 import { supabase } from "@/lib/supabase";
 import TabsSelector from "@/components/TabsSelector";
+import OfferCard from "@/components/OfferCard";
+import UnifiedModalContent from "@/components/UnifiedModalContent";
+import SimpleModal from "@/components/SimpleModal";
 
 export default function Offers({ mode = "light", toggleMode }) {
   const {
@@ -44,6 +47,8 @@ export default function Offers({ mode = "light", toggleMode }) {
     loading: offersLoading,
     error,
   } = useOffers(filters, user);
+  const [modalData, setModalData] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const title = "Exclusive Offers";
   const description =
@@ -79,7 +84,17 @@ export default function Offers({ mode = "light", toggleMode }) {
     setShowFilterPanel(false);
   };
 
-  const handleOfferClick = async (offer) => {
+  const handleOfferClick = (offer) => {
+    setModalData({ ...offer, type: 'offer' });
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setModalData(null);
+  };
+
+  const handleOfferAccess = async (offer) => {
     if (!hasTierAccess(offer.tier_restriction, user)) {
       toast.error(
         `This offer is available to ${normalizeTier(
@@ -313,95 +328,23 @@ export default function Offers({ mode = "light", toggleMode }) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredOffers.map((offer) => (
-                <div
+                <OfferCard
                   key={offer.id}
-                  onClick={() => handleOfferClick(offer)}
-                  className={`group rounded-2xl overflow-hidden border shadow-sm hover:shadow-xl transition-all duration-300 ${
-                    mode === "dark"
-                      ? "bg-gray-800 border-gray-700 hover:border-gray-600"
-                      : "bg-white border-gray-200 hover:border-gray-300"
-                  } ${
-                    !hasTierAccess(offer.tier_restriction, user)
-                      ? "opacity-60"
-                      : ""
-                  }`}
-                >
-                  <div className="relative h-40 bg-gradient-to-r from-indigo-400 to-purple-600 overflow-hidden">
-                    <div className="absolute inset-0 opacity-20 bg-pattern"></div>
-                    <div className="absolute top-0 right-0 p-3">
-                      <TierBadge
-                        tier={offer.tier_restriction}
-                        mode={mode}
-                        variant="solid"
-                      />
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
-                      <div className="flex items-center gap-2 text-white font-semibold">
-                        <Icon icon="mdi:tag" />
-                        {offer.offer_type || "General"}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-5 space-y-4">
-                    <div>
-                      <h3 className="text-xl font-bold mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                        {offer.title}
-                      </h3>
-                      <p
-                        className={`text-sm ${
-                          mode === "dark" ? "text-gray-300" : "text-gray-600"
-                        } line-clamp-3`}
-                      >
-                        {offer.description || "No description available."}
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div
-                        className={`rounded-lg p-3 ${
-                          mode === "dark" ? "bg-gray-700/60" : "bg-gray-50"
-                        }`}
-                      >
-                        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                          Type
-                        </div>
-                        <div className="font-medium truncate">
-                          {offer.offer_type || "General"}
-                        </div>
-                      </div>
-                      <div
-                        className={`rounded-lg p-3 ${
-                          mode === "dark" ? "bg-gray-700/60" : "bg-gray-50"
-                        }`}
-                      >
-                        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                          Rating
-                        </div>
-                        <div className="font-medium flex items-center gap-1.5">
-                          <Icon icon="mdi:star" className="text-yellow-500" />
-                          {offer.averageRating.toFixed(1)} (
-                          {offer.feedbackCount})
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="pt-2">
-                      <button
-                        className={`block w-full px-4 py-2 rounded-lg font-semibold text-center ${
-                          hasTierAccess(offer.tier_restriction, user)
-                            ? "bg-blue-600 text-white hover:bg-blue-700"
-                            : "bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400"
-                        } transition-colors`}
-                        disabled={!hasTierAccess(offer.tier_restriction, user)}
-                      >
-                        {hasTierAccess(offer.tier_restriction, user)
-                          ? "Access Offer"
-                          : "Locked"}
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                  offer={offer}
+                  mode={mode}
+                  onAccess={handleOfferAccess}
+                  isRestricted={!hasTierAccess(offer.tier_restriction, user)}
+                  onRestrictedClick={() => {
+                    toast.error(
+                      `This offer is available to ${normalizeTier(
+                        offer.tier_restriction
+                      )} only. Consider upgrading your membership to access this offer.`,
+                      { duration: 5000 }
+                    );
+                  }}
+                  onClick={handleOfferClick}
+                  Icon={Icon}
+                />
               ))}
             </div>
 
@@ -471,6 +414,19 @@ export default function Offers({ mode = "light", toggleMode }) {
           <SimpleFooter mode={mode} isSidebarOpen={isSidebarOpen} />
         </div>
       </div>
+      <SimpleModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        title={modalData?.title || "Offer Details"}
+        mode={mode}
+        width="max-w-4xl"
+      >
+        <UnifiedModalContent
+          modalData={modalData}
+          mode={mode}
+          onClose={handleCloseModal}
+        />
+      </SimpleModal>
     </div>
   );
 }

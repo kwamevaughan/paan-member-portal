@@ -8,6 +8,7 @@ const ResourceCard = ({
   onView,
   isRestricted,
   onRestrictedClick,
+  onClick,
   Icon,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -17,7 +18,7 @@ const ResourceCard = ({
       onRestrictedClick?.();
       return;
     }
-    onView?.(resource);
+    onClick?.(resource);
   };
 
   const handleViewMoreInfo = (e) => {
@@ -26,7 +27,29 @@ const ResourceCard = ({
       onRestrictedClick?.();
       return;
     }
-    onView?.(resource);
+    onClick?.(resource);
+  };
+
+  const getResourceIcon = (type) => {
+    const iconMap = {
+      Video: "mdi:video",
+      Document: "mdi:file-document",
+      Template: "mdi:file-cog",
+      Guide: "mdi:book-open",
+      Tool: "mdi:wrench",
+      Template: "mdi:file-cog",
+      Checklist: "mdi:format-list-checks",
+      Whitepaper: "mdi:file-document-multiple",
+      Case: "mdi:briefcase",
+      Webinar: "mdi:video-outline",
+      Ebook: "mdi:book-open-variant",
+      Infographic: "mdi:chart-line",
+      Podcast: "mdi:microphone",
+      Course: "mdi:school",
+      Workshop: "mdi:account-group",
+      Toolkit: "mdi:briefcase-outline",
+    };
+    return iconMap[type] || "mdi:file";
   };
 
   return (
@@ -49,7 +72,9 @@ const ResourceCard = ({
       aria-label={
         isRestricted
           ? `Restricted resource: ${resource.title}`
-          : `View resource: ${resource.title}`
+          : resource.resource_type === "Video" 
+            ? `Watch video: ${resource.title}` 
+            : `View details for ${resource.title}`
       }
     >
       {/* Background Gradient Overlay */}
@@ -70,17 +95,18 @@ const ResourceCard = ({
 
       <div className="relative p-6 flex-1 flex flex-col">
         {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-start space-x-3 flex-1">
+        <div className="mb-4">
+          {/* First Row: Icon and Title */}
+          <div className="flex items-start space-x-3 mb-3">
             {/* Type Icon */}
             <div
               className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300 ${
                 mode === "dark"
-                  ? "bg-gray-700/50 text-blue-400"
-                  : "bg-white text-amber-400"
+                  ? "bg-gray-700/50 text-paan-blue"
+                  : "bg-white text-paan-yellow"
               } ${isHovered ? "scale-95 rotate-12" : ""}`}
             >
-              <Icon icon="mdi:book-open" className="text-3xl" />
+              <Icon icon={getResourceIcon(resource.resource_type)} className="text-3xl" />
             </div>
 
             <div className="flex-1 min-w-0">
@@ -88,36 +114,57 @@ const ResourceCard = ({
                 className={`font-normal text-lg leading-tight mb-1 transition-colors duration-200 ${
                   mode === "dark" ? "text-white" : "text-white"
                 } ${isRestricted ? "text-gray-500 dark:text-gray-400" : ""} ${
-                  isHovered ? "text-blue-600 dark:text-blue-400" : ""
+                  isHovered ? "text-paan-blue dark:text-paan-blue" : ""
                 }`}
               >
                 {resource.title}
-                {isRestricted && (
-                  <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
-                    <Icon icon="mdi:lock" className="text-sm mr-1" />
-                    Restricted
-                  </span>
-                )}
               </h3>
-
-              {/* Resource Type */}
-              {resource.resource_type && (
-                <p
-                  className={`text-sm font-medium ${
-                    mode === "dark" ? "text-gray-300" : "text-gray-700"
-                  } ${isRestricted ? "text-gray-400 dark:text-gray-500" : ""}`}
-                >
-                  {resource.resource_type}
-                </p>
-              )}
             </div>
           </div>
 
-          <div className="[&>span]:!bg-white [&>span]:!text-gray-900 [&>span]:!border-gray-200 [&>span>svg]:!text-[#f25749]">
-            <TierBadge
-              tier={resource.tier_restriction || "Free Member"}
-              mode={mode}
-            />
+          {/* Second Row: Tier Badge, Resource Type and Status Badge */}
+          <div className="flex items-center justify-between">
+            <div className="[&>span]:!bg-white [&>span]:!text-gray-900 [&>span]:!border-gray-200 [&>span>svg]:!text-[#f25749]">
+              <TierBadge
+                tier={resource.tier_restriction || "Free Member"}
+                mode={mode}
+              />
+            </div>
+
+            {resource.resource_type && (
+              <p
+                className={`text-sm font-medium flex bg-gray-100/50 text-gray-100 px-2 py-1 rounded-full w-fit ${
+                  isRestricted ? "text-gray-400 dark:text-gray-500" : ""
+                }`}
+              >
+                {resource.resource_type}
+              </p>
+            )}
+
+            {/* Status Badges */}
+            <div className="flex gap-2">
+              {/* Restricted Badge */}
+              {isRestricted && (
+                <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
+                  <Icon icon="mdi:lock" className="text-sm mr-1" />
+                  Restricted
+                </div>
+              )}
+
+              {/* NEW Badge */}
+              {resource.is_new && !isRestricted && (
+                <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
+                  NEW
+                </div>
+              )}
+
+              {/* Premium Badge */}
+              {resource.premium && !isRestricted && (
+                <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
+                  Premium
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -199,6 +246,19 @@ const ResourceCard = ({
               <span>{resource.file_size}</span>
             </div>
           )}
+
+          {/* Created Date */}
+          {resource.created_at && (
+            <div className="flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200 text-white">
+              <Icon icon="mdi:calendar" className="text-lg text-[#f25749]" />
+              <span>
+                {new Date(resource.created_at).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                })}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Footer */}
@@ -212,33 +272,24 @@ const ResourceCard = ({
             className={`px-4 py-2 rounded-full font-normal text-xs transition-colors ${
               isRestricted
                 ? "bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400"
-                : "bg-amber-400 hover:bg-amber-500 dark:bg-amber-400 dark:hover:bg-amber-500"
+                : "bg-paan-yellow hover:bg-paan-yellow/80 dark:bg-paan-yellow dark:hover:bg-paan-yellow/80"
             }`}
             disabled={isRestricted}
             aria-label={`View details for ${resource.title}`}
           >
-            View Details
+            {resource.resource_type === "Video" ? "Watch Video" : "View Details"}
           </button>
         </div>
 
         {/* Hover Glow Effect */}
         {!isRestricted && (
           <div
-            className={`absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 opacity-0 transition-opacity duration-500 pointer-events-none ${
+            className={`absolute inset-0 rounded-2xl bg-gradient-to-r from-paan-blue/5 via-paan-blue/5 to-paan-red/5 opacity-0 transition-opacity duration-500 pointer-events-none ${
               isHovered ? "opacity-100" : "opacity-0"
             }`}
           ></div>
         )}
       </div>
-
-      {/* NEW Badge */}
-      {resource.is_new && !isRestricted && (
-        <div className="absolute top-4 left-4">
-          <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
-            NEW
-          </div>
-        </div>
-      )}
     </div>
   );
 };

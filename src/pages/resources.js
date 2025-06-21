@@ -10,7 +10,6 @@ import SimpleFooter from "@/layouts/simpleFooter";
 import useSidebar from "@/hooks/useSidebar";
 import toast, { Toaster } from "react-hot-toast";
 import TitleCard from "@/components/TitleCard";
-import VideoModal from "@/components/VideoModal";
 import {
   getTierBadgeStyles,
   TierBadge,
@@ -21,6 +20,130 @@ import Link from "next/link";
 import { hasTierAccess } from "@/utils/tierUtils";
 import { supabase } from "@/lib/supabase";
 import TabsSelector from "@/components/TabsSelector";
+import ResourceCard from "@/components/ResourceCard";
+import SimpleModal from "@/components/SimpleModal";
+import UnifiedModalContent from "@/components/UnifiedModalContent";
+
+// Video Modal Content Component
+const VideoModalContent = ({ videoUrl, resourceId, title, mode }) => {
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmitFeedback = async (e) => {
+    e.preventDefault();
+    if (!rating) {
+      toast.error("Please select a rating");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("You must be logged in to submit feedback");
+        return;
+      }
+
+      const { error } = await supabase.from("resource_feedback").insert({
+        resource_id: resourceId,
+        user_id: user.id,
+        rating,
+        comment: comment.trim() || null,
+      });
+
+      if (error)
+        throw new Error(`Feedback submission failed: ${error.message}`);
+
+      toast.success("Feedback submitted successfully!");
+      setRating(0);
+      setComment("");
+    } catch (err) {
+      console.error("[VideoModal] Error submitting feedback:", err);
+      toast.error("Failed to submit feedback");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Video Player */}
+      <div className="relative" style={{ paddingBottom: "56.25%" }}>
+        <iframe
+          src={videoUrl}
+          className="absolute top-0 left-0 w-full h-full rounded-lg"
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        ></iframe>
+      </div>
+
+      {/* Video Info */}
+      <div className="text-center">
+        <p className={`text-sm ${
+          mode === "dark" ? "text-gray-300" : "text-gray-600"
+        }`}>
+          Click the video player above to watch the full content
+        </p>
+      </div>
+
+      {/* Feedback Form */}
+      <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+        <h3 className={`text-lg font-semibold mb-4 ${
+          mode === "dark" ? "text-gray-200" : "text-gray-800"
+        }`}>
+          Rate this Video
+        </h3>
+        
+        {/* Star Rating */}
+        <div className="flex items-center gap-2 mb-4">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <button
+              key={star}
+              onClick={() => setRating(star)}
+              className={`text-2xl transition-colors duration-200 ${
+                star <= rating
+                  ? "text-paan-yellow"
+                  : "text-gray-400 dark:text-gray-600"
+              } hover:text-paan-yellow`}
+            >
+              <Icon icon="heroicons:star-solid" />
+            </button>
+          ))}
+        </div>
+
+        {/* Comment Textarea */}
+        <textarea
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          placeholder="Optional comments..."
+          className={`w-full p-3 rounded-lg border transition-all ${
+            mode === "dark"
+              ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+              : "bg-white border-gray-200 text-gray-800 placeholder-gray-500"
+          } focus:ring-2 focus:ring-paan-blue focus:border-paan-blue`}
+          rows={4}
+        />
+
+        {/* Submit Button */}
+        <button
+          onClick={handleSubmitFeedback}
+          disabled={submitting}
+          className={`mt-4 px-6 py-2 rounded-lg font-medium transition-colors ${
+            submitting
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-paan-blue hover:bg-paan-blue/80 text-white"
+          }`}
+        >
+          {submitting ? "Submitting..." : "Submit Feedback"}
+        </button>
+      </div>
+    </div>
+  );
+};
 
 export default function Resources({ mode = "light", toggleMode }) {
   const {
@@ -39,11 +162,18 @@ export default function Resources({ mode = "light", toggleMode }) {
   });
   const [activeTab, setActiveTab] = useState("all");
   const [showFilterPanel, setShowFilterPanel] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Unified modal state
+  const [modalData, setModalData] = useState(null);
+  const [isUnifiedModalOpen, setIsUnifiedModalOpen] = useState(false);
+
+  // Video modal state
   const [selectedVideo, setSelectedVideo] = useState({
     url: "",
     resourceId: null,
+    title: "",
   });
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
 
   const {
     resources,
@@ -109,19 +239,54 @@ export default function Resources({ mode = "light", toggleMode }) {
       );
       return;
     }
+    
+    // Handle video resources with SimpleModal
     if (resource.resource_type === "Video" && resource.video_url) {
       const embedUrl = getVideoEmbedUrl(resource.video_url);
       if (embedUrl) {
-        setSelectedVideo({ url: embedUrl, resourceId: resource.id });
-        setIsModalOpen(true);
+        setSelectedVideo({ 
+          url: embedUrl, 
+          resourceId: resource.id,
+          title: resource.title 
+        });
+        setIsVideoModalOpen(true);
+        return;
       }
     }
+    
+    // Use unified modal for other resource details
+    setModalData({ ...resource, type: 'resource' });
+    setIsUnifiedModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsUnifiedModalOpen(false);
+    setModalData(null);
+  };
+
+  const handleCloseVideoModal = () => {
+    setIsVideoModalOpen(false);
+    setSelectedVideo({ url: "", resourceId: null, title: "" });
   };
 
   const filteredResources =
     activeTab === "all"
       ? resources
       : resources.filter((res) => hasTierAccess(res.tier_restriction, user));
+
+  // Sort resources: accessible first, then by created date descending
+  const sortedResources = filteredResources.sort((a, b) => {
+    const aAccessible = hasTierAccess(a.tier_restriction, user);
+    const bAccessible = hasTierAccess(b.tier_restriction, user);
+    
+    // First sort by accessibility
+    if (aAccessible !== bAccessible) {
+      return aAccessible ? -1 : 1;
+    }
+    
+    // Then sort by created date (newest first)
+    return new Date(b.created_at) - new Date(a.created_at);
+  });
 
   if (userLoading || resourcesLoading) {
     return LoadingComponent;
@@ -255,13 +420,13 @@ export default function Resources({ mode = "light", toggleMode }) {
                     <div className="flex items-center gap-2 text-lg font-semibold">
                       <Icon
                         icon="mdi:filter-variant"
-                        className="text-blue-500"
+                        className="text-paan-blue"
                       />
                       <span>Refine Your Search</span>
                     </div>
                     <button
                       onClick={handleResetFilters}
-                      className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-500 transition"
+                      className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-paan-blue dark:text-gray-400 dark:hover:text-paan-blue transition"
                     >
                       <Icon icon="mdi:restart" />
                       Reset All
@@ -316,7 +481,7 @@ export default function Resources({ mode = "light", toggleMode }) {
                 } shadow-sm`}
               >
                 <span className="font-semibold">
-                  {filteredResources.length}
+                  {sortedResources.length}
                 </span>
                 <span className="text-gray-600 dark:text-gray-400">
                   {" "}
@@ -324,151 +489,32 @@ export default function Resources({ mode = "light", toggleMode }) {
                 </span>
               </div>
               <div className="text-sm text-gray-500 dark:text-gray-400">
-                Showing {Math.min(12, filteredResources.length)} of{" "}
-                {filteredResources.length}
+                Showing {Math.min(12, sortedResources.length)} of{" "}
+                {sortedResources.length}
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredResources.map((resource) => {
-                const embedUrl = getVideoEmbedUrl(resource.video_url);
-                const canAccess = hasTierAccess(
-                  resource.tier_restriction,
-                  user
-                );
-                return (
-                  <div
-                    key={resource.id}
-                    onClick={() => handleResourceClick(resource)}
-                    className={`group rounded-2xl overflow-hidden border shadow-sm hover:shadow-xl transition-all duration-300 ${
-                      mode === "dark"
-                        ? "bg-gray-800 border-gray-700 hover:border-gray-600"
-                        : "bg-white border-gray-200 hover:border-gray-300"
-                    } ${!canAccess ? "opacity-60" : ""}`}
-                  >
-                    <div className="relative h-40 bg-gradient-to-r from-blue-400 to-indigo-600 overflow-hidden">
-                      <div className="absolute inset-0 opacity-20 bg-pattern"></div>
-                      <div className="absolute top-0 right-0 p-3">
-                        <TierBadge
-                          tier={resource.tier_restriction}
-                          mode={mode}
-                          variant="solid"
-                        />
-                      </div>
-                      <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
-                        <div className="flex items-center gap-2 text-white font-semibold">
-                          <Icon icon="mdi:tag" />
-                          {resource.resource_type}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="p-5 space-y-4">
-                      <div>
-                        <h3 className="text-xl font-bold mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                          {resource.title}
-                        </h3>
-                        <p
-                          className={`text-sm ${
-                            mode === "dark" ? "text-gray-300" : "text-gray-600"
-                          } line-clamp-3`}
-                        >
-                          {resource.description || "No description available."}
-                        </p>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-3">
-                        <div
-                          className={`rounded-lg p-3 ${
-                            mode === "dark" ? "bg-gray-700/60" : "bg-gray-50"
-                          }`}
-                        >
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                            Type
-                          </div>
-                          <div className="font-medium truncate">
-                            {resource.resource_type}
-                          </div>
-                        </div>
-                        <div
-                          className={`rounded-lg p-3 ${
-                            mode === "dark" ? "bg-gray-700/60" : "bg-gray-50"
-                          }`}
-                        >
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                            Added
-                          </div>
-                          <div className="font-medium flex items-center gap-1.5">
-                            <Icon
-                              icon="mdi:calendar"
-                              className="text-blue-500"
-                            />
-                            {new Date(resource.created_at).toLocaleDateString(
-                              "en-US",
-                              {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              }
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="pt-2">
-                        {canAccess ? (
-                          resource.file_path ? (
-                            <a
-                              href={
-                                supabase.storage
-                                  .from("resources")
-                                  .getPublicUrl(resource.file_path).data
-                                  .publicUrl
-                              }
-                              download
-                              onClick={(e) => e.stopPropagation()}
-                              className="block w-full px-4 py-2 rounded-lg font-semibold text-center bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-                            >
-                              Download
-                            </a>
-                          ) : resource.video_url && embedUrl ? (
-                            <button className="block w-full px-4 py-2 rounded-lg font-semibold text-center bg-blue-600 text-white hover:bg-blue-700 transition-colors">
-                              Watch Video
-                            </button>
-                          ) : resource.url ? (
-                            <a
-                              href={resource.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={(e) => e.stopPropagation()}
-                              className="block w-full px-4 py-2 rounded-lg font-semibold text-center bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-                            >
-                              Access Resource
-                            </a>
-                          ) : (
-                            <button
-                              disabled
-                              className="block w-full px-4 py-2 rounded-lg font-semibold text-center bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400"
-                            >
-                              No Resource Available
-                            </button>
-                          )
-                        ) : (
-                          <button
-                            disabled
-                            className="block w-full px-4 py-2 rounded-lg font-semibold text-center bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400"
-                          >
-                            Locked
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+              {sortedResources.map((resource) => (
+                <ResourceCard
+                  key={resource.id}
+                  resource={resource}
+                  mode={mode}
+                  isRestricted={!hasTierAccess(resource.tier_restriction, user)}
+                  onRestrictedClick={() => {
+                    toast.error(
+                      `This resource is available to ${normalizeTier(
+                        resource.tier_restriction
+                      )} only. Consider upgrading your membership to unlock this resource.`
+                    );
+                  }}
+                  onClick={handleResourceClick}
+                  Icon={Icon}
+                />
+              ))}
             </div>
 
-            {filteredResources.length === 0 && (
+            {sortedResources.length === 0 && (
               <div
                 className={`text-center py-12 rounded-2xl ${
                   mode === "dark" ? "bg-gray-800" : "bg-white"
@@ -487,14 +533,14 @@ export default function Resources({ mode = "light", toggleMode }) {
                 </p>
                 <button
                   onClick={handleResetFilters}
-                  className="mt-6 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                  className="mt-6 px-6 py-2 bg-paan-blue hover:bg-paan-blue/80 text-white rounded-lg font-medium transition-colors"
                 >
                   Reset Filters
                 </button>
               </div>
             )}
 
-            {filteredResources.length > 12 && (
+            {sortedResources.length > 12 && (
               <div className="flex justify-center mt-8">
                 <div className="flex items-center space-x-2">
                   <button
@@ -511,7 +557,7 @@ export default function Resources({ mode = "light", toggleMode }) {
                       key={num}
                       className={`w-10 h-10 flex items-center justify-center rounded-lg font-medium ${
                         num === 1
-                          ? "bg-blue-600 text-white"
+                          ? "bg-paan-blue text-white"
                           : mode === "dark"
                           ? "bg-gray-800 hover:bg-gray-700"
                           : "bg-white hover:bg-gray-100"
@@ -532,18 +578,41 @@ export default function Resources({ mode = "light", toggleMode }) {
                 </div>
               </div>
             )}
-
-            <VideoModal
-              isOpen={isModalOpen}
-              onClose={() => setIsModalOpen(false)}
-              videoUrl={selectedVideo.url}
-              resourceId={selectedVideo.resourceId}
-              mode={mode}
-            />
           </div>
           <SimpleFooter mode={mode} isSidebarOpen={isSidebarOpen} />
         </div>
       </div>
+
+      {/* Unified Modal */}
+      <SimpleModal
+        isOpen={isUnifiedModalOpen}
+        onClose={handleCloseModal}
+        title={modalData?.title || "Resource Details"}
+        mode={mode}
+        width="max-w-4xl"
+      >
+        <UnifiedModalContent
+          modalData={modalData}
+          mode={mode}
+          onClose={handleCloseModal}
+        />
+      </SimpleModal>
+
+      {/* Video Modal */}
+      <SimpleModal
+        isOpen={isVideoModalOpen}
+        onClose={handleCloseVideoModal}
+        title={selectedVideo.title || "Video Resource"}
+        mode={mode}
+        width="max-w-4xl"
+      >
+        <VideoModalContent
+          videoUrl={selectedVideo.url}
+          resourceId={selectedVideo.resourceId}
+          title={selectedVideo.title}
+          mode={mode}
+        />
+      </SimpleModal>
     </div>
   );
 }

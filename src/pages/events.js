@@ -18,6 +18,7 @@ import TabsSelector from "@/components/TabsSelector";
 import EventCard from "@/components/EventCard";
 import SimpleModal from "@/components/SimpleModal";
 import Image from "next/image";
+import UnifiedModalContent from "@/components/UnifiedModalContent";
 
 export default function Events({ mode = "light", toggleMode }) {
   const {
@@ -45,8 +46,8 @@ export default function Events({ mode = "light", toggleMode }) {
   const [showRegistrationsModal, setShowRegistrationsModal] = useState(false);
 
   // Modal state for event details
-  const [selectedEvent, setSelectedEvent] = useState(null);
-  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
+  const [modalData, setModalData] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const {
     events,
@@ -166,14 +167,13 @@ export default function Events({ mode = "light", toggleMode }) {
   };
 
   const handleEventClick = (event) => {
-    console.log('Events page handleEventClick called with:', event);
-    setSelectedEvent(event);
-    setIsEventModalOpen(true);
+    setModalData({ ...event, type: 'event' });
+    setIsModalOpen(true);
   };
 
-  const handleCloseEventModal = () => {
-    setIsEventModalOpen(false);
-    setSelectedEvent(null);
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setModalData(null);
   };
 
   const tabs = [
@@ -501,208 +501,19 @@ export default function Events({ mode = "light", toggleMode }) {
 
       {/* Event Details Modal */}
       <SimpleModal
-        isOpen={isEventModalOpen}
-        onClose={handleCloseEventModal}
-        title={selectedEvent?.title || "Event Details"}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        title={modalData?.title || "Event Details"}
         mode={mode}
         width="max-w-4xl"
       >
-        {selectedEvent && (
-          <div className="space-y-6">
-            {/* Event Header */}
-            <div className="flex items-start space-x-4">
-              <div
-                className={`flex-shrink-0 w-16 h-16 rounded-xl flex items-center justify-center ${
-                  mode === "dark"
-                    ? "bg-gray-700/50 text-paan-blue"
-                    : "bg-white text-paan-yellow"
-                }`}
-              >
-                <Icon icon="mdi:calendar-star" className="text-3xl" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-2xl font-bold mb-2">{selectedEvent.title}</h3>
-                {selectedEvent.event_type && (
-                  <p className={`text-sm font-medium ${
-                    mode === "dark" ? "text-gray-300" : "text-gray-600"
-                  }`}>
-                    {selectedEvent.event_type}
-                  </p>
-                )}
-              </div>
-              <div className="flex-shrink-0">
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                  mode === "dark" 
-                    ? "bg-blue-900/30 text-blue-400 border border-blue-700/50"
-                    : "bg-blue-100 text-blue-800 border border-blue-200"
-                }`}>
-                  {selectedEvent.tier_restriction || "All Members"}
-                </span>
-              </div>
-            </div>
-
-            {/* Banner Image in Modal */}
-            {selectedEvent.banner_image && (
-              <div className="relative h-100 rounded-lg overflow-hidden">
-                <Image
-                  src={selectedEvent.banner_image}
-                  width={800}
-                  height={200}
-                  alt={`Banner for ${selectedEvent.title}`}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                  }}
-                />
-              </div>
-            )}
-
-            {/* Description */}
-            {selectedEvent.description && (
-              <div>
-                <h4 className={`text-lg font-semibold mb-2 ${
-                  mode === "dark" ? "text-gray-200" : "text-gray-800"
-                }`}>
-                  Description
-                </h4>
-                <p className={`text-sm leading-relaxed ${
-                  mode === "dark" ? "text-gray-300" : "text-gray-600"
-                }`}>
-                  {selectedEvent.description}
-                </p>
-              </div>
-            )}
-
-            {/* Event Details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Date */}
-              <div className={`p-4 rounded-lg ${
-                mode === "dark" ? "bg-gray-800/50" : "bg-gray-50"
-              }`}>
-                <div className="flex items-center space-x-2 mb-2">
-                  <Icon icon="mdi:calendar" className="text-lg text-paan-red" />
-                  <span className={`font-semibold ${
-                    mode === "dark" ? "text-gray-200" : "text-gray-800"
-                  }`}>
-                    {new Date(selectedEvent.date).toLocaleDateString("en-US", {
-                      weekday: "long",
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </span>
-                </div>
-                <p className={`text-sm ${
-                  mode === "dark" ? "text-gray-400" : "text-gray-600"
-                }`}>
-                  Event Date & Time
-                </p>
-              </div>
-
-              {/* Location */}
-              {selectedEvent.location && (
-                <div className={`p-4 rounded-lg ${
-                  mode === "dark" ? "bg-gray-800/50" : "bg-gray-50"
-                }`}>
-                  <div className="flex items-center space-x-2 mb-2">
-                    <Icon icon="mdi:map-marker" className="text-lg text-paan-yellow" />
-                    <span className={`font-semibold ${
-                      mode === "dark" ? "text-gray-200" : "text-gray-800"
-                    }`}>
-                      {selectedEvent.location}
-                    </span>
-                  </div>
-                  <p className={`text-sm ${
-                    mode === "dark" ? "text-gray-400" : "text-gray-600"
-                  }`}>
-                    Location
-                  </p>
-                </div>
-              )}
-
-              {/* Virtual Event */}
-              {selectedEvent.is_virtual && (
-                <div className={`p-4 rounded-lg ${
-                  mode === "dark" ? "bg-gray-800/50" : "bg-gray-50"
-                }`}>
-                  <div className="flex items-center space-x-2 mb-2">
-                    <Icon icon="mdi:video" className="text-lg text-paan-blue" />
-                    <span className={`font-semibold ${
-                      mode === "dark" ? "text-paan-blue" : "text-paan-blue"
-                    }`}>
-                      Virtual Event
-                    </span>
-                  </div>
-                  <p className={`text-sm ${
-                    mode === "dark" ? "text-gray-400" : "text-gray-600"
-                  }`}>
-                    Event Type
-                  </p>
-                </div>
-              )}
-
-              {/* Registration Status */}
-              <div className={`p-4 rounded-lg ${
-                mode === "dark" ? "bg-gray-800/50" : "bg-gray-50"
-              }`}>
-                <div className="flex items-center space-x-2 mb-2">
-                  <Icon 
-                    icon={registeredEvents.some(reg => reg.id === selectedEvent.id) ? "mdi:check-circle" : "mdi:account-plus"} 
-                    className={`text-lg ${registeredEvents.some(reg => reg.id === selectedEvent.id) ? "text-green-500" : "text-paan-yellow"}`} 
-                  />
-                  <span className={`font-semibold ${
-                    mode === "dark" 
-                      ? registeredEvents.some(reg => reg.id === selectedEvent.id) ? "text-green-400" : "text-gray-200"
-                      : registeredEvents.some(reg => reg.id === selectedEvent.id) ? "text-green-600" : "text-gray-800"
-                  }`}>
-                    {registeredEvents.some(reg => reg.id === selectedEvent.id) ? "Registered" : "Not Registered"}
-                  </span>
-                </div>
-                <p className={`text-sm ${
-                  mode === "dark" ? "text-gray-400" : "text-gray-600"
-                }`}>
-                  Registration Status
-                </p>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200 dark:border-gray-700">
-              <button
-                onClick={handleCloseEventModal}
-                className={`px-6 py-3 text-sm font-medium rounded-xl border transition-all duration-200 ${
-                  mode === "dark"
-                    ? "border-gray-600 text-gray-200 bg-gray-800 hover:bg-gray-700"
-                    : "border-gray-200 text-gray-700 bg-white hover:bg-gray-50"
-                }`}
-              >
-                Close
-              </button>
-              {!registeredEvents.some(reg => reg.id === selectedEvent.id) && (
-                <button
-                  onClick={() => {
-                    if (selectedEvent.registration_link) {
-                      window.open(selectedEvent.registration_link, '_blank', 'noopener,noreferrer');
-                    } else {
-                      handleEventRegistration(selectedEvent.id);
-                    }
-                  }}
-                  className={`px-6 py-3 text-sm font-medium rounded-xl text-white transition-all duration-200 ${
-                    selectedEvent.registration_link
-                      ? "bg-paan-red hover:bg-paan-red/80"
-                      : "bg-paan-blue hover:bg-paan-blue/80"
-                  } ${
-                    mode === "dark" ? "shadow-white/10" : "shadow-gray-200"
-                  }`}
-                >
-                  {selectedEvent.registration_link ? "Register Online" : "Register Now"}
-                </button>
-              )}
-            </div>
-          </div>
-        )}
+        <UnifiedModalContent
+          modalData={modalData}
+          mode={mode}
+          registeredEvents={registeredEvents}
+          handleEventRegistration={handleEventRegistration}
+          onClose={handleCloseModal}
+        />
       </SimpleModal>
     </div>
   );

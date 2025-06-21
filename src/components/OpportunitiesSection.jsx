@@ -348,92 +348,6 @@ const OpportunitiesSection = ({
 
     return (
       <div className="">
-        {showFilterPanel && (
-          <div
-            className={`rounded-2xl shadow-md mb-6 ${
-              mode === "dark"
-                ? "bg-gray-800 border border-gray-400"
-                : "bg-white border border-gray-200"
-            }`}
-          >
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2 text-lg font-normal">
-                  <Icon
-                    icon="mdi:filter-variant"
-                    className="h-5 w-5 text-blue-600"
-                  />
-                  <span>Refine Your Search</span>
-                </div>
-                <button
-                  onClick={handleResetFilters}
-                  className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
-                >
-                  <Icon icon="mdi:refresh" />
-                  Reset All
-                </button>
-              </div>
-
-              {/* Search Input */}
-              <div className="relative mb-6">
-                <Icon
-                  icon="mdi:magnify"
-                  className={`absolute left-3 top-1/2 -translate-y-1/2 ${
-                    mode === "dark" ? "text-gray-400" : "text-gray-500"
-                  }`}
-                />
-                <input
-                  type="text"
-                  placeholder={`Search ${itemLabel.toLowerCase()}...`}
-                  value={inputValue}
-                  onChange={handleInputChange}
-                  className={`w-full pl-10 pr-4 py-2 rounded-xl border ${
-                    mode === "dark"
-                      ? "bg-gray-700 border-gray-600 text-white"
-                      : "bg-white border-gray-200 text-gray-900"
-                  } focus:ring-2 focus:ring-blue-500 z-10`}
-                  aria-label={`Search ${itemLabel.toLowerCase()}`}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                {filterFields.map(({ key, icon, label, isArrayFilter }) => (
-                  <FilterField
-                    key={key}
-                    icon={icon}
-                    label={label}
-                    value={filters[key] || ""}
-                    onChange={(e) => handleFilterChange(key, e.target.value)}
-                    options={
-                      key === "skills"
-                        ? filterOptions.skills || []
-                        : key === "budgetRange"
-                        ? filterOptions.budgetRanges || []
-                        : key === "remoteWork"
-                        ? filterOptions.remoteWorkOptions || []
-                        : key === "estimatedDuration"
-                        ? filterOptions.durations || []
-                        : key === "projectType"
-                        ? filterOptions.projectTypes || []
-                        : key === "country"
-                        ? filterOptions.countries || []
-                        : key === "serviceType"
-                        ? filterOptions.serviceTypes || []
-                        : key === "industry"
-                        ? filterOptions.industries || []
-                        : key === "tier_restriction"
-                        ? filterOptions.tiers || []
-                        : []
-                    }
-                    mode={mode}
-                    isArrayFilter={isArrayFilter}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
         <div
           className={`grid grid-cols-2 md:grid-cols-4 gap-4 p-6 rounded-lg mb-6 ${
             mode === "dark"
@@ -580,24 +494,6 @@ const OpportunitiesSection = ({
       title={itemLabel} 
       icon="mdi:briefcase" 
       mode={mode}
-      headerAction={
-        <button
-          onClick={() => setShowFilterPanel(!showFilterPanel)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all shadow-lg ${
-            mode === "dark"
-              ? "bg-gray-800 hover:bg-gray-700 text-white"
-              : "bg-white hover:bg-gray-100 text-gray-900"
-          } ${showFilterPanel ? "ring-2 ring-blue-600" : ""}`}
-        >
-          <Icon icon="mdi:filter" />
-          <span>Filters</span>
-          {filters && Object.values(filters).some((val) => val !== "") && (
-            <span className="flex items-center justify-center w-5 h-5 text-xs font-medium rounded-full bg-blue-600 text-white">
-              {Object.values(filters).filter((val) => val !== "").length}
-            </span>
-          )}
-        </button>
-      }
     >
       {renderContent()}
     </SectionCard>

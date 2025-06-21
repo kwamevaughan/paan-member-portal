@@ -125,7 +125,7 @@ export default function Offers({ mode = "light", toggleMode }) {
       ? offers
       : offers.filter((offer) => hasTierAccess(offer.tier_restriction, user));
 
-  if (userLoading || offersLoading) {
+  if (userLoading) {
     return LoadingComponent;
   }
 
@@ -327,7 +327,15 @@ export default function Offers({ mode = "light", toggleMode }) {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredOffers.map((offer) => (
+              {offersLoading && (
+                <div className="col-span-full flex justify-center py-8">
+                  <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-paan-blue"></div>
+                    <span>Loading offers...</span>
+                  </div>
+                </div>
+              )}
+              {!offersLoading && filteredOffers.map((offer) => (
                 <OfferCard
                   key={offer.id}
                   offer={offer}

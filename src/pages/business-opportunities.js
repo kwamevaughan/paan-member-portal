@@ -36,6 +36,7 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
     estimatedDuration: "",
   });
   const [activeTab, setActiveTab] = useState("all");
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
 
   const {
     opportunities,
@@ -108,7 +109,8 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
     setFilters((prev) => ({ ...prev, [key]: value || "" }));
   }, []);
 
-  const handleResetFilters = useCallback(() => {
+  const handleResetFilters = useCallback((e) => {
+    e.preventDefault();
     setFilters({
       country: "",
       serviceType: "",
@@ -179,7 +181,7 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
     [user, router]
   );
 
-  if (userLoading || loading) return LoadingComponent;
+  if (userLoading) return LoadingComponent;
   if (!user) {
     router.push("/");
     return null;
@@ -193,6 +195,12 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
 
   console.log("[BusinessOpportunities] filters:", filters);
   console.log("[BusinessOpportunities] filterOptions:", filterOptions);
+
+  // Define main tabs like resources page
+  const mainTabs = [
+    { id: "all", label: "All Opportunities", icon: "mdi:view-grid" },
+    { id: "accessible", label: "For Your Tier", icon: "mdi:accessibility" },
+  ];
 
   return (
     <div
@@ -221,11 +229,14 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
           toggleMode={toggleMode}
         />
         <div
-          className={`flex-1 p-4 md:p-6 lg:p-8 transition-all ${
-            isSidebarOpen && !isMobile ? "ml-52" : "ml-20"
+          className={`content-container flex-1 p-4 md:p-6 lg:p-8 transition-all duration-300 ${
+            isSidebarOpen && !isMobile ? "sidebar-open" : ""
           }`}
+          style={{
+            marginLeft: isMobile ? "0px" : isSidebarOpen ? "200px" : "80px",
+          }}
         >
-          <div className="max-w-7xl mx-auto space-y-6 pt-14">
+          <div className="max-w-7xl mx-auto space-y-6">
             <TitleCard
               title={title}
               description={description}
@@ -238,36 +249,263 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
               pageTable="business_opportunities"
               lastUpdated={latestOpportunityDate}
             />
+
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              {isMobile ? (
-                <select
-                  value={activeTab}
-                  onChange={(e) => setActiveTab(e.target.value)}
-                  className={`w-full px-4 py-2 rounded-lg border shadow-sm ${
-                    mode === "dark"
-                      ? "bg-gray-800 text-white border-gray-600"
-                      : "bg-white text-gray-900 border-gray-200"
-                  }`}
-                >
-                  {[
-                    { id: "all", label: "All Opportunities" },
-                    { id: "accessible", label: "For Your Tier" },
-                    { id: "trending", label: "Trending" },
-                    { id: "deadlineSoon", label: "Closing Soon" },
-                  ].map((tab) => (
-                    <option key={tab.id} value={tab.id}>
-                      {tab.label}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <TabsSelector
-                  activeTab={activeTab}
-                  setActiveTab={setActiveTab}
-                  mode={mode}
-                />
-              )}
+              <TabsSelector
+                tabs={mainTabs}
+                selectedTab={activeTab}
+                onSelect={setActiveTab}
+                mode={mode}
+                icon="mdi:view-grid"
+              />
+              <button
+                onClick={() => setShowFilterPanel(!showFilterPanel)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full transition ${
+                  mode === "dark"
+                    ? "bg-gray-800 hover:bg-gray-700"
+                    : "bg-white hover:bg-gray-100"
+                } ${showFilterPanel ? "ring-2 ring-blue-500" : ""} shadow-sm`}
+              >
+                <Icon icon="mdi:filter-variant" />
+                <span>Filters</span>
+                {Object.values(filters).some((val) => val !== "") && (
+                  <span className="flex items-center justify-center w-5 h-5 text-xs font-medium rounded-full bg-blue-600 text-white">
+                    {Object.values(filters).filter((val) => val !== "").length}
+                  </span>
+                )}
+              </button>
             </div>
+
+            {showFilterPanel && (
+              <div
+                className={`rounded-2xl shadow-lg overflow-hidden transition-all ${
+                  mode === "dark"
+                    ? "bg-gray-800 border border-gray-700"
+                    : "bg-white"
+                }`}
+              >
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2 text-lg font-semibold">
+                      <Icon
+                        icon="mdi:filter-variant"
+                        className="text-paan-blue"
+                      />
+                      <span>Refine Your Search</span>
+                    </div>
+                    <button
+                      onClick={handleResetFilters}
+                      className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-paan-blue dark:text-gray-400 dark:hover:text-paan-blue transition"
+                    >
+                      <Icon icon="mdi:restart" />
+                      Reset All
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {!isFreelancer && (
+                      <>
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-gray-600 dark:text-gray-300 flex items-center gap-1.5">
+                            <Icon icon="mdi:map-marker" />
+                            Country
+                          </label>
+                          <TabsSelector
+                            tabs={[
+                              { id: "", label: "All Countries" },
+                              ...(filterOptions.countries?.map((country) => ({
+                                id: country,
+                                label: country,
+                              })) || []),
+                            ]}
+                            selectedTab={filters.country}
+                            onSelect={(value) => handleFilterChange("country", value)}
+                            mode={mode}
+                            icon="mdi:map-marker"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-gray-600 dark:text-gray-300 flex items-center gap-1.5">
+                            <Icon icon="mdi:briefcase" />
+                            Service Type
+                          </label>
+                          <TabsSelector
+                            tabs={[
+                              { id: "", label: "All Services" },
+                              ...(filterOptions.serviceTypes?.map((type) => ({
+                                id: type,
+                                label: type,
+                              })) || []),
+                            ]}
+                            selectedTab={filters.serviceType}
+                            onSelect={(value) => handleFilterChange("serviceType", value)}
+                            mode={mode}
+                            icon="mdi:briefcase"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-gray-600 dark:text-gray-300 flex items-center gap-1.5">
+                            <Icon icon="mdi:factory" />
+                            Industry
+                          </label>
+                          <TabsSelector
+                            tabs={[
+                              { id: "", label: "All Industries" },
+                              ...(filterOptions.industries?.map((industry) => ({
+                                id: industry,
+                                label: industry,
+                              })) || []),
+                            ]}
+                            selectedTab={filters.industry}
+                            onSelect={(value) => handleFilterChange("industry", value)}
+                            mode={mode}
+                            icon="mdi:factory"
+                          />
+                        </div>
+                      </>
+                    )}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-600 dark:text-gray-300 flex items-center gap-1.5">
+                        <Icon icon="mdi:projector" />
+                        Project Type
+                      </label>
+                      <TabsSelector
+                        tabs={[
+                          { id: "", label: "All Types" },
+                          ...(filterOptions.projectTypes?.map((type) => ({
+                            id: type,
+                            label: type,
+                          })) || []),
+                        ]}
+                        selectedTab={filters.projectType}
+                        onSelect={(value) => handleFilterChange("projectType", value)}
+                        mode={mode}
+                        icon="mdi:projector"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-600 dark:text-gray-300 flex items-center gap-1.5">
+                        <Icon icon="mdi:crown-outline" />
+                        Tier
+                      </label>
+                      <TabsSelector
+                        tabs={[
+                          { id: "", label: "All Tiers" },
+                          ...(filterOptions.tier_restrictions?.map((tier) => ({
+                            id: tier,
+                            label: tier,
+                          })) || []),
+                        ]}
+                        selectedTab={filters.tier_restriction}
+                        onSelect={(value) => handleFilterChange("tier_restriction", value)}
+                        mode={mode}
+                        icon="mdi:crown-outline"
+                      />
+                    </div>
+                    {isFreelancer && (
+                      <>
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-gray-600 dark:text-gray-300 flex items-center gap-1.5">
+                            <Icon icon="mdi:tools" />
+                            Skills
+                          </label>
+                          <TabsSelector
+                            tabs={[
+                              { id: "", label: "All Skills" },
+                              ...(filterOptions.skills?.map((skill) => ({
+                                id: skill,
+                                label: skill,
+                              })) || []),
+                            ]}
+                            selectedTab={filters.skills}
+                            onSelect={(value) => handleFilterChange("skills", value)}
+                            mode={mode}
+                            icon="mdi:tools"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-gray-600 dark:text-gray-300 flex items-center gap-1.5">
+                            <Icon icon="mdi:currency-usd" />
+                            Budget Range
+                          </label>
+                          <TabsSelector
+                            tabs={[
+                              { id: "", label: "All Budgets" },
+                              ...(filterOptions.budgetRanges?.map((range) => ({
+                                id: range,
+                                label: range,
+                              })) || []),
+                            ]}
+                            selectedTab={filters.budgetRange}
+                            onSelect={(value) => handleFilterChange("budgetRange", value)}
+                            mode={mode}
+                            icon="mdi:currency-usd"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-gray-600 dark:text-gray-300 flex items-center gap-1.5">
+                            <Icon icon="mdi:home" />
+                            Remote Work
+                          </label>
+                          <TabsSelector
+                            tabs={[
+                              { id: "", label: "All Options" },
+                              ...(filterOptions.remoteWorkOptions?.map((option) => ({
+                                id: option,
+                                label: option,
+                              })) || []),
+                            ]}
+                            selectedTab={filters.remoteWork}
+                            onSelect={(value) => handleFilterChange("remoteWork", value)}
+                            mode={mode}
+                            icon="mdi:home"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-gray-600 dark:text-gray-300 flex items-center gap-1.5">
+                            <Icon icon="mdi:clock" />
+                            Duration
+                          </label>
+                          <TabsSelector
+                            tabs={[
+                              { id: "", label: "All Durations" },
+                              ...(filterOptions.estimatedDurations?.map((duration) => ({
+                                id: duration,
+                                label: duration,
+                              })) || []),
+                            ]}
+                            selectedTab={filters.estimatedDuration}
+                            onSelect={(value) => handleFilterChange("estimatedDuration", value)}
+                            mode={mode}
+                            icon="mdi:clock"
+                          />
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-between items-center">
+              <div
+                className={`px-4 py-2 rounded-lg ${
+                  mode === "dark" ? "bg-gray-800" : "bg-white"
+                } shadow-sm`}
+              >
+                <span className="font-semibold">
+                  {filteredByTab.length}
+                </span>
+                <span className="text-gray-600 dark:text-gray-400">
+                  {" "}
+                  opportunities found
+                </span>
+              </div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                Showing {Math.min(12, filteredByTab.length)} of{" "}
+                {filteredByTab.length}
+              </div>
+            </div>
+
             <OpportunitiesSection
               opportunities={filteredByTab}
               opportunitiesLoading={loading}

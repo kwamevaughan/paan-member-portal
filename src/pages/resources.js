@@ -288,7 +288,7 @@ export default function Resources({ mode = "light", toggleMode }) {
     return new Date(b.created_at) - new Date(a.created_at);
   });
 
-  if (userLoading || resourcesLoading) {
+  if (userLoading) {
     return LoadingComponent;
   }
 
@@ -495,7 +495,15 @@ export default function Resources({ mode = "light", toggleMode }) {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {sortedResources.map((resource) => (
+              {resourcesLoading && (
+                <div className="col-span-full flex justify-center py-8">
+                  <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-paan-blue"></div>
+                    <span>Loading resources...</span>
+                  </div>
+                </div>
+              )}
+              {!resourcesLoading && sortedResources.map((resource) => (
                 <ResourceCard
                   key={resource.id}
                   resource={resource}

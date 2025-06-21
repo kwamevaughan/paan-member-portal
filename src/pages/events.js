@@ -209,7 +209,7 @@ export default function Events({ mode = "light", toggleMode }) {
           return true;
         });
 
-  if (userLoading || eventsLoading) {
+  if (userLoading) {
     return LoadingComponent;
   }
 
@@ -409,7 +409,15 @@ export default function Events({ mode = "light", toggleMode }) {
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredByTab.map((event) => (
+              {eventsLoading && (
+                <div className="col-span-full flex justify-center py-8">
+                  <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-paan-blue"></div>
+                    <span>Loading events...</span>
+                  </div>
+                </div>
+              )}
+              {!eventsLoading && filteredByTab.map((event) => (
                 <EventCard
                   key={event.id}
                   event={event}

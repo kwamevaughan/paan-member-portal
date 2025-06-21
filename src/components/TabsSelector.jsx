@@ -13,7 +13,10 @@ export default function TabsSelector({
       {/* Dropdown on mobile */}
       <select
         value={selectedTab}
-        onChange={(e) => onSelect(e.target.value)}
+        onChange={(e) => {
+          e.preventDefault();
+          onSelect(e.target.value);
+        }}
         className={`block sm:hidden w-full px-4 py-2 rounded-xl font-medium transition-all appearance-none ${
           mode === "dark"
             ? "bg-gray-700/50 border border-gray-600 text-gray-200"

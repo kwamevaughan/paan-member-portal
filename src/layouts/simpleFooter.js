@@ -76,12 +76,12 @@ const SimpleFooter = ({ mode, isSidebarOpen }) => {
           <span>Made with ♡ in</span>
           <span className="relative group">
             <span className="cursor-default"> Nairobi</span>
-            <div className="absolute top-0 left-0 w-full h-full bg-transparent opacity-0 transition-all duration-500 ease-in-out group-hover:top-[-120%] group-hover:opacity-100">
+            <div className="absolute top-0 left-0 w-10 bg-transparent opacity-0 transition-all duration-500 ease-in-out group-hover:top-[-120%] group-hover:opacity-100">
               <Image
                 src="/assets/images/kenya.gif"
                 alt="Nairobi Flag"
-                width={30}
-                height={30}
+                width={15}
+                height={15}
                 className="absolute top-0 left-0 w-auto"
               />
             </div>
@@ -89,12 +89,12 @@ const SimpleFooter = ({ mode, isSidebarOpen }) => {
           <span>x</span>{" "}
           <span className="relative group">
             <span className="cursor-default">Accra</span>
-            <div className="absolute top-0 left-0 w-full h-full bg-transparent opacity-0 transition-all duration-500 ease-in-out group-hover:top-[-120%] group-hover:opacity-100">
+            <div className="absolute top-0 left-0 w-10 bg-transparent opacity-0 transition-all duration-500 ease-in-out group-hover:top-[-120%] group-hover:opacity-100">
               <Image
                 src="/assets/images/ghana.gif"
                 alt="Accra Flag"
-                width={30}
-                height={30}
+                width={15}
+                height={15}
                 className="absolute top-0 left-0 w-auto"
               />
             </div>

@@ -7,49 +7,36 @@ const UpdateCard = ({
   mode,
   isRestricted,
   onRestrictedClick,
+  onClick,
   Icon: CustomIcon,
-  toast,
 }) => {
   const IconComponent = CustomIcon || Icon;
   const [isHovered, setIsHovered] = useState(false);
 
   const handleClick = () => {
     if (isRestricted) {
-      toast?.error(
-        `This update requires ${update.tier_restriction} membership. Upgrade your membership to access it.`,
-        {
-          duration: 4000,
-          position: "top-center",
-          style: {
-            background: mode === "dark" ? "#1F2937" : "#fff",
-            color: mode === "dark" ? "#fff" : "#1F2937",
-            border: mode === "dark" ? "1px solid #374151" : "1px solid #E5E7EB",
-          },
-        }
-      );
+      onRestrictedClick?.();
       return;
     }
-    onRestrictedClick?.(update); // Trigger modal
+    onClick?.(update);
   };
 
   const handleViewMoreInfo = (e) => {
     e.stopPropagation(); // Prevent card click
     if (isRestricted) {
-      toast?.error(
-        `This update requires ${update.tier_restriction} membership. Upgrade your membership to access it.`,
-        {
-          duration: 4000,
-          position: "top-center",
-          style: {
-            background: mode === "dark" ? "#1F2937" : "#fff",
-            color: mode === "dark" ? "#fff" : "#1F2937",
-            border: mode === "dark" ? "1px solid #374151" : "1px solid #E5E7EB",
-          },
-        }
-      );
+      onRestrictedClick?.();
       return;
     }
-    onRestrictedClick?.(update); // Trigger modal
+    onClick?.(update);
+  };
+
+  const getUpdateIcon = (update) => {
+    if (update.cta_url) return "mdi:external-link";
+    if (update.title.toLowerCase().includes("event")) return "mdi:calendar";
+    if (update.title.toLowerCase().includes("opportunity")) return "mdi:briefcase";
+    if (update.title.toLowerCase().includes("offer")) return "mdi:gift";
+    if (update.title.toLowerCase().includes("resource")) return "mdi:book-open";
+    return "mdi:bell";
   };
 
   return (
@@ -93,17 +80,18 @@ const UpdateCard = ({
 
       <div className="relative p-6 flex-1 flex flex-col">
         {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-start space-x-3 flex-1">
+        <div className="mb-4">
+          {/* First Row: Icon and Title */}
+          <div className="flex items-start space-x-3 mb-3">
             {/* Type Icon */}
             <div
               className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300 ${
                 mode === "dark"
-                  ? "bg-gray-700/50 text-blue-400"
-                  : "bg-white text-amber-400"
+                  ? "bg-gray-700/50 text-paan-blue"
+                  : "bg-white text-paan-yellow"
               } ${isHovered ? "scale-95 rotate-12" : ""}`}
             >
-              <IconComponent icon="mdi:bell" className="text-3xl" />
+              <IconComponent icon={getUpdateIcon(update)} className="text-3xl" />
             </div>
 
             <div className="flex-1 min-w-0">
@@ -111,36 +99,57 @@ const UpdateCard = ({
                 className={`font-normal text-lg leading-tight mb-1 transition-colors duration-200 ${
                   mode === "dark" ? "text-white" : "text-white"
                 } ${isRestricted ? "text-gray-500 dark:text-gray-400" : ""} ${
-                  isHovered ? "text-blue-600 dark:text-blue-400" : ""
+                  isHovered ? "text-paan-blue dark:text-paan-blue" : ""
                 }`}
               >
                 {update.title}
-                {isRestricted && (
-                  <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
-                    <IconComponent icon="mdi:lock" className="text-sm mr-1" />
-                    Restricted
-                  </span>
-                )}
               </h3>
-
-              {/* Category */}
-              {update.category && (
-                <p
-                  className={`text-sm font-medium ${
-                    mode === "dark" ? "text-gray-300" : "text-gray-700"
-                  } ${isRestricted ? "text-gray-400 dark:text-gray-500" : ""}`}
-                >
-                  {update.category}
-                </p>
-              )}
             </div>
           </div>
 
-          <div className="[&>span]:!bg-white [&>span]:!text-gray-900 [&>span]:!border-gray-200 [&>span>svg]:!text-[#f25749]">
-            <TierBadge
-              tier={update.tier_restriction || "Free Member"}
-              mode={mode}
-            />
+          {/* Second Row: Tier Badge, Category and Status Badge */}
+          <div className="flex items-center justify-between">
+            <div className="[&>span]:!bg-white [&>span]:!text-gray-900 [&>span]:!border-gray-200 [&>span>svg]:!text-[#f25749]">
+              <TierBadge
+                tier={update.tier_restriction || "Free Member"}
+                mode={mode}
+              />
+            </div>
+
+            {update.category && (
+              <p
+                className={`text-sm font-medium flex bg-gray-100/50 text-gray-100 px-2 py-1 rounded-full w-fit ${
+                  isRestricted ? "text-gray-400 dark:text-gray-500" : ""
+                }`}
+              >
+                {update.category}
+              </p>
+            )}
+
+            {/* Status Badges */}
+            <div className="flex gap-2">
+              {/* Restricted Badge */}
+              {isRestricted && (
+                <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
+                  <IconComponent icon="mdi:lock" className="text-sm mr-1" />
+                  Restricted
+                </div>
+              )}
+
+              {/* NEW Badge */}
+              {update.is_new && !isRestricted && (
+                <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
+                  NEW
+                </div>
+              )}
+
+              {/* External Link Badge */}
+              {update.cta_url && !isRestricted && (
+                <div className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
+                  External Link
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -196,7 +205,10 @@ const UpdateCard = ({
             <div className="flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200 text-white">
               <IconComponent icon="mdi:calendar" className="text-lg text-[#f25749]" />
               <span>
-                {new Date(update.created_at).toLocaleDateString()}
+                {new Date(update.created_at).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                })}
               </span>
             </div>
           )}
@@ -211,11 +223,9 @@ const UpdateCard = ({
 
           {/* CTA URL */}
           {update.cta_url && (
-            <div className="flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200">
+            <div className="flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200 text-white">
               <IconComponent icon="mdi:link" className="text-lg text-green-500" />
-              <span className="font-semibold text-green-600 dark:text-green-400">
-                External link
-              </span>
+              <span>External link</span>
             </div>
           )}
         </div>
@@ -233,7 +243,7 @@ const UpdateCard = ({
             className={`px-4 py-2 rounded-full font-normal text-xs transition-colors ${
               isRestricted
                 ? "bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400"
-                : "bg-amber-400  hover:bg-amber-500 dark:bg-amber-400 dark:hover:bg-amber-500"
+                : "bg-paan-yellow hover:bg-paan-yellow/80 dark:bg-paan-yellow dark:hover:bg-paan-yellow/80"
             }`}
             disabled={isRestricted}
             aria-label={`View details for ${update.title}`}
@@ -245,21 +255,12 @@ const UpdateCard = ({
         {/* Hover Glow Effect */}
         {!isRestricted && (
           <div
-            className={`absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 opacity-0 transition-opacity duration-500 pointer-events-none ${
+            className={`absolute inset-0 rounded-2xl bg-gradient-to-r from-paan-blue/5 via-paan-blue/5 to-paan-red/5 opacity-0 transition-opacity duration-500 pointer-events-none ${
               isHovered ? "opacity-100" : "opacity-0"
             }`}
           ></div>
         )}
       </div>
-
-      {/* NEW Badge */}
-      {update.is_new && !isRestricted && (
-        <div className="absolute top-4 left-4">
-          <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
-            NEW
-          </div>
-        </div>
-      )}
     </div>
   );
 };

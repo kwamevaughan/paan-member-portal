@@ -15,7 +15,9 @@ import { hasTierAccess, normalizeTier } from "@/utils/tierUtils";
 import Link from "next/link";
 import { TierBadge, JobTypeBadge } from "@/components/Badge";
 import TabsSelector from "@/components/TabsSelector";
-
+import UpdateCard from "@/components/UpdateCard";
+import SimpleModal from "@/components/SimpleModal";
+import UnifiedModalContent from "@/components/UnifiedModalContent";
 
 export default function Updates({ mode = "light", toggleMode }) {
   const {
@@ -31,6 +33,11 @@ export default function Updates({ mode = "light", toggleMode }) {
   const [filters, setFilters] = useState({ tags: "All" });
   const [filterTerm, setFilterTerm] = useState("");
   const [viewMode, setViewMode] = useState("grid");
+
+  // Unified modal state
+  const [modalData, setModalData] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const {
     updates,
     filterOptions,
@@ -75,6 +82,16 @@ export default function Updates({ mode = "light", toggleMode }) {
     );
   };
 
+  const handleUpdateClick = (update) => {
+    setModalData({ ...update, type: 'update' });
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setModalData(null);
+  };
+
   // Filter and sort updates
   const filteredUpdates = updates
     .filter((update) => {
@@ -93,8 +110,6 @@ export default function Updates({ mode = "light", toggleMode }) {
       return new Date(b.created_at) - new Date(a.created_at);
     });
 
-  
-
   if (userLoading || updatesLoading) return LoadingComponent;
   if (!user) {
     router.push("/");
@@ -107,14 +122,6 @@ export default function Updates({ mode = "light", toggleMode }) {
       </div>
     );
   }
-
-  const getUpdateTypeIcon = (update) => {
-    if (update.cta_url) return "mdi:external-link";
-    if (update.title.toLowerCase().includes("event")) return "mdi:calendar";
-    if (update.title.toLowerCase().includes("opportunity"))
-      return "mdi:briefcase";
-    return "mdi:information";
-  };
 
   return (
     <div
@@ -313,182 +320,15 @@ export default function Updates({ mode = "light", toggleMode }) {
                             ? { y: -4, transition: { duration: 0.2 } }
                             : undefined
                         }
-                        onClick={
-                          !isAccessible
-                            ? () => handleDisabledClick(update.tier_restriction)
-                            : undefined
-                        }
-                        className={`group relative overflow-hidden rounded-2xl ${
-                          mode === "dark"
-                            ? isAccessible
-                              ? "bg-gray-800/60 border border-gray-700/50 hover:border-gray-600/70"
-                              : "bg-gray-700/50 border border-gray-700/50 opacity-60 cursor-not-allowed"
-                            : isAccessible
-                            ? "bg-white/80 border border-gray-200/50 hover:border-gray-300/70"
-                            : "bg-gray-100/50 border border-gray-200/50 opacity-60 cursor-not-allowed"
-                        } backdrop-blur-md shadow-lg ${
-                          isAccessible ? "hover:shadow-2xl" : ""
-                        } transition-all duration-300 ${
-                          viewMode === "list"
-                            ? "flex items-center gap-6 p-6"
-                            : "p-6"
-                        }`}
                       >
-                        <div
-                          className={`absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 opacity-0 ${
-                            isAccessible ? "group-hover:opacity-100" : ""
-                          } transition-opacity duration-300 rounded-2xl`}
+                        <UpdateCard
+                          update={update}
+                          mode={mode}
+                          isRestricted={!isAccessible}
+                          onRestrictedClick={() => handleDisabledClick(update.tier_restriction)}
+                          onClick={handleUpdateClick}
+                          Icon={Icon}
                         />
-
-                        <div
-                          className={`relative ${
-                            viewMode === "list" ? "flex-1" : ""
-                          }`}
-                        >
-                          {/* Badges */}
-                          <div className="flex justify-between items-start mb-4">
-                            <div className="flex flex-wrap gap-2">
-                              <span
-                                className={`text-xs px-2 py-1 rounded-full ${
-                                  mode === "dark"
-                                    ? "bg-indigo-700 text-white"
-                                    : "bg-indigo-100 text-indigo-800"
-                                }`}
-                              >
-                                {update.category || "General"}
-                              </span>
-                              <span
-                                className={`text-xs px-2 py-1 rounded-full ${
-                                  mode === "dark"
-                                    ? "bg-purple-700 text-white"
-                                    : "bg-purple-100 text-purple-800"
-                                }`}
-                              >
-                                {normalizeTier(update.tier_restriction)}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Icon and Title */}
-                          <div
-                            className={`flex items-start gap-4 ${
-                              viewMode === "list" ? "mb-0" : "mb-4"
-                            }`}
-                          >
-                            <div
-                              className={`p-3 rounded-xl ${
-                                mode === "dark"
-                                  ? isAccessible
-                                    ? "bg-blue-500/20 text-blue-400"
-                                    : "bg-gray-600/20 text-gray-500"
-                                  : isAccessible
-                                  ? "bg-blue-500/10 text-blue-600"
-                                  : "bg-gray-200/20 text-gray-400"
-                              } ${
-                                isAccessible ? "group-hover:scale-110" : ""
-                              } transition-transform duration-200`}
-                            >
-                              <Icon
-                                icon={getUpdateTypeIcon(update)}
-                                className="w-6 h-6"
-                              />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h3
-                                className={`text-lg font-bold mb-2 line-clamp-2 ${
-                                  mode === "dark"
-                                    ? isAccessible
-                                      ? "text-white"
-                                      : "text-gray-400"
-                                    : isAccessible
-                                    ? "text-gray-900"
-                                    : "text-gray-500"
-                                } ${
-                                  isAccessible
-                                    ? "group-hover:text-blue-500"
-                                    : ""
-                                } transition-colors`}
-                              >
-                                {update.title}
-                              </h3>
-                              <p
-                                className={`text-sm leading-relaxed ${
-                                  mode === "dark"
-                                    ? isAccessible
-                                      ? "text-gray-300"
-                                      : "text-gray-500"
-                                    : isAccessible
-                                    ? "text-gray-600"
-                                    : "text-gray-400"
-                                } ${
-                                  viewMode === "grid"
-                                    ? "line-clamp-3"
-                                    : "line-clamp-2"
-                                }`}
-                              >
-                                {update.description}
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Footer */}
-                          <div
-                            className={`flex items-center justify-between gap-4 ${
-                              viewMode === "list" ? "mt-0" : "mt-6"
-                            }`}
-                          >
-                            <div
-                              className={`text-xs font-medium ${
-                                mode === "dark"
-                                  ? isAccessible
-                                    ? "text-gray-400"
-                                    : "text-gray-500"
-                                  : isAccessible
-                                  ? "text-gray-500"
-                                  : "text-gray-400"
-                              }`}
-                            >
-                              {new Date(update.created_at).toLocaleDateString(
-                                "en-US",
-                                {
-                                  month: "short",
-                                  day: "numeric",
-                                  year: "numeric",
-                                }
-                              )}
-                            </div>
-
-                            {update.cta_text && update.cta_url && (
-                              <motion.a
-                                href={update.cta_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                whileHover={isAccessible ? { scale: 1.05 } : {}}
-                                whileTap={isAccessible ? { scale: 0.95 } : {}}
-                                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-                                  mode === "dark"
-                                    ? isAccessible
-                                      ? "bg-blue-600 hover:bg-blue-700 text-white"
-                                      : "bg-gray-600 text-gray-400 cursor-not-allowed"
-                                    : isAccessible
-                                    ? "bg-blue-500 hover:bg-blue-600 text-white"
-                                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                } shadow-md ${
-                                  isAccessible ? "hover:shadow-lg" : ""
-                                }`}
-                                onClick={(e) =>
-                                  !isAccessible && e.preventDefault()
-                                }
-                              >
-                                <span>{update.cta_text}</span>
-                                <Icon
-                                  icon="mdi:arrow-right"
-                                  className="w-4 h-4"
-                                />
-                              </motion.a>
-                            )}
-                          </div>
-                        </div>
                       </motion.div>
                     );
                   })}
@@ -499,6 +339,21 @@ export default function Updates({ mode = "light", toggleMode }) {
           <SimpleFooter mode={mode} isSidebarOpen={isSidebarOpen} />
         </div>
       </div>
+
+      {/* Unified Modal */}
+      <SimpleModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        title={modalData?.title || "Update Details"}
+        mode={mode}
+        width="max-w-4xl"
+      >
+        <UnifiedModalContent
+          modalData={modalData}
+          mode={mode}
+          onClose={handleCloseModal}
+        />
+      </SimpleModal>
     </div>
   );
 }

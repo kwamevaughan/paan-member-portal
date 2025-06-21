@@ -4,7 +4,6 @@ import { hasTierAccess } from "@/utils/tierUtils";
 import SectionCard from "./SectionCard";
 import OfferCard from "./OfferCard";
 import FilterDropdown from "./FilterDropdown";
-import SimpleModal from "./SimpleModal";
 import { Icon } from "@iconify/react";
 
 const OffersSection = ({
@@ -24,11 +23,10 @@ const OffersSection = ({
   mode,
   Icon,
   toast,
+  onClick,
 }) => {
   const [statsFilter, setStatsFilter] = useState("total");
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedOffer, setSelectedOffer] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const statsConfig = createStatsConfig({
     items: offers,
@@ -40,16 +38,6 @@ const OffersSection = ({
 
   const handleStatsFilter = (filter) => {
     setStatsFilter(filter);
-  };
-
-  const handleOfferClick = (offer) => {
-    setSelectedOffer(offer);
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedOffer(null);
   };
 
   const renderContent = () => {
@@ -316,17 +304,17 @@ const OffersSection = ({
               <OfferCard
                 offer={offer}
                 mode={mode}
-                isRestricted={
-                  !hasTierAccess(offer.tier_restriction, user)
-                }
-                onRestrictedClick={() =>
-                  handleRestrictedClick(
-                    `Access restricted: ${offer.tier_restriction} tier required for "${offer.title}"`
-                  )
-                }
-                onClick={handleOfferClick}
+                isRestricted={!hasTierAccess(offer.tier_restriction, user)}
+                onRestrictedClick={() => {
+                  toast.error(
+                    `This offer is available to ${normalizeTier(
+                      offer.tier_restriction
+                    )} only. Consider upgrading your membership to access this offer.`,
+                    { duration: 5000 }
+                  );
+                }}
+                onClick={onClick}
                 Icon={Icon}
-                toast={toast}
               />
             </div>
           ))}
@@ -380,201 +368,6 @@ const OffersSection = ({
       >
         {renderContent()}
       </SectionCard>
-
-      {/* Offer Details Modal */}
-      <SimpleModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        title={selectedOffer?.title || "Offer Details"}
-        mode={mode}
-        width="max-w-4xl"
-      >
-        {selectedOffer && (
-          <div className="space-y-6">
-            {/* Offer Header */}
-            <div className="flex items-start space-x-4">
-              <div
-                className={`flex-shrink-0 w-16 h-16 rounded-xl flex items-center justify-center ${
-                  mode === "dark"
-                    ? "bg-gray-700/50 text-blue-400"
-                    : "bg-white text-amber-400"
-                }`}
-              >
-                <Icon icon="mdi:gift-outline" className="text-3xl" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-2xl font-bold mb-2">{selectedOffer.title}</h3>
-                {selectedOffer.type && (
-                  <p className={`text-sm font-medium ${
-                    mode === "dark" ? "text-gray-300" : "text-gray-600"
-                  }`}>
-                    {selectedOffer.type}
-                  </p>
-                )}
-              </div>
-              <div className="flex-shrink-0">
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                  mode === "dark" 
-                    ? "bg-blue-900/30 text-blue-400 border border-blue-700/50"
-                    : "bg-blue-100 text-blue-800 border border-blue-200"
-                }`}>
-                  {selectedOffer.tier_restriction || "All Members"}
-                </span>
-              </div>
-            </div>
-
-            {/* Description */}
-            {selectedOffer.description && (
-              <div>
-                <h4 className={`text-lg font-semibold mb-2 ${
-                  mode === "dark" ? "text-gray-200" : "text-gray-800"
-                }`}>
-                  Description
-                </h4>
-                <p className={`text-sm leading-relaxed ${
-                  mode === "dark" ? "text-gray-300" : "text-gray-600"
-                }`}>
-                  {selectedOffer.description}
-                </p>
-              </div>
-            )}
-
-            {/* Tags */}
-            {selectedOffer.tags && selectedOffer.tags.length > 0 && (
-              <div>
-                <h4 className={`text-lg font-semibold mb-3 ${
-                  mode === "dark" ? "text-gray-200" : "text-gray-800"
-                }`}>
-                  Tags
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                  {selectedOffer.tags.map((tag, index) => (
-                    <span
-                      key={index}
-                      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                        mode === "dark"
-                          ? "bg-gray-700/60 text-gray-300"
-                          : "bg-gray-100 text-gray-700"
-                      }`}
-                    >
-                      <Icon icon="mdi:tag" className="text-teal-500 text-sm mr-1" />
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Rating */}
-              {selectedOffer.averageRating > 0 && (
-                <div className={`p-4 rounded-lg ${
-                  mode === "dark" ? "bg-gray-800/50" : "bg-gray-50"
-                }`}>
-                  <div className="flex items-center space-x-2 mb-2">
-                    <Icon icon="mdi:star" className="text-lg text-amber-400" />
-                    <span className={`font-semibold ${
-                      mode === "dark" ? "text-amber-400" : "text-amber-600"
-                    }`}>
-                      {selectedOffer.averageRating.toFixed(1)}
-                    </span>
-                  </div>
-                  <p className={`text-sm ${
-                    mode === "dark" ? "text-gray-400" : "text-gray-600"
-                  }`}>
-                    Average Rating
-                  </p>
-                </div>
-              )}
-
-              {/* Created Date */}
-              {selectedOffer.created_at && (
-                <div className={`p-4 rounded-lg ${
-                  mode === "dark" ? "bg-gray-800/50" : "bg-gray-50"
-                }`}>
-                  <div className="flex items-center space-x-2 mb-2">
-                    <Icon icon="mdi:calendar" className="text-lg text-[#f25749]" />
-                    <span className={`font-semibold ${
-                      mode === "dark" ? "text-gray-200" : "text-gray-800"
-                    }`}>
-                      {new Date(selectedOffer.created_at).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <p className={`text-sm ${
-                    mode === "dark" ? "text-gray-400" : "text-gray-600"
-                  }`}>
-                    Created Date
-                  </p>
-                </div>
-              )}
-
-              {/* Feedback Count */}
-              {selectedOffer.feedbackCount > 0 && (
-                <div className={`p-4 rounded-lg ${
-                  mode === "dark" ? "bg-gray-800/50" : "bg-gray-50"
-                }`}>
-                  <div className="flex items-center space-x-2 mb-2">
-                    <Icon icon="mdi:comment" className="text-lg text-green-500" />
-                    <span className={`font-semibold ${
-                      mode === "dark" ? "text-green-400" : "text-green-600"
-                    }`}>
-                      {selectedOffer.feedbackCount}
-                    </span>
-                  </div>
-                  <p className={`text-sm ${
-                    mode === "dark" ? "text-gray-400" : "text-gray-600"
-                  }`}>
-                    Reviews
-                  </p>
-                </div>
-              )}
-
-              {/* Offer Type */}
-              {selectedOffer.offer_type && (
-                <div className={`p-4 rounded-lg ${
-                  mode === "dark" ? "bg-gray-800/50" : "bg-gray-50"
-                }`}>
-                  <div className="flex items-center space-x-2 mb-2">
-                    <Icon icon="mdi:gift" className="text-lg text-[#85c1da]" />
-                    <span className={`font-semibold ${
-                      mode === "dark" ? "text-gray-200" : "text-gray-800"
-                    }`}>
-                      {selectedOffer.offer_type}
-                    </span>
-                  </div>
-                  <p className={`text-sm ${
-                    mode === "dark" ? "text-gray-400" : "text-gray-600"
-                  }`}>
-                    Offer Type
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200 dark:border-gray-700">
-              <button
-                onClick={handleCloseModal}
-                className={`px-6 py-3 text-sm font-medium rounded-xl border transition-all duration-200 ${
-                  mode === "dark"
-                    ? "border-gray-600 text-gray-200 bg-gray-800 hover:bg-gray-700"
-                    : "border-gray-200 text-gray-700 bg-white hover:bg-gray-50"
-                }`}
-              >
-                Close
-              </button>
-              <button
-                className={`px-6 py-3 text-sm font-medium rounded-xl text-white bg-[#f25749] hover:bg-[#e04a3d] transition-all duration-200 ${
-                  mode === "dark" ? "shadow-white/10" : "shadow-gray-200"
-                }`}
-              >
-                Claim Offer
-              </button>
-            </div>
-          </div>
-        )}
-      </SimpleModal>
     </>
   );
 };

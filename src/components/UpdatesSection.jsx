@@ -17,7 +17,7 @@ const UpdatesSection = ({
   handleRestrictedClick,
   mode,
   Icon,
-  toast,
+  onClick,
 }) => {
   const [statsFilter, setStatsFilter] = useState("total");
   const [selectedUpdate, setSelectedUpdate] = useState(null);
@@ -297,7 +297,7 @@ const UpdatesSection = ({
                     `Access restricted: ${update.tier_restriction} tier required for "${update.title}"`
                   )
                 }
-                toast={toast}
+                onClick={onClick}
               />
             </div>
           ))}

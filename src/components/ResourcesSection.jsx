@@ -17,6 +17,7 @@ const ResourcesSection = ({
   handleRestrictedClick,
   mode,
   Icon,
+  onClick,
 }) => {
   const [statsFilter, setStatsFilter] = useState("total");
   const [selectedResource, setSelectedResource] = useState(null);
@@ -304,9 +305,7 @@ const ResourcesSection = ({
                     `Access restricted: ${resource.tier_restriction} tier required for "${resource.title}"`
                   )
                 }
-                onView={(resource) => {
-                  if (resource.url) window.open(resource.url, "_blank");
-                }}
+                onClick={onClick}
               />
             </div>
           ))}

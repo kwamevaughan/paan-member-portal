@@ -280,6 +280,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
             handleRestrictedClick={handleRestrictedClick}
             mode={mode}
             Icon={Icon}
+            onClick={(resource) => handleOpenModal(resource, 'resource')}
           />
         )}
         {activeTab === "marketIntel" && (
@@ -311,6 +312,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
             mode={mode}
             Icon={Icon}
             toast={toast}
+            onClick={(offer) => handleOpenModal(offer, 'offer')}
           />
         )}
         {activeTab === "updates" && (
@@ -325,7 +327,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
             handleRestrictedClick={handleRestrictedClick}
             mode={mode}
             Icon={Icon}
-            toast={toast}
+            onClick={(update) => handleOpenModal(update, 'update')}
           />
         )}
       </TabContentTransition>

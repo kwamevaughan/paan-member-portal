@@ -199,7 +199,7 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
       className={`min-h-screen flex flex-col ${
         mode === "dark"
           ? "bg-gradient-to-br from-gray-900 to-gray-800 text-white"
-          : "bg-gradient-to-br from-gray-50 to-gray-100 text-gray-900"
+          : "bg-white text-gray-900"
       }`}
     >
       <HrHeader
@@ -225,7 +225,7 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
             isSidebarOpen && !isMobile ? "ml-52" : "ml-20"
           }`}
         >
-          <div className="max-w-7xl mx-auto space-y-6">
+          <div className="max-w-7xl mx-auto space-y-6 pt-14">
             <TitleCard
               title={title}
               description={description}

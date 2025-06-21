@@ -4,6 +4,7 @@ import { hasTierAccess } from "@/utils/tierUtils";
 import SectionCard from "./SectionCard";
 import MarketIntelItem from "./MarketIntelItem";
 import FilterDropdown from "./FilterDropdown";
+import SimpleModal from "./SimpleModal";
 import { Icon } from "@iconify/react";
 
 const MarketIntelligenceSection = ({
@@ -15,12 +16,12 @@ const MarketIntelligenceSection = ({
   marketIntelFilterOptions,
   user,
   handleRestrictedClick,
+  onClick,
   mode,
   Icon,
+  toast,
 }) => {
   const [statsFilter, setStatsFilter] = useState("total");
-  const [selectedIntel, setSelectedIntel] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
 
   const statsConfig = createStatsConfig({
@@ -36,7 +37,11 @@ const MarketIntelligenceSection = ({
   };
 
   const handleViewIntelligence = (item) => {
-    if (item.url) window.open(item.url, "_blank");
+    onClick(item);
+  };
+
+  const handleCloseModal = () => {
+    // This function is no longer needed since modal is handled at dashboard level
   };
 
   const renderContent = () => {
@@ -303,6 +308,7 @@ const MarketIntelligenceSection = ({
                     `Access restricted: ${item.tier_restriction} tier required for "${item.title}"`
                   )
                 }
+                onClick={handleViewIntelligence}
               />
             </div>
           ))}
@@ -312,51 +318,53 @@ const MarketIntelligenceSection = ({
   };
 
   return (
-    <SectionCard
-      title="Market Intelligence"
-      icon="mdi:chart-line"
-      mode={mode}
-      headerAction={
-        <div className="flex flex-wrap gap-3">
-          <div className="relative">
-            <FilterDropdown
-              value={marketIntelFilters.intel_type || ""}
-              onChange={(value) =>
-                handleMarketIntelFilterChange("intel_type", value)
-              }
-              options={[
-                { value: "", label: "All Types" },
-                ...marketIntelFilterOptions.intel_types.map((t) => ({
-                  value: t,
-                  label: t,
-                })),
-              ]}
-              mode={mode}
-              ariaLabel="Filter market intelligence by type"
-            />
+    <>
+      <SectionCard
+        title="Market Intelligence"
+        icon="mdi:chart-line"
+        mode={mode}
+        headerAction={
+          <div className="flex flex-wrap gap-3">
+            <div className="relative">
+              <FilterDropdown
+                value={marketIntelFilters.intel_type || ""}
+                onChange={(value) =>
+                  handleMarketIntelFilterChange("intel_type", value)
+                }
+                options={[
+                  { value: "", label: "All Types" },
+                  ...marketIntelFilterOptions.intel_types.map((t) => ({
+                    value: t,
+                    label: t,
+                  })),
+                ]}
+                mode={mode}
+                ariaLabel="Filter market intelligence by type"
+              />
+            </div>
+            <div className="relative">
+              <FilterDropdown
+                value={marketIntelFilters.tier_restriction || ""}
+                onChange={(value) =>
+                  handleMarketIntelFilterChange("tier_restriction", value)
+                }
+                options={[
+                  { value: "", label: "All Tiers" },
+                  ...marketIntelFilterOptions.tier_restrictions.map((t) => ({
+                    value: t,
+                    label: t,
+                  })),
+                ]}
+                mode={mode}
+                ariaLabel="Filter market intelligence by membership tier"
+              />
+            </div>
           </div>
-          <div className="relative">
-            <FilterDropdown
-              value={marketIntelFilters.tier_restriction || ""}
-              onChange={(value) =>
-                handleMarketIntelFilterChange("tier_restriction", value)
-              }
-              options={[
-                { value: "", label: "All Tiers" },
-                ...marketIntelFilterOptions.tier_restrictions.map((t) => ({
-                  value: t,
-                  label: t,
-                })),
-              ]}
-              mode={mode}
-              ariaLabel="Filter market intelligence by membership tier"
-            />
-          </div>
-        </div>
-      }
-    >
-      {renderContent()}
-    </SectionCard>
+        }
+      >
+        {renderContent()}
+      </SectionCard>
+    </>
   );
 };
 

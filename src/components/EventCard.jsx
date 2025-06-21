@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { TierBadge } from "./Badge";
 import { Icon } from "@iconify/react";
+import Image from "next/image";
 
 const EventCard = ({
   event,
@@ -18,6 +19,14 @@ const EventCard = ({
       onRestrictedClick?.();
       return;
     }
+    
+    // If there's an external registration link, open it in a new tab
+    if (event.registration_link) {
+      window.open(event.registration_link, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    
+    // Otherwise, use the internal registration system
     onRegister?.(event.id);
   };
 
@@ -47,6 +56,8 @@ const EventCard = ({
       aria-label={
         isRestricted
           ? `Restricted event: ${event.title}`
+          : event.registration_link
+          ? `Register online for event: ${event.title}`
           : `Register for event: ${event.title}`
       }
     >
@@ -67,15 +78,33 @@ const EventCard = ({
       )}
 
       <div className="relative p-6 flex-1 flex flex-col">
+        {/* Banner Image */}
+        {event.banner_image && (
+          <div className="relative w-full h-[150px] mb-4 rounded-lg overflow-hidden">
+            <Image
+              src={event.banner_image}
+              width={1000}
+              height={0}
+              alt={`Banner for ${event.title}`}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.target.style.display = 'none';
+              }}
+            />
+            
+          </div>
+        )}
+
         {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-start space-x-3 flex-1">
+        <div className="mb-4">
+          {/* First Row: Icon and Title */}
+          <div className="flex items-start space-x-3 mb-3">
             {/* Type Icon */}
             <div
               className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300 ${
                 mode === "dark"
-                  ? "bg-gray-700/50 text-blue-400"
-                  : "bg-white text-amber-400"
+                  ? "bg-gray-700/50 text-paan-blue"
+                  : "bg-white text-paan-yellow"
               } ${isHovered ? "scale-95 rotate-12" : ""}`}
             >
               <Icon icon="mdi:calendar-star" className="text-3xl" />
@@ -86,36 +115,57 @@ const EventCard = ({
                 className={`font-normal text-lg leading-tight mb-1 transition-colors duration-200 ${
                   mode === "dark" ? "text-white" : "text-white"
                 } ${isRestricted ? "text-gray-500 dark:text-gray-400" : ""} ${
-                  isHovered ? "text-blue-600 dark:text-blue-400" : ""
+                  isHovered ? "text-paan-blue dark:text-paan-blue" : ""
                 }`}
               >
                 {event.title}
-                {isRestricted && (
-                  <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
-                    <Icon icon="mdi:lock" className="text-sm mr-1" />
-                    Restricted
-                  </span>
-                )}
               </h3>
-
-              {/* Event Type */}
-              {event.event_type && (
-                <p
-                  className={`text-sm font-medium ${
-                    mode === "dark" ? "text-gray-300" : "text-gray-700"
-                  } ${isRestricted ? "text-gray-400 dark:text-gray-500" : ""}`}
-                >
-                  {event.event_type}
-                </p>
-              )}
             </div>
           </div>
 
-          <div className="[&>span]:!bg-white [&>span]:!text-gray-900 [&>span]:!border-gray-200 [&>span>svg]:!text-[#f25749]">
-            <TierBadge
-              tier={event.tier_restriction || "Free Member"}
-              mode={mode}
-            />
+          {/* Second Row: Tier Badge, Event Type and Status Badge */}
+          <div className="flex items-center justify-between">
+            <div className="[&>span]:!bg-white [&>span]:!text-gray-900 [&>span]:!border-gray-200 [&>span>svg]:!text-[#f25749]">
+              <TierBadge
+                tier={event.tier_restriction || "Free Member"}
+                mode={mode}
+              />
+            </div>
+
+            {event.event_type && (
+              <p
+                className={`text-sm font-medium flex bg-gray-100/50 text-gray-100 px-2 py-1 rounded-full w-fit ${
+                  isRestricted ? "text-gray-400 dark:text-gray-500" : ""
+                }`}
+              >
+                {event.event_type}
+              </p>
+            )}
+
+            {/* Status Badges */}
+            <div className="flex gap-2">
+              {/* Restricted Badge */}
+              {isRestricted && (
+                <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
+                  <Icon icon="mdi:lock" className="text-sm mr-1" />
+                  Restricted
+                </div>
+              )}
+
+              {/* Upcoming Badge */}
+              {isUpcoming && !isRestricted && (
+                <div className="bg-paan-blue text-white text-xs font-semibold px-2 py-1 rounded-full">
+                  Upcoming
+                </div>
+              )}
+
+              {/* Past Badge */}
+              {isPast && !isRestricted && (
+                <div className="bg-gradient-to-r from-gray-500 to-gray-600 text-white text-xs font-semibold px-2 py-1 rounded-full">
+                  Past
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -141,7 +191,7 @@ const EventCard = ({
             <Icon
               icon={isUpcoming ? "mdi:calendar" : "mdi:calendar-check"}
               className={`text-lg ${
-                isUpcoming ? "text-[#f25749]" : "text-green-500"
+                isUpcoming ? "text-paan-red" : "text-paan-yellow"
               }`}
             />
             <span>
@@ -158,7 +208,10 @@ const EventCard = ({
           {/* Location */}
           {event.location && (
             <div className="flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200 text-white">
-              <Icon icon="mdi:map-marker" className="text-lg text-amber-400" />
+              <Icon
+                icon="mdi:map-marker"
+                className="text-lg text-paan-yellow"
+              />
               <span>{event.location}</span>
             </div>
           )}
@@ -166,7 +219,10 @@ const EventCard = ({
           {/* Registration Status */}
           {isRegistered && (
             <div className="flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200 text-white">
-              <Icon icon="mdi:check-circle" className="text-lg text-green-500" />
+              <Icon
+                icon="mdi:check-circle"
+                className="text-lg text-paan-yellow"
+              />
               <span>Registered</span>
             </div>
           )}
@@ -174,53 +230,49 @@ const EventCard = ({
 
         {/* Footer */}
         <div className="flex items-center justify-between pt-4 mt-auto">
-          <div className="flex items-center space-x-1.5 text-xs text-gray-500 dark:text-gray-400">
-            <Icon icon="mdi:account-group" className="text-sm" />
-            <span>{event.attendee_count || 0} attendees</span>
-          </div>
+          {!event.registration_link && (
+            <div className="flex items-center space-x-1.5 text-xs text-gray-500 dark:text-gray-400">
+              <Icon icon="mdi:account-group" className="text-sm" />
+              <span>{event.attendee_count || 0} attendees</span>
+            </div>
+          )}
           <button
             onClick={handleClick}
             className={`px-4 py-2 rounded-full font-normal text-xs transition-colors ${
               isRestricted
                 ? "bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400"
                 : isRegistered
-                ? "bg-green-400 hover:bg-green-500 dark:bg-green-400 dark:hover:bg-green-500"
-                : "bg-amber-400 hover:bg-amber-500 dark:bg-amber-400 dark:hover:bg-amber-500"
+                ? "bg-paan-yellow hover:bg-paan-yellow/80 dark:bg-paan-yellow dark:hover:bg-paan-yellow/80"
+                : "bg-paan-yellow hover:bg-paan-yellow/80 dark:bg-paan-yellow dark:hover:bg-paan-yellow/80"
             }`}
             disabled={isRestricted}
-            aria-label={`${isRegistered ? "Unregister" : "Register"} for ${event.title}`}
+            aria-label={
+              isRestricted
+                ? `Restricted event: ${event.title}`
+                : event.registration_link
+                ? `Register online for ${event.title}`
+                : `${isRegistered ? "Unregister" : "Register"} for ${event.title}`
+            }
           >
-            {isRegistered ? "Registered" : "Register Now"}
+            {isRestricted
+              ? "Restricted"
+              : isRegistered
+              ? "Registered"
+              : event.registration_link
+              ? "Register Online"
+              : "Register Now"}
           </button>
         </div>
 
         {/* Hover Glow Effect */}
         {!isRestricted && (
           <div
-            className={`absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 opacity-0 transition-opacity duration-500 pointer-events-none ${
+            className={`absolute inset-0 rounded-2xl bg-gradient-to-r from-paan-blue/5 via-paan-blue/5 to-paan-red/5 opacity-0 transition-opacity duration-500 pointer-events-none ${
               isHovered ? "opacity-100" : "opacity-0"
             }`}
           ></div>
         )}
       </div>
-
-      {/* UPCOMING Badge */}
-      {isUpcoming && !isRestricted && (
-        <div className="absolute top-4 right-4">
-          <div className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
-            UPCOMING
-          </div>
-        </div>
-      )}
-
-      {/* PAST Badge */}
-      {isPast && !isRestricted && (
-        <div className="absolute top-4 right-4">
-          <div className="bg-gradient-to-r from-gray-500 to-gray-600 text-white text-xs font-semibold px-2 py-1 rounded-full">
-            PAST
-          </div>
-        </div>
-      )}
     </div>
   );
 };

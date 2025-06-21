@@ -55,7 +55,7 @@ export default function OfferCard({ offer, userTier, onClick, mode }) {
       );
       return;
     }
-    onClick(offer);
+    onClick?.(offer);
   };
 
   const handleViewMoreInfo = (e) => {
@@ -75,7 +75,7 @@ export default function OfferCard({ offer, userTier, onClick, mode }) {
       );
       return;
     }
-    onClick(offer);
+    onClick?.(offer);
   };
 
   const getOfferIcon = (type) => {
@@ -130,8 +130,9 @@ export default function OfferCard({ offer, userTier, onClick, mode }) {
 
       <div className="relative p-6 flex-1 flex flex-col">
         {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-start space-x-3 flex-1">
+        <div className="mb-4">
+          {/* First Row: Icon and Title */}
+          <div className="flex items-start space-x-3 mb-3">
             {/* Type Icon */}
             <div
               className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300 ${
@@ -152,12 +153,6 @@ export default function OfferCard({ offer, userTier, onClick, mode }) {
                 }`}
               >
                 {offer.title}
-                {!canAccess && (
-                  <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
-                    <Icon icon="mdi:lock" className="text-sm mr-1" />
-                    Restricted
-                  </span>
-                )}
               </h3>
 
               {/* Offer Type */}
@@ -173,14 +168,45 @@ export default function OfferCard({ offer, userTier, onClick, mode }) {
             </div>
           </div>
 
-          <div className="[&>span]:!bg-white [&>span]:!text-gray-900 [&>span]:!border-gray-200 [&>span>svg]:!text-[#f25749]">
-            <span
-              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                tierColors[normalizedOfferTier] || tierColors["All"]
-              }`}
-            >
-              {normalizedOfferTier === "All" ? "All Members" : normalizedOfferTier}
-            </span>
+          {/* Second Row: Tier Badge, Offer Type and Status Badge */}
+          <div className="flex items-center justify-between">
+            <div className="[&>span]:!bg-white [&>span]:!text-gray-900 [&>span]:!border-gray-200 [&>span>svg]:!text-[#f25749]">
+              <span
+                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                  tierColors[normalizedOfferTier] || tierColors["All"]
+                }`}
+              >
+                {normalizedOfferTier === "All" ? "All Members" : normalizedOfferTier}
+              </span>
+            </div>
+
+            {offer.type && (
+              <p
+                className={`text-sm font-medium flex bg-gray-100/50 text-gray-100 px-2 py-1 rounded-full w-fit ${
+                  !canAccess ? "text-gray-400 dark:text-gray-500" : ""
+                }`}
+              >
+                {offer.type}
+              </p>
+            )}
+
+            {/* Status Badges */}
+            <div className="flex gap-2">
+              {/* Restricted Badge */}
+              {!canAccess && (
+                <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
+                  <Icon icon="mdi:lock" className="text-sm mr-1" />
+                  Restricted
+                </div>
+              )}
+
+              {/* NEW Badge */}
+              {offer.is_new && canAccess && (
+                <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
+                  NEW
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -301,15 +327,6 @@ export default function OfferCard({ offer, userTier, onClick, mode }) {
           ></div>
         )}
       </div>
-
-      {/* NEW Badge */}
-      {offer.is_new && canAccess && (
-        <div className="absolute top-4 left-4">
-          <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
-            NEW
-          </div>
-        </div>
-      )}
     </motion.div>
   );
 }

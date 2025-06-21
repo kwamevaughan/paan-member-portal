@@ -15,6 +15,7 @@ import { hasTierAccess, normalizeTier } from "@/utils/tierUtils";
 import { TierBadge, JobTypeBadge } from "@/components/Badge";
 import RegisteredEventsModal from "@/components/RegisteredEventsModal";
 import TabsSelector from "@/components/TabsSelector";
+import EventCard from "@/components/EventCard";
 
 export default function Events({ mode = "light", toggleMode }) {
   const {
@@ -392,99 +393,22 @@ export default function Events({ mode = "light", toggleMode }) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredByTab.map((event) => (
-                <div
+                <EventCard
                   key={event.id}
-                  className={`group rounded-2xl overflow-hidden border shadow-sm hover:shadow-xl transition-all duration-300 ${
-                    mode === "dark"
-                      ? "bg-gray-800 border-gray-700 hover:border-gray-600"
-                      : "bg-white border-gray-200 hover:border-gray-300"
-                  } ${
-                    !hasTierAccess(event.tier_restriction, user)
-                      ? "opacity-60"
-                      : ""
-                  }`}
-                >
-                  <div className="relative h-40 bg-gradient-to-r from-indigo-400 to-purple-600 overflow-hidden">
-                    <div className="absolute inset-0 opacity-20 bg-pattern"></div>
-                    <div className="absolute top-0 right-0 p-3">
-                      <TierBadge
-                        tier={event.tier_restriction}
-                        mode={mode}
-                        variant="solid"
-                      />
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
-                      <div className="flex items-center gap-2 text-white font-semibold">
-                        <Icon icon="mdi:map-marker" />
-                        {event.location || "Virtual"}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-5 space-y-4">
-                    <div>
-                      <h3 className="text-xl font-bold mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                        {event.title}
-                      </h3>
-                      <p
-                        className={`text-sm ${
-                          mode === "dark" ? "text-gray-300" : "text-gray-600"
-                        } line-clamp-3`}
-                      >
-                        {event.description || "No description available."}
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div
-                        className={`rounded-lg p-3 ${
-                          mode === "dark" ? "bg-gray-700/60" : "bg-gray-50"
-                        }`}
-                      >
-                        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                          Event Type
-                        </div>
-                        <div className="font-medium truncate">
-                          {event.event_type || "General"}
-                        </div>
-                      </div>
-
-                      <div
-                        className={`rounded-lg p-3 ${
-                          mode === "dark" ? "bg-gray-700/60" : "bg-gray-50"
-                        }`}
-                      >
-                        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                          Date
-                        </div>
-                        <div className="font-medium flex items-center gap-1.5">
-                          <Icon
-                            icon="mdi:calendar-clock"
-                            className="text-red-500"
-                          />
-                          {formatDateRange(event.start_date, event.end_date)}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="pt-2">
-                      <button
-                        onClick={() => handleRegister(event)}
-                        className={`px-4 py-2 rounded-lg font-semibold transition-colors w-full ${
-                          hasTierAccess(event.tier_restriction, user) &&
-                          !registrationLoading.includes(event.id)
-                            ? "bg-blue-600 text-white hover:bg-blue-700"
-                            : "bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400"
-                        }`}
-                        disabled={registrationLoading.includes(event.id)}
-                      >
-                        {registrationLoading.includes(event.id)
-                          ? "Registering..."
-                          : "Register"}
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                  event={event}
+                  mode={mode}
+                  onRegister={handleEventRegistration}
+                  isRegistered={registeredEvents.some(reg => reg.id === event.id)}
+                  isRestricted={!hasTierAccess(event.tier_restriction, user)}
+                  onRestrictedClick={() => {
+                    toast.error(
+                      `This event is available to ${normalizeTier(
+                        event.tier_restriction
+                      )} only. Consider upgrading your membership to register.`
+                    );
+                  }}
+                  Icon={Icon}
+                />
               ))}
             </div>
 

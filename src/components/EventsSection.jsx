@@ -137,10 +137,10 @@ const EventsSection = ({
       <div className="space-y-6">
         {/* Stats bar */}
         <div
-          className={`grid grid-cols-2 md:grid-cols-4 gap-4 p-6 rounded-lg ${
+          className={`grid grid-cols-2 md:grid-cols-5 gap-4 p-6 rounded-lg ${
             mode === "dark"
-              ? "bg-blue-900/20 border border-blue-800/30"
-              : "bg-[#e5f3f6] border border-[#84C1D9]"
+              ? "bg-paan-dark-blue/20 border border-paan-dark-blue/30"
+              : "bg-paan-blue/10 border border-paan-blue/20"
           }`}
         >
           {statsConfig.map(({ filter, label, count, color }) => (

@@ -18,7 +18,9 @@ const MarketIntelSection = ({
   mode,
   Icon,
   toast,
+  onClick,
 }) => {
+  console.log('MarketIntelSection - onClick prop received:', !!onClick);
   const [statsFilter, setStatsFilter] = useState("total");
   const [selectedCategory, setSelectedCategory] = useState("");
 
@@ -270,6 +272,7 @@ const MarketIntelSection = ({
                   )
                 }
                 toast={toast}
+                onClick={onClick}
               />
             </div>
           ))}

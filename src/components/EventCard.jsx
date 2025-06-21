@@ -10,11 +10,22 @@ const EventCard = ({
   isRegistered,
   isRestricted,
   onRestrictedClick,
+  onClick,
   Icon,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   const handleClick = () => {
+    if (isRestricted) {
+      onRestrictedClick?.();
+      return;
+    }
+    onClick?.(event);
+  };
+
+  const handleRegisterClick = (e) => {
+    e.stopPropagation(); // Prevent modal from opening
+    
     if (isRestricted) {
       onRestrictedClick?.();
       return;
@@ -237,7 +248,7 @@ const EventCard = ({
             </div>
           )}
           <button
-            onClick={handleClick}
+            onClick={handleRegisterClick}
             className={`px-4 py-2 rounded-full font-normal text-xs transition-colors ${
               isRestricted
                 ? "bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400"

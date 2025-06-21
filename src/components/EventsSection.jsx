@@ -19,6 +19,7 @@ const EventsSection = ({
   handleRestrictedClick,
   mode,
   Icon,
+  onClick,
 }) => {
   const [statsFilter, setStatsFilter] = useState("total");
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -212,6 +213,7 @@ const EventsSection = ({
                     `Access restricted: ${event.tier_restriction} tier required for "${event.title}"`
                   )
                 }
+                onClick={onClick}
               />
             </div>
           ))}

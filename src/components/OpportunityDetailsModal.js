@@ -55,6 +55,17 @@ const OpportunityDetailsModal = ({
 
   if (!opportunity) return null;
 
+  // Check if this is a tender opportunity
+  const isTender = opportunity.is_tender || 
+    (opportunity.tender_organization && opportunity.tender_category && opportunity.tender_issued && opportunity.tender_closing);
+  
+  // Calculate tender deadline if it's a tender
+  const tenderDaysUntilDeadline = isTender && opportunity.tender_closing ? 
+    Math.ceil((new Date(opportunity.tender_closing) - new Date()) / (1000 * 60 * 60 * 24)) : null;
+  
+  const isTenderUrgent = tenderDaysUntilDeadline !== null && tenderDaysUntilDeadline <= 7 && tenderDaysUntilDeadline > 0;
+  const isTenderExpired = tenderDaysUntilDeadline !== null && tenderDaysUntilDeadline < 0;
+
   const daysUntilDeadline = Math.ceil(
     (new Date(opportunity.deadline) - new Date()) / (1000 * 60 * 60 * 24)
   );
@@ -114,18 +125,27 @@ const OpportunityDetailsModal = ({
             >
               {opportunity.title}
             </h3>
-            {opportunity.company && (
+            {(opportunity.company || (isTender && opportunity.tender_organization)) && (
               <p
                 className={`text-sm font-medium ${
                   mode === "dark" ? "text-gray-300" : "text-gray-700"
                 }`}
               >
-                {opportunity.company}
+                {isTender ? opportunity.tender_organization : opportunity.company}
+              </p>
+            )}
+            {isTender && opportunity.tender_category && (
+              <p
+                className={`text-xs ${
+                  mode === "dark" ? "text-gray-400" : "text-gray-500"
+                }`}
+              >
+                Category: {opportunity.tender_category}
               </p>
             )}
           </div>
           {!isFreelancer && (
-            <div className="[&>span]:!bg-white [&>span]:!text-gray-900 [&>span]:!border-gray-200 [&>span>svg]:!text-[#f25749]">
+            <div className="[&>span]:!bg-white [&>span]:!text-gray-900 [&>span]:!border-gray-200 [&>span>svg]:!text-paan-red">
               <TierBadge
                 tier={opportunity.tier_restriction || "Free Member"}
                 mode={mode}
@@ -136,23 +156,28 @@ const OpportunityDetailsModal = ({
 
         {/* Badges */}
         <div className="flex flex-wrap gap-2">
-          {isUrgent && (
-            <span className="bg-orange-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
-              URGENT: {daysUntilDeadline} days left
+          {isTender && (
+            <span className="bg-paan-red text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+              Tender
             </span>
           )}
-          {isExpired && (
-            <span className="bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+          {(isUrgent || isTenderUrgent) && (
+            <span className="bg-paan-red text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+              URGENT: {isTender ? tenderDaysUntilDeadline : daysUntilDeadline} days left
+            </span>
+          )}
+          {(isExpired || isTenderExpired) && (
+            <span className="bg-paan-red text-white text-xs font-semibold px-2 py-0.5 rounded-full">
               EXPIRED
             </span>
           )}
           {opportunity.is_new && (
-            <span className="bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+            <span className="bg-paan-yellow text-white text-xs font-semibold px-2 py-0.5 rounded-full">
               NEW
             </span>
           )}
-          {opportunity.remote_work && (
-            <span className="bg-blue-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+          {opportunity.remote_work && !isTender && (
+            <span className="bg-paan-blue text-white text-xs font-semibold px-2 py-0.5 rounded-full">
               Remote
             </span>
           )}
@@ -182,7 +207,7 @@ const OpportunityDetailsModal = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {opportunity.location && (
             <div className="flex items-center space-x-2">
-              <Icon icon="mdi:map-marker" className="text-amber-500 text-lg" />
+              <Icon icon="mdi:map-marker" className="text-paan-yellow text-lg" />
               <span
                 className={`text-sm ${
                   mode === "dark" ? "text-gray-400" : "text-gray-600"
@@ -192,47 +217,103 @@ const OpportunityDetailsModal = ({
               </span>
             </div>
           )}
-          {opportunity.deadline && (
-            <div className="flex items-center space-x-2">
-              <Icon
-                icon={isUrgent ? "mdi:clock-alert" : "mdi:calendar"}
-                className={`text-lg ${
-                  isUrgent ? "text-orange-500" : "text-amber-500"
-                }`}
-              />
-              <span
-                className={`text-sm ${
-                  mode === "dark" ? "text-gray-400" : "text-gray-600"
-                }`}
-              >
-                Deadline: {new Date(opportunity.deadline).toLocaleDateString()}
-              </span>
-            </div>
+          
+          {/* Tender-specific details */}
+          {isTender ? (
+            <>
+              {opportunity.tender_issued && (
+                <div className="flex items-center space-x-2">
+                  <Icon icon="mdi:calendar-plus" className="text-paan-blue text-lg" />
+                  <span
+                    className={`text-sm ${
+                      mode === "dark" ? "text-gray-400" : "text-gray-600"
+                    }`}
+                  >
+                    Issued: {new Date(opportunity.tender_issued).toLocaleDateString()}
+                  </span>
+                </div>
+              )}
+              {opportunity.tender_closing && (
+                <div className="flex items-center space-x-2">
+                  <Icon
+                    icon={isTenderUrgent ? "mdi:clock-alert" : "mdi:calendar"}
+                    className={`text-lg ${
+                      isTenderUrgent ? "text-paan-red" : "text-paan-yellow"
+                    }`}
+                  />
+                  <span
+                    className={`text-sm ${
+                      mode === "dark" ? "text-gray-400" : "text-gray-600"
+                    }`}
+                  >
+                    Closing: {new Date(opportunity.tender_closing).toLocaleDateString()}
+                  </span>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              {opportunity.deadline && (
+                <div className="flex items-center space-x-2">
+                  <Icon
+                    icon={isUrgent ? "mdi:clock-alert" : "mdi:calendar"}
+                    className={`text-lg ${
+                      isUrgent ? "text-paan-red" : "text-paan-yellow"
+                    }`}
+                  />
+                  <span
+                    className={`text-sm ${
+                      mode === "dark" ? "text-gray-400" : "text-gray-600"
+                    }`}
+                  >
+                    Deadline: {new Date(opportunity.deadline).toLocaleDateString()}
+                  </span>
+                </div>
+              )}
+              {opportunity.budget_range && (
+                <div className="flex items-center space-x-2">
+                  <Icon icon="mdi:cash" className="text-paan-yellow text-lg" />
+                  <span
+                    className={`text-sm font-semibold ${
+                      mode === "dark" ? "text-green-400" : "text-green-600"
+                    }`}
+                  >
+                    Budget: {opportunity.budget_range}
+                  </span>
+                </div>
+              )}
+              {opportunity.job_type && (
+                <div className="flex items-center space-x-2">
+                  <Icon icon="mdi:briefcase" className="text-paan-yellow text-lg" />
+                  <span
+                    className={`text-sm ${
+                      mode === "dark" ? "text-gray-400" : "text-gray-600"
+                    }`}
+                  >
+                    Job Type: {opportunity.job_type}
+                  </span>
+                </div>
+              )}
+              {opportunity.remote_work !== null && (
+                <div className="flex items-center space-x-2">
+                  <Icon
+                    icon="mdi:home"
+                    className={`text-lg ${
+                      opportunity.remote_work ? "text-paan-yellow" : "text-paan-yellow"
+                    }`}
+                  />
+                  <span
+                    className={`text-sm ${
+                      mode === "dark" ? "text-gray-400" : "text-gray-600"
+                    }`}
+                  >
+                    Remote Work: {opportunity.remote_work ? "Yes" : "No"}
+                  </span>
+                </div>
+              )}
+            </>
           )}
-          {opportunity.budget_range && (
-            <div className="flex items-center space-x-2">
-              <Icon icon="mdi:cash" className="text-amber-500 text-lg" />
-              <span
-                className={`text-sm font-semibold ${
-                  mode === "dark" ? "text-green-400" : "text-green-600"
-                }`}
-              >
-                Budget: {opportunity.budget_range}
-              </span>
-            </div>
-          )}
-          {opportunity.job_type && (
-            <div className="flex items-center space-x-2">
-              <Icon icon="mdi:briefcase" className="text-amber-500 text-lg" />
-              <span
-                className={`text-sm ${
-                  mode === "dark" ? "text-gray-400" : "text-gray-600"
-                }`}
-              >
-                Job Type: {opportunity.job_type}
-              </span>
-            </div>
-          )}
+          
           {opportunity.applicant_count && (
             <div className="flex items-center space-x-2">
               <Icon
@@ -248,9 +329,9 @@ const OpportunityDetailsModal = ({
               </span>
             </div>
           )}
-          {opportunity.service_type && (
+          {opportunity.service_type && !isTender && (
             <div className="flex items-center space-x-2">
-              <Icon icon="mdi:cog" className="text-amber-500 text-lg" />
+              <Icon icon="mdi:cog" className="text-paan-yellow text-lg" />
               <span
                 className={`text-sm ${
                   mode === "dark" ? "text-gray-400" : "text-gray-600"
@@ -260,9 +341,9 @@ const OpportunityDetailsModal = ({
               </span>
             </div>
           )}
-          {opportunity.industry && (
+          {opportunity.industry && !isTender && (
             <div className="flex items-center space-x-2">
-              <Icon icon="mdi:industry" className="text-amber-500 text-lg" />
+              <Icon icon="mdi:industry" className="text-paan-yellow text-lg" />
               <span
                 className={`text-sm ${
                   mode === "dark" ? "text-gray-400" : "text-gray-600"
@@ -272,9 +353,9 @@ const OpportunityDetailsModal = ({
               </span>
             </div>
           )}
-          {opportunity.project_type && (
+          {opportunity.project_type && !isTender && (
             <div className="flex items-center space-x-2">
-              <Icon icon="mdi:folder" className="text-orange-500 text-lg" />
+              <Icon icon="mdi:folder" className="text-paan-yellow text-lg" />
               <span
                 className={`text-sm ${
                   mode === "dark" ? "text-gray-400" : "text-gray-600"
@@ -284,32 +365,15 @@ const OpportunityDetailsModal = ({
               </span>
             </div>
           )}
-          {opportunity.estimated_duration && (
+          {opportunity.estimated_duration && !isTender && (
             <div className="flex items-center space-x-2">
-              <Icon icon="mdi:timer" className="text-amber-500 text-lg" />
+              <Icon icon="mdi:timer" className="text-paan-yellow text-lg" />
               <span
                 className={`text-sm ${
                   mode === "dark" ? "text-gray-400" : "text-gray-600"
                 }`}
               >
                 Duration: {opportunity.estimated_duration}
-              </span>
-            </div>
-          )}
-          {opportunity.remote_work !== null && (
-            <div className="flex items-center space-x-2">
-              <Icon
-                icon="mdi:home"
-                className={`text-lg ${
-                  opportunity.remote_work ? "text-amber-500" : "text-amber-500"
-                }`}
-              />
-              <span
-                className={`text-sm ${
-                  mode === "dark" ? "text-gray-400" : "text-gray-600"
-                }`}
-              >
-                Remote Work: {opportunity.remote_work ? "Yes" : "No"}
               </span>
             </div>
           )}
@@ -345,28 +409,28 @@ const OpportunityDetailsModal = ({
           )}
 
         {/* Application Link */}
-        {opportunity.application_link && (
+        {(opportunity.application_link || (isTender && opportunity.tender_access_link)) && (
           <div>
             <h4
               className={`text-lg font-medium mb-2 ${
                 mode === "dark" ? "text-gray-200" : "text-gray-800"
               }`}
             >
-              Apply
+              {isTender ? "Tender Details" : "Apply"}
             </h4>
             <a
-              href={opportunity.application_link}
+              href={isTender ? opportunity.tender_access_link : opportunity.application_link}
               target="_blank"
               rel="noopener noreferrer"
               className={`inline-flex items-center text-sm font-medium ${
                 mode === "dark"
-                  ? "text-blue-400 hover:text-blue-300"
-                  : "text-[#172840] hover:text-blue-700"
+                  ? "text-paan-blue hover:text-paan-blue"
+                  : "text-paan-dark-blue hover:text-paan-blue"
               }`}
-              aria-label={`Apply for ${opportunity.title} (opens in new tab)`}
+              aria-label={`${isTender ? "View tender details" : "Apply for ${opportunity.title}"} (opens in new tab)`}
             >
               <Icon icon="mdi:open-in-new" className="mr-2" />
-              Apply Now
+              {isTender ? "View Tender Details" : "Apply Now"}
             </a>
           </div>
         )}
@@ -389,7 +453,7 @@ const OpportunityDetailsModal = ({
             className={`px-4 py-2 rounded-full font-normal transition-colors ${
               isButtonDisabled
                 ? "bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400"
-                : "bg-amber-500 text-white hover:bg-amber-700 dark:bg-amber-700 dark:hover:bg-amber-600"
+                : "bg-paan-yellow text-white hover:bg-paan-yellow-700 dark:bg-paan-yellow-700 dark:hover:bg-paan-yellow-600"
             }`}
             aria-disabled={isButtonDisabled}
             aria-label={

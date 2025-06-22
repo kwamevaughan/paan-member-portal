@@ -15,6 +15,7 @@ export const useBusinessOpportunities = (
     budgetRange: null,
     remoteWork: null,
     estimatedDuration: null,
+    tenderType: null,
   },
   user = null
 ) => {
@@ -29,6 +30,9 @@ export const useBusinessOpportunities = (
     budgetRanges: [],
     remoteWorkOptions: ["true", "false"],
     durations: [],
+    tenderTypes: ["Regular", "Tender"],
+    tenderCategories: [],
+    tenderOrganizations: [],
   });
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
@@ -60,7 +64,7 @@ export const useBusinessOpportunities = (
         let query = supabase
           .from("business_opportunities")
           .select(
-            "location, service_type, industry, project_type, tier_restriction, job_type, skills_required, budget_range, remote_work, estimated_duration"
+            "location, service_type, industry, project_type, tier_restriction, job_type, skills_required, budget_range, remote_work, estimated_duration, is_tender, tender_category, tender_organization"
           )
           .ilike("job_type", `%${jobTypeFilter}%`);
 
@@ -160,6 +164,29 @@ export const useBusinessOpportunities = (
                 .filter(Boolean)
             ),
           ].sort(),
+          tenderTypes: ["Regular", "Tender"],
+          tenderCategories: [
+            ...new Set(
+              data
+                ?.map((item) =>
+                  typeof item.tender_category === "string"
+                    ? item.tender_category.trim()
+                    : null
+                )
+                .filter(Boolean)
+            ),
+          ].sort(),
+          tenderOrganizations: [
+            ...new Set(
+              data
+                ?.map((item) =>
+                  typeof item.tender_organization === "string"
+                    ? item.tender_organization.trim()
+                    : null
+                )
+                .filter(Boolean)
+            ),
+          ].sort(),
         };
 
         setFilterOptions(newFilterOptions);
@@ -191,7 +218,7 @@ export const useBusinessOpportunities = (
           let query = supabase
             .from("business_opportunities")
             .select(
-              "id, title, description, tier_restriction, location, application_link, deadline, created_at, updated_at, service_type, industry, project_type, job_type, skills_required, estimated_duration, budget_range, remote_work"
+              "id, title, description, tier_restriction, location, application_link, deadline, created_at, updated_at, service_type, industry, project_type, job_type, skills_required, estimated_duration, budget_range, remote_work, is_tender, tender_organization, tender_category, tender_issued, tender_closing, tender_access_link"
             )
             .gte("deadline", new Date().toISOString().split("T")[0])
             .ilike("job_type", `%${currentJobTypeFilter}%`);
@@ -226,6 +253,13 @@ export const useBusinessOpportunities = (
           }
           if (currentFilters.estimatedDuration && isFreelancer) {
             query = query.eq("estimated_duration", currentFilters.estimatedDuration);
+          }
+          if (currentFilters.tenderType) {
+            if (currentFilters.tenderType === "Tender") {
+              query = query.eq("is_tender", true);
+            } else if (currentFilters.tenderType === "Regular") {
+              query = query.eq("is_tender", false);
+            }
           }
 
           const { data, error } = await query;
@@ -314,6 +348,7 @@ export const useBusinessOpportunities = (
     filters.budgetRange,
     filters.remoteWork,
     filters.estimatedDuration,
+    filters.tenderType,
     jobTypeFilter,
     fetchOpportunities,
     isInitialFetch,

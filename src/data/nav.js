@@ -20,6 +20,11 @@ export const sidebarNav = [
             ? "View Gigs"
             : "View Opportunities",
       },
+      {
+        href: "/business-opportunities?opportunityType=tender",
+        icon: "mdi:clipboard-text",
+        label: "View Tenders",
+      },
     ],
   },
   {

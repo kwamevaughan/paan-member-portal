@@ -53,14 +53,43 @@ const HrSidebar = ({
     return () => window.removeEventListener("resize", handleResize);
   }, [handleResize]);
 
-  const isActive = (pathname) =>
-    router.pathname === pathname
+  const isActive = (href) => {
+    // Extract pathname from href (remove query parameters)
+    const pathname = href.split('?')[0];
+    const pathMatches = router.pathname === pathname;
+    
+    // Special handling for business opportunities with tender filter
+    if (pathname === "/business-opportunities") {
+      if (href.includes("opportunityType=tender")) {
+        // If this nav item is for tenders, check if we're currently viewing tenders
+        return router.asPath.includes("opportunityType=tender")
+          ? mode === "dark"
+            ? "bg-[#19191e] text-white shadow-md"
+            : "bg-[#0a1215] text-[#E7EEF8] shadow-md"
+          : mode === "dark"
+          ? "text-gray-200 hover:bg-gray-700 hover:text-white"
+          : "text-[#231812] hover:bg-[#0B1215]";
+      } else {
+        // If this nav item is for regular opportunities, check if we're viewing all opportunities
+        return router.pathname === "/business-opportunities" && !router.asPath.includes("opportunityType=tender")
+          ? mode === "dark"
+            ? "bg-[#19191e] text-white shadow-md"
+            : "bg-[#0a1215] text-[#E7EEF8] shadow-md"
+          : mode === "dark"
+          ? "text-gray-200 hover:bg-gray-700 hover:text-white"
+          : "text-[#231812] hover:bg-[#0B1215]";
+      }
+    }
+    
+    // Default behavior for other pages
+    return pathMatches
       ? mode === "dark"
         ? "bg-[#19191e] text-white shadow-md"
         : "bg-[#0a1215] text-[#E7EEF8] shadow-md"
       : mode === "dark"
       ? "text-gray-200 hover:bg-gray-700 hover:text-white"
       : "text-[#231812] hover:bg-[#0B1215]";
+  };
 
   const handleNavigation = async (href, label) => {
     try {
@@ -191,7 +220,7 @@ const HrSidebar = ({
                 <span className="text-xs font-medium text-black">
                   {user.name}
                 </span>
-                <div className="w-3 h-3 bg-green-500 rounded-full border border-green-400 flex items-center justify-center aspect-square"></div>
+                <div className="w-3 h-3 bg-paan-yellow rounded-full border border-paan-yellow flex items-center justify-center aspect-square"></div>
               </div>
             </div>
             <div
@@ -202,14 +231,14 @@ const HrSidebar = ({
               }`}
             >
               <div className="flex flex-col gap-2 text-white text-sm pt-2">
-                <div className="flex items-center gap-2 hover:bg-[#19191e] rounded-2xl p-2">
+                <div className="flex items-center gap-2 hover:bg-paan-dark-blue rounded-2xl p-2">
                   <Icon
                     icon="mdi:business-card-outline"
                     className="h-5 w-5"
                   />
                   <span>Profile</span>
                 </div>
-                <div className="py-2 hover:bg-[#19191e] rounded-2xl p-2">
+                <div className="py-2 hover:bg-paan-dark-blue rounded-2xl p-2">
                   <button
                     onClick={toggleMode}
                     className="flex items-center gap-2 hover:opacity-80 transition-colors duration-300"
@@ -221,7 +250,7 @@ const HrSidebar = ({
                           : "line-md:moon-alt-to-sunny-outline-loop-transition"
                       }
                       className={`h-5 w-5 ${
-                        mode === "dark" ? "text-blue-400" : "text-yellow-400"
+                        mode === "dark" ? "text-paan-blue" : "text-paan-yellow"
                       }`}
                     />
                     <span>
@@ -232,7 +261,7 @@ const HrSidebar = ({
                 <hr className="border-t border-gray-600" />
                 <button
                   onClick={onLogout}
-                  className="flex items-center gap-2 text-red-500 hover:text-redentication600 transition-colors hover:bg-[#19191e] rounded-2xl p-2"
+                  className="flex items-center gap-2 text-paan-red hover:text-paan-red transition-colors hover:bg-[#19191e] rounded-2xl p-2"
                 >
                   <Icon icon="mdi:logout" className="h-5 w-5" />
                   <span>Sign Out</span>

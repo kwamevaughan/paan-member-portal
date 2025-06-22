@@ -59,13 +59,24 @@ const OpportunityCard = ({
   const isUrgent = daysUntilDeadline <= 7 && daysUntilDeadline > 0;
   const isExpired = daysUntilDeadline < 0;
   const itemLabel = isFreelancer ? "gig" : "opportunity";
+  
+  // Check if this is a tender opportunity
+  const isTender = opportunity.is_tender || 
+    (opportunity.tender_organization && opportunity.tender_category && opportunity.tender_issued && opportunity.tender_closing);
+  
+  // Calculate tender deadline if it's a tender
+  const tenderDaysUntilDeadline = isTender && opportunity.tender_closing ? 
+    Math.ceil((new Date(opportunity.tender_closing) - new Date()) / (1000 * 60 * 60 * 24)) : null;
+  
+  const isTenderUrgent = tenderDaysUntilDeadline !== null && tenderDaysUntilDeadline <= 7 && tenderDaysUntilDeadline > 0;
+  const isTenderExpired = tenderDaysUntilDeadline !== null && tenderDaysUntilDeadline < 0;
 
   return (
     <div
       className={`group relative overflow-hidden rounded-lg border backdrop-blur-lg transition-all duration-300 transform h-full flex flex-col ${
         mode === "dark"
-          ? "bg-[#172840] border-gray-700/60 hover:border-gray-600/80"
-          : "bg-[#172840] border-gray-200/70 hover:border-gray-300/80"
+          ? "bg-paan-dark-blue border-gray-700/60 hover:border-gray-600/80"
+          : "bg-paan-dark-blue border-gray-200/70 hover:border-gray-300/80"
       } ${
         isRestricted
           ? "opacity-50 cursor-not-allowed"
@@ -85,15 +96,15 @@ const OpportunityCard = ({
     >
       {/* Background Gradient Overlay */}
       <div
-        className={`absolute inset-0 bg-[#172840] opacity-5 transition-opacity duration-300 ${
+        className={`absolute inset-0 bg-paan-dark-blue opacity-5 transition-opacity duration-300 ${
           isHovered ? "opacity-10" : "opacity-5"
-        } ${isRestricted ? "bg-[#172840]" : ""}`}
+        } ${isRestricted ? "bg-paan-dark-blue" : ""}`}
       ></div>
 
       {/* Animated Border */}
       {!isRestricted && (
         <div
-          className={`absolute inset-0 rounded-2xl bg-[#172840] opacity-0 transition-opacity duration-300 ${
+          className={`absolute inset-0 rounded-2xl bg-paan-dark-blue opacity-0 transition-opacity duration-300 ${
             isHovered ? "opacity-100" : "opacity-0"
           }`}
         ></div>
@@ -107,51 +118,64 @@ const OpportunityCard = ({
             <div
               className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300 ${
                 mode === "dark"
-                  ? "bg-gray-700/50 text-blue-400"
-                  : "bg-white text-amber-400"
+                  ? "bg-gray-700/50 text-paan-blue"
+                  : "bg-white text-paan-yellow"
               } ${isHovered ? "scale-95 rotate-12" : ""}`}
             >
               <Icon icon="material-symbols:star" className="text-3xl" />
             </div>
 
             <div className="flex-1 min-w-0">
+              {/* Title Row */}
               <h3
-                className={`font-normal text-lg leading-tight mb-1 transition-colors duration-200 ${
+                className={`font-normal text-lg leading-tight mb-2 transition-colors duration-200 ${
                   mode === "dark" ? "text-white" : "text-white"
                 } ${isRestricted ? "text-gray-500 dark:text-gray-400" : ""} ${
-                  isHovered ? "text-blue-600 dark:text-blue-400" : ""
+                  isHovered ? "text-paan-blue dark:text-paan-blue" : ""
                 }`}
               >
                 {opportunity.title}
                 {isRestricted && (
                   <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
-                    <Icon icon="mdi:lock" className="text-sm mr-1" />
-                    Restricted
+                    <Icon icon="mdi:lock" className="text-sm" />
+                    
                   </span>
                 )}
               </h3>
 
-              {/* Company/Organization */}
-              {opportunity.company && (
-                <p
-                  className={`text-sm font-medium ${
-                    mode === "dark" ? "text-gray-300" : "text-gray-700"
-                  } ${isRestricted ? "text-gray-400 dark:text-gray-500" : ""}`}
+              {/* Type and Tier Row */}
+              <div className="flex items-center gap-2 mb-2">
+                <span
+                  className={`flex items-center gap-2 px-2 py-2 text-xs font-medium rounded-full ${
+                    isTender
+                      ? mode === "dark"
+                        ? "bg-paan-red/30 text-paan-red"
+                        : "bg-paan-red/10 text-paan-red"
+                      : mode === "dark"
+                      ? "bg-paan-blue/30 text-paan-blue"
+                      : "bg-paan-blue/10 text-paan-blue"
+                  }`}
                 >
-                  {opportunity.company}
-                </p>
-              )}
+                  {isTender ? (
+                    <>
+                      <Icon icon="mdi:file-document" className="text-lg" />
+                      Tender
+                    </>
+                  ) : (
+                    opportunity.job_type
+                  )}
+                </span>
+                {!isFreelancer && (
+                  <div className="[&>span]:!bg-white [&>span]:!text-gray-900 [&>span]:!border-gray-200 [&>span>svg]:!text-[#f25749]">
+                    <TierBadge
+                      tier={opportunity.tier_restriction || "Free Member"}
+                      mode={mode}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-
-          {!isFreelancer && (
-            <div className="[&>span]:!bg-white [&>span]:!text-gray-900 [&>span]:!border-gray-200 [&>span>svg]:!text-[#f25749]">
-              <TierBadge
-                tier={opportunity.tier_restriction || "Free Member"}
-                mode={mode}
-              />
-            </div>
-          )}
         </div>
 
         {/* Description */}
@@ -204,79 +228,169 @@ const OpportunityCard = ({
           {/* Location */}
           {opportunity.location && (
             <div className="flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200">
-              <Icon icon="mdi:map-marker" className="text-lg text-amber-400" />
+              <Icon icon="mdi:map-marker" className="text-lg text-paan-yellow" />
               <span className="truncate text-white">
                 {opportunity.location}
               </span>
             </div>
           )}
 
-          {/* Deadline */}
-          {opportunity.deadline && (
-            <div
-              className={`flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200 text-white ${
-                isUrgent
-                  ? "text-orange-500 font-semibold"
-                  : isExpired
-                  ? "text-red-500 font-semibold"
-                  : ""
-              }`}
-            >
-              <Icon
-                icon={
-                  isUrgent
-                    ? "mdi:clock-alert"
-                    : isExpired
-                    ? "mdi:clock-remove"
-                    : "mdi:calendar"
-                }
-                className={`text-lg ${
-                  isUrgent
-                    ? "text-orange-500"
-                    : isExpired
-                    ? "text-red-500"
-                    : "text-[#f25749]"
-                }`}
-              />
-              <span>
-                {isExpired
-                  ? "Expired"
-                  : isUrgent
-                  ? `${daysUntilDeadline} days left`
-                  : new Date(opportunity.deadline).toLocaleDateString()}
-              </span>
-            </div>
-          )}
-
-          {/* Budget Range */}
-          {opportunity.budget_range && (
-            <div className="flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200">
-              <Icon icon="mdi:cash" className="text-lg text-green-500" />
-              <span className="font-semibold text-green-600 dark:text-green-400">
-                {opportunity.budget_range}
-              </span>
-            </div>
-          )}
-
-          {/* Job Type */}
-          {opportunity.job_type && (
+          {/* Category (for tenders) */}
+          {isTender && opportunity.tender_category && (
             <div className="flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200 text-white">
-              <Icon icon="mdi:briefcase" className="text-lg text-[#85c1da]" />
-              <span>{opportunity.job_type}</span>
+              <Icon icon="mdi:tag" className="text-lg text-paan-blue" />
+              <span>{opportunity.tender_category}</span>
             </div>
           )}
 
-          {/* Remote Work */}
-          {opportunity.remote_work !== null && (
-            <div className="flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200 text-white">
-              <Icon
-                icon="mdi:home"
-                className={`text-lg ${
-                  opportunity.remote_work ? "text-blue-500" : "text-amber-400"
-                }`}
-              />
-              <span>{opportunity.remote_work ? "Remote" : "On-site"}</span>
-            </div>
+          {/* Tender-specific information */}
+          {isTender ? (
+            <>
+              {/* Tender Issued Date */}
+              {opportunity.tender_issued && (
+                <div className="flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200 text-white">
+                  <Icon
+                    icon="mdi:calendar-plus"
+                    className="text-lg text-paan-blue"
+                  />
+                  <span>
+                    Issued:{" "}
+                    {new Date(opportunity.tender_issued).toLocaleDateString()}
+                  </span>
+                </div>
+              )}
+
+              {/* Tender Closing Date */}
+              {opportunity.tender_closing && (
+                <div
+                  className={`flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200 text-white ${
+                    isTenderUrgent
+                      ? "text-paan-red font-semibold"
+                      : isTenderExpired
+                      ? "text-paan-red font-semibold"
+                      : ""
+                  }`}
+                >
+                  <Icon
+                    icon={
+                      isTenderUrgent
+                        ? "mdi:clock-alert"
+                        : isTenderExpired
+                        ? "mdi:clock-remove"
+                        : "mdi:calendar"
+                    }
+                    className={`text-lg ${
+                      isTenderUrgent
+                        ? "text-paan-red"
+                        : isTenderExpired
+                        ? "text-paan-red"
+                        : "text-paan-red"
+                    }`}
+                  />
+                  <span>
+                    {isTenderExpired
+                      ? "Expired"
+                      : isTenderUrgent
+                      ? `${tenderDaysUntilDeadline} days left`
+                      : `Closes: ${new Date(
+                          opportunity.tender_closing
+                        ).toLocaleDateString()}`}
+                  </span>
+                </div>
+              )}
+
+              {/* Tender Access Link */}
+              {opportunity.tender_access_link && (
+                <div className="flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200">
+                  <Icon icon="mdi:link" className="text-lg text-paan-blue" />
+                  <a
+                    href={opportunity.tender_access_link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-paan-blue hover:text-paan-blue underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    View Tender
+                  </a>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              {/* Regular opportunity information */}
+              {/* Deadline */}
+              {opportunity.deadline && (
+                <div
+                  className={`flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200 text-white ${
+                    isUrgent
+                      ? "text-paan-red font-semibold"
+                      : isExpired
+                      ? "text-paan-red font-semibold"
+                      : ""
+                  }`}
+                >
+                  <Icon
+                    icon={
+                      isUrgent
+                        ? "mdi:clock-alert"
+                        : isExpired
+                        ? "mdi:clock-remove"
+                        : "mdi:calendar"
+                    }
+                    className={`text-lg ${
+                      isUrgent
+                        ? "text-paan-red"
+                        : isExpired
+                        ? "text-paan-red"
+                        : "text-paan-red"
+                    }`}
+                  />
+                  <span>
+                    {isExpired
+                      ? "Expired"
+                      : isUrgent
+                      ? `${daysUntilDeadline} days left`
+                      : new Date(opportunity.deadline).toLocaleDateString()}
+                  </span>
+                </div>
+              )}
+
+              {/* Budget Range */}
+              {opportunity.budget_range && (
+                <div className="flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200">
+                  <Icon icon="mdi:cash" className="text-lg text-paan-yellow" />
+                  <span className="font-semibold text-paan-yellow dark:text-paan-yellow">
+                    {opportunity.budget_range}
+                  </span>
+                </div>
+              )}
+
+              {/* Job Type */}
+              {opportunity.job_type && (
+                <div className="flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200 text-white">
+                  <Icon
+                    icon="mdi:briefcase"
+                    className="text-lg text-paan-blue"
+                  />
+                  <span>{opportunity.job_type}</span>
+                </div>
+              )}
+
+              {/* Remote Work */}
+              {opportunity.remote_work !== null && (
+                <div className="flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200 text-white">
+                  <Icon
+                    icon="mdi:home"
+                    className={`text-lg ${
+                      opportunity.remote_work
+                        ? "text-paan-blue"
+                        : "text-paan-yellow"
+                    }`}
+                  />
+                  <span>{opportunity.remote_work ? "Remote" : "On-site"}</span>
+                </div>
+              )}
+            </>
           )}
         </div>
 
@@ -305,7 +419,7 @@ const OpportunityCard = ({
         {/* Hover Glow Effect */}
         {!isRestricted && (
           <div
-            className={`absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 opacity-0 transition-opacity duration-500 pointer-events-none ${
+            className={`absolute inset-0 rounded-2xl bg-gradient-to-r from-paan-blue/5 via-paan-blue/5 to-paan-blue/5 opacity-0 transition-opacity duration-500 pointer-events-none ${
               isHovered ? "opacity-100" : "opacity-0"
             }`}
           ></div>
@@ -313,9 +427,9 @@ const OpportunityCard = ({
       </div>
 
       {/* URGENT Badge */}
-      {isUrgent && !isRestricted && (
+      {(isUrgent || isTenderUrgent) && !isRestricted && (
         <div className="absolute top-4 right-4">
-          <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-semibold px-2 py-1 rounded-full animate-pulse">
+          <div className="bg-gradient-to-r from-paan-red to-paan-red text-white text-xs font-semibold px-2 py-1 rounded-full animate-pulse">
             URGENT
           </div>
         </div>
@@ -324,7 +438,7 @@ const OpportunityCard = ({
       {/* NEW Badge */}
       {opportunity.is_new && !isRestricted && (
         <div className="absolute top-4 left-4">
-          <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
+          <div className="bg-gradient-to-r from-paan-yellow-500 to-paan-yellow-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
             NEW
           </div>
         </div>

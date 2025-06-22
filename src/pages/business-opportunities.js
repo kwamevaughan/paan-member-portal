@@ -34,6 +34,7 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
     budgetRange: "",
     remoteWork: "",
     estimatedDuration: "",
+    tenderType: "",
   });
   const [activeTab, setActiveTab] = useState("all");
   const [showFilterPanel, setShowFilterPanel] = useState(false);
@@ -58,8 +59,21 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
       budgetRange: isFreelancer ? prev.budgetRange : "",
       remoteWork: isFreelancer ? prev.remoteWork : "",
       estimatedDuration: isFreelancer ? prev.estimatedDuration : "",
+      tenderType: prev.tenderType, // Keep for both
     }));
   }, [isFreelancer]);
+
+  // Handle URL parameters for automatic filtering
+  useEffect(() => {
+    if (router.query.opportunityType === "tender") {
+      setFilters(prev => ({ ...prev, tenderType: "Tender" }));
+      setShowFilterPanel(true); // Show filter panel to indicate active filter
+    } else {
+      // Reset tender filter when not viewing tenders
+      setFilters(prev => ({ ...prev, tenderType: "" }));
+      setShowFilterPanel(false);
+    }
+  }, [router.query.opportunityType]);
 
   const title = useMemo(
     () => (isFreelancer ? "Gigs" : "Business Opportunities"),
@@ -121,6 +135,7 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
       budgetRange: "",
       remoteWork: "",
       estimatedDuration: "",
+      tenderType: "",
     });
   }, []);
 
@@ -399,6 +414,23 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
                         onSelect={(value) => handleFilterChange("tier_restriction", value)}
                         mode={mode}
                         icon="mdi:crown-outline"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-600 dark:text-gray-300 flex items-center gap-1.5">
+                        <Icon icon="mdi:file-document" />
+                        Type
+                      </label>
+                      <TabsSelector
+                        tabs={[
+                          { id: "", label: "All Types" },
+                          { id: "Regular", label: "Regular" },
+                          { id: "Tender", label: "Tender" },
+                        ]}
+                        selectedTab={filters.tenderType}
+                        onSelect={(value) => handleFilterChange("tenderType", value)}
+                        mode={mode}
+                        icon="mdi:file-document"
                       />
                     </div>
                     {isFreelancer && (

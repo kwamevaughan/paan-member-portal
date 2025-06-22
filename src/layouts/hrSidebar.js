@@ -34,6 +34,11 @@ const HrSidebar = ({
     }
   }, [filteredNav]);
 
+  // Auto-scroll to active item when page loads
+  useEffect(() => {
+    // This will be handled by the callback ref
+  }, [router.asPath]);
+
   const toggleCategory = (category) => {
     setExpandedCategories((prev) => ({
       ...prev,
@@ -41,7 +46,36 @@ const HrSidebar = ({
     }));
   };
 
-  
+  const setActiveItemRef = useCallback((element) => {
+    if (element) {
+      // Check if this element is the active one
+      const href = element.getAttribute('data-href');
+      if (href) {
+        const pathname = href.split('?')[0];
+        let isActive = false;
+        
+        if (pathname === "/business-opportunities") {
+          if (href.includes("opportunityType=tender")) {
+            isActive = router.asPath.includes("opportunityType=tender");
+          } else {
+            isActive = router.pathname === "/business-opportunities" && !router.asPath.includes("opportunityType=tender");
+          }
+        } else {
+          isActive = router.pathname === pathname;
+        }
+        
+        if (isActive) {
+          setTimeout(() => {
+            element.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center',
+              inline: 'nearest'
+            });
+          }, 200);
+        }
+      }
+    }
+  }, [router.asPath, router.pathname]);
 
   const handleResize = useCallback(() => {
     setWindowWidth(window.innerWidth);
@@ -165,25 +199,29 @@ const HrSidebar = ({
                 >
                   <ul>
                     {Array.isArray(items) && items.length > 0 ? (
-                      items.map(({ href, icon, label }) => (
-                        <li
-                          key={href}
-                          onClick={() => handleNavigation(href, label)}
-                          className={`relative py-3 px-2 flex items-center font-normal text-sm w-full text-white cursor-pointer rounded-lg hover:shadow-md transition-all duration-200 group mb-1 ${isActive(
-                            href
-                          )}`}
-                        >
-                          <Icon
-                            icon={icon}
-                            className="h-5 w-5 mr-3 text-gray-300 group-hover:scale-110 group-hover:text-white transition-all"
-                          />
-                          <span className="text-sm">
-                            {typeof label === "function"
-                              ? label(user?.job_type)
-                              : label}
-                          </span>
-                        </li>
-                      ))
+                      items.map(({ href, icon, label }) => {
+                        const isActiveItem = isActive(href);
+                        
+                        return (
+                          <li
+                            key={href}
+                            ref={setActiveItemRef}
+                            data-href={href}
+                            onClick={() => handleNavigation(href, label)}
+                            className={`relative py-3 px-2 flex items-center font-normal text-sm w-full text-white cursor-pointer rounded-lg hover:shadow-md transition-all duration-200 group mb-1 ${isActiveItem}`}
+                          >
+                            <Icon
+                              icon={icon}
+                              className="h-5 w-5 mr-3 text-gray-300 group-hover:scale-110 group-hover:text-white transition-all"
+                            />
+                            <span className="text-sm">
+                              {typeof label === "function"
+                                ? label(user?.job_type)
+                                : label}
+                            </span>
+                          </li>
+                        );
+                      })
                     ) : (
                       <li className="py-3 px-2 text-gray-500 text-sm">
                         No items available
@@ -220,7 +258,7 @@ const HrSidebar = ({
                 <span className="text-xs font-medium text-black">
                   {user.name}
                 </span>
-                <div className="w-3 h-3 bg-paan-yellow rounded-full border border-paan-yellow flex items-center justify-center aspect-square"></div>
+                <div className="w-3 h-3 bg-green-400 rounded-full border border-green-400 flex items-center justify-center aspect-square"></div>
               </div>
             </div>
             <div

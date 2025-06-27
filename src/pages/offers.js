@@ -339,6 +339,7 @@ export default function Offers({ mode = "light", toggleMode }) {
                 <OfferCard
                   key={offer.id}
                   offer={offer}
+                  userTier={user.selected_tier}
                   mode={mode}
                   onAccess={handleOfferAccess}
                   isRestricted={!hasTierAccess(offer.tier_restriction, user)}

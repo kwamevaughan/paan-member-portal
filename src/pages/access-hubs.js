@@ -108,6 +108,36 @@ export default function AccessHubs({ mode = "light", toggleMode }) {
     return diffDays;
   };
 
+  // Sort access hubs by user access and tier
+  const sortAccessHubsByAccessAndTier = (accessHubs) => {
+    const tierOrder = {
+      "Gold Member": 0,
+      "Full Member": 1,
+      "Associate Member": 2,
+      "Free Member": 3,
+    };
+
+    return [...accessHubs].sort((a, b) => {
+      const aHasAccess = hasTierAccess(a.tier_restriction, user);
+      const bHasAccess = hasTierAccess(b.tier_restriction, user);
+
+      // First, sort by access (accessible hubs first)
+      if (aHasAccess && !bHasAccess) return -1;
+      if (!aHasAccess && bHasAccess) return 1;
+
+      // If both have same access status, sort by tier
+      if (aHasAccess === bHasAccess) {
+        const aTier = normalizeTier(a.tier_restriction);
+        const bTier = normalizeTier(b.tier_restriction);
+        const aTierIndex = tierOrder[aTier] ?? 4; // Default to lowest priority
+        const bTierIndex = tierOrder[bTier] ?? 4;
+        return aTierIndex - bTierIndex;
+      }
+
+      return 0;
+    });
+  };
+
   useEffect(() => {
     if (spaceType && typeof spaceType === "string") {
       const capitalizedSpaceType =
@@ -194,10 +224,10 @@ export default function AccessHubs({ mode = "light", toggleMode }) {
 
   const filteredByTab =
     activeTab === "all"
-      ? accessHubs
+      ? sortAccessHubsByAccessAndTier(accessHubs)
       : activeTab === "registrations"
       ? registeredAccessHubs
-      : accessHubs;
+      : sortAccessHubsByAccessAndTier(accessHubs);
 
   if (userLoading) {
     return LoadingComponent;

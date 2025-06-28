@@ -28,12 +28,12 @@ export const sidebarNav = [
     ],
   },
   {
-    category: "Regional Hubs",
+    category: "Access Hubs",
     items: [
       {
-        href: "/regional-hubs",
+        href: "/access-hubs",
         icon: "mdi:office-building",
-        label: "Access Hubs",
+        label: "View Access Hubs",
       },
     ],
   },

@@ -474,7 +474,7 @@ const OpportunityDetailsModal = ({
             className={`px-4 py-2 rounded-full font-normal transition-colors ${
               isButtonDisabled
                 ? "bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400"
-                : "bg-paan-yellow text-white hover:bg-paan-yellow-700 dark:bg-paan-yellow-700 dark:hover:bg-paan-yellow-600"
+                : "bg-paan-yellow text-white hover:bg-paan-blue dark:bg-paan-yellow dark:hover:bg-paan-yellow-600"
             }`}
             aria-disabled={isButtonDisabled}
             aria-label={

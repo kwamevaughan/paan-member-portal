@@ -17,41 +17,6 @@ import TabsSelector from "@/components/TabsSelector";
 import OpportunitiesSection from "@/components/OpportunitiesSection";
 import { supabase } from "@/lib/supabase";
 
-// Create a callback-based handleExpressInterest function
-const handleExpressInterest = useCallback(async (opportunity, user, router, toast) => {
-  try {
-    // Get authenticated user
-    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
-    
-    if (authError || !authUser) {
-      toast.error("User not authenticated. Please log in.");
-      return;
-    }
-
-    // Insert interest directly without checking candidate profile first
-    const { error: insertError } = await supabase
-      .from("opportunity_interests")
-      .insert({
-        user_id: authUser.id,
-        opportunity_id: opportunity.id,
-      });
-
-    if (insertError) {
-      if (insertError.code === "23505") {
-        toast.error("You have already expressed interest in this opportunity.");
-      } else {
-        console.error("Insert error:", insertError);
-        toast.error("Failed to express interest. Please try again.");
-      }
-    } else {
-      toast.success(`Interest expressed for ${opportunity.title}!`);
-    }
-  } catch (err) {
-    console.error("Error saving interest:", err);
-    toast.error("Failed to express interest. Please try again.");
-  }
-}, []);
-
 export default function BusinessOpportunities({ mode = "light", toggleMode }) {
   const { isSidebarOpen, toggleSidebar, updateDragOffset, isMobile } =
     useSidebar();
@@ -172,6 +137,41 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
       estimatedDuration: "",
       tenderType: "",
     });
+  }, []);
+
+  // Move handleExpressInterest here so useCallback is called inside the component
+  const handleExpressInterest = useCallback(async (opportunity, user, router, toast) => {
+    try {
+      // Get authenticated user
+      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !authUser) {
+        toast.error("User not authenticated. Please log in.");
+        return;
+      }
+  
+      // Insert interest directly without checking candidate profile first
+      const { error: insertError } = await supabase
+        .from("opportunity_interests")
+        .insert({
+          user_id: authUser.id,
+          opportunity_id: opportunity.id,
+        });
+  
+      if (insertError) {
+        if (insertError.code === "23505") {
+          toast.error("You have already expressed interest in this opportunity.");
+        } else {
+          console.error("Insert error:", insertError);
+          toast.error("Failed to express interest. Please try again.");
+        }
+      } else {
+        toast.success(`Interest expressed for ${opportunity.title}!`);
+      }
+    } catch (err) {
+      console.error("Error saving interest:", err);
+      toast.error("Failed to express interest. Please try again.");
+    }
   }, []);
 
   // Create a wrapper function that ensures nothing is returned

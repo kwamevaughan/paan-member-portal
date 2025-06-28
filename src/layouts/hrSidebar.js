@@ -271,10 +271,10 @@ const HrSidebar = ({
               <div className="flex flex-col gap-2 text-white text-sm pt-2">
                 <div className="flex items-center gap-2 hover:bg-paan-dark-blue rounded-2xl p-2">
                   <Icon
-                    icon="mdi:business-card-outline"
+                    icon="mdi:briefcase-outline"
                     className="h-5 w-5"
                   />
-                  <span>Profile</span>
+                  <span>Member Assets</span>
                 </div>
                 <div className="py-2 hover:bg-paan-dark-blue rounded-2xl p-2">
                   <button

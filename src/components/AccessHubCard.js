@@ -97,6 +97,18 @@ const AccessHubCard = ({
                 e.target.style.display = "none";
               }}
             />
+            {/* Availability Status - Top Right Corner */}
+            <div className={`absolute top-2 right-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium shadow-lg ${
+              accessHub.is_available 
+                ? "bg-green-500 text-white"
+                : "bg-red-500 text-white"
+            }`}>
+              <Icon 
+                icon={accessHub.is_available ? "mdi:check-circle" : "mdi:close-circle"} 
+                className="text-sm mr-1" 
+              />
+              {accessHub.is_available ? "Available" : "Unavailable"}
+            </div>
           </div>
         )}
 
@@ -131,15 +143,17 @@ const AccessHubCard = ({
                 mode={mode}
               />
             </div>
-            {accessHub.space_type && (
-              <p
-                className={`text-sm font-medium flex bg-gray-100/50 text-gray-100 px-2 py-1 rounded-full w-fit ${
-                  isRestricted ? "text-gray-400 dark:text-gray-500" : ""
-                }`}
-              >
-                {accessHub.space_type}
-              </p>
-            )}
+            <div className="flex items-center gap-2">
+              {accessHub.space_type && (
+                <p
+                  className={`text-sm font-medium flex bg-gray-100/50 text-gray-100 px-2 py-1 rounded-full w-fit ${
+                    isRestricted ? "text-gray-400 dark:text-gray-500" : ""
+                  }`}
+                >
+                  {accessHub.space_type}
+                </p>
+              )}
+            </div>
             <div className="flex gap-2">
               {isRestricted && (
                 <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">

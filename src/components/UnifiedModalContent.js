@@ -3,6 +3,7 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import toast from "react-hot-toast";
+import ImageGallery from "./ImageGallery";
 
 // Shared Components
 const ModalHero = ({ title, subtitle, icon, tier, mode, bannerImage, children }) => (
@@ -986,8 +987,16 @@ const AccessHubModalContent = ({ modalData, mode, onClose, handleAccessHubRegist
         icon="mdi:office-building"
         tier={modalData.tier_restriction}
         mode={mode}
-        bannerImage={modalData.images?.[0]}
       />
+
+      {/* Image Gallery */}
+      {modalData.images && modalData.images.length > 0 && (
+        <ImageGallery 
+          images={modalData.images} 
+          title={modalData.title} 
+          mode={mode} 
+        />
+      )}
 
       <InfoGrid mode={mode}>
         {(modalData.city || modalData.country) && (

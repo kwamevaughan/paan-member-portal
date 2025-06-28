@@ -1,5 +1,6 @@
 const normalizeTier = (tier) => {
   if (!tier || typeof tier !== "string") return "Free Member";
+  
   const tierMap = {
     "gold member (tier 3)": "Gold Member",
     "full member (tier 2)": "Full Member",

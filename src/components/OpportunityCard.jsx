@@ -300,7 +300,7 @@ const OpportunityCard = ({
               )}
 
               {/* Tender Access Link */}
-              {opportunity.tender_access_link && (
+              {/* {opportunity.tender_access_link && (
                 <div className="flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200">
                   <Icon icon="mdi:link" className="text-lg text-paan-blue" />
                   <a
@@ -313,7 +313,7 @@ const OpportunityCard = ({
                     View Tender
                   </a>
                 </div>
-              )}
+              )} */}
             </>
           ) : (
             <>

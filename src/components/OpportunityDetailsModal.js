@@ -16,6 +16,7 @@ const OpportunityDetailsModal = ({
 }) => {
   const [hasExpressedInterest, setHasExpressedInterest] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isExpressingInterest, setIsExpressingInterest] = useState(false);
   const itemLabel = isFreelancer ? "Gig" : "Opportunity";
 
   useEffect(() => {
@@ -24,8 +25,7 @@ const OpportunityDetailsModal = ({
     const checkInterestStatus = async () => {
       setIsLoading(true);
       try {
-        const { data: authData, error: authError } =
-          await supabase.auth.getUser();
+        const { data: authData, error: authError } = await supabase.auth.getUser();
         if (authError || !authData.user) {
           setHasExpressedInterest(false);
           return;
@@ -45,6 +45,7 @@ const OpportunityDetailsModal = ({
         setHasExpressedInterest(!!data);
       } catch (err) {
         console.error("Error checking interest status:", err);
+        setHasExpressedInterest(false);
       } finally {
         setIsLoading(false);
       }
@@ -53,7 +54,9 @@ const OpportunityDetailsModal = ({
     checkInterestStatus();
   }, [isOpen, user, opportunity]);
 
-  if (!opportunity) return null;
+  if (!opportunity) {
+    return null;
+  }
 
   // Check if this is a tender opportunity
   const isTender = opportunity.is_tender || 
@@ -72,40 +75,58 @@ const OpportunityDetailsModal = ({
   const isUrgent = daysUntilDeadline <= 7 && daysUntilDeadline > 0;
   const isExpired = daysUntilDeadline < 0;
 
-  const handleExpressInterestClick = () => {
+  const handleExpressInterestClick = async () => {
+    // If already expressed interest, open tender URL
     if (hasExpressedInterest) {
-      toast.error(
-        `You've already expressed interest in this ${itemLabel.toLowerCase()}.`,
-        {
-          style: {
-            background: mode === "dark" ? "#1F2937" : "#FFFFFF",
-            color: mode === "dark" ? "#F3F4F6" : "#111827",
-            border: `1px solid ${mode === "dark" ? "#374151" : "#E5E7EB"}`,
-          },
+      const tenderUrl = opportunity.tender_access_link || opportunity.application_link;
+      if (tenderUrl) {
+        window.open(tenderUrl, '_blank', 'noopener,noreferrer');
+      } else {
+        toast.error("No tender URL available for this opportunity.");
+      }
+      return;
+    }
+
+    // Set loading state
+    setIsExpressingInterest(true);
+
+    try {
+      // Get authenticated user
+      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !authUser) {
+        toast.error("User not authenticated. Please log in.");
+        return;
+      }
+
+      // Insert interest directly
+      const { error: insertError } = await supabase
+        .from("opportunity_interests")
+        .insert({
+          user_id: authUser.id,
+          opportunity_id: opportunity.id,
+        });
+
+      if (insertError) {
+        if (insertError.code === "23505") {
+          toast.error("You have already expressed interest in this opportunity.");
+        } else {
+          console.error("Insert error:", insertError);
+          toast.error("Failed to express interest. Please try again.");
         }
-      );
-    } else if (isExpired) {
-      toast.error(`${itemLabel} has expired`, {
-        style: {
-          background: mode === "dark" ? "#1F2937" : "#FFFFFF",
-          color: mode === "dark" ? "#F3F4F6" : "#111827",
-          border: `1px solid ${mode === "dark" ? "#374151" : "#E5E7EB"}`,
-        },
-      });
-    } else if (isLoading) {
-      toast.error("Checking interest status...", {
-        style: {
-          background: mode === "dark" ? "#1F2937" : "#FFFFFF",
-          color: mode === "dark" ? "#F3F4F6" : "#111827",
-          border: `1px solid ${mode === "dark" ? "#374151" : "#E5E7EB"}`,
-        },
-      });
-    } else {
-      onExpressInterest(opportunity);
+      } else {
+        toast.success(`Interest expressed for ${opportunity.title}!`);
+        setHasExpressedInterest(true);
+      }
+    } catch (err) {
+      console.error("Error saving interest:", err);
+      toast.error("Failed to express interest. Please try again.");
+    } finally {
+      setIsExpressingInterest(false);
     }
   };
 
-  const isButtonDisabled = hasExpressedInterest || isLoading || isExpired;
+  const isButtonDisabled = isLoading || isExpired || (isExpressingInterest && !hasExpressedInterest);
 
   return (
     <SimpleModal
@@ -408,8 +429,8 @@ const OpportunityDetailsModal = ({
             </div>
           )}
 
-        {/* Application Link */}
-        {(opportunity.application_link || (isTender && opportunity.tender_access_link)) && (
+        {/* Application Link - Commented out since View Opportunity button handles this now */}
+        {/* {(opportunity.application_link || (isTender && opportunity.tender_access_link)) && (
           <div>
             <h4
               className={`text-lg font-medium mb-2 ${
@@ -433,7 +454,7 @@ const OpportunityDetailsModal = ({
               {isTender ? "View Tender Details" : "Apply Now"}
             </a>
           </div>
-        )}
+        )} */}
 
         {/* Action Buttons */}
         <div className="flex justify-end gap-4 pt-4 border-t border-gray-200/50 dark:border-gray-700/50">
@@ -458,19 +479,21 @@ const OpportunityDetailsModal = ({
             aria-disabled={isButtonDisabled}
             aria-label={
               isButtonDisabled
-                ? hasExpressedInterest
-                  ? `Interest already expressed for ${opportunity.title}`
-                  : isExpired
+                ? isExpired
                   ? `${opportunity.title} has expired`
                   : `Checking interest status for ${opportunity.title}`
+                : hasExpressedInterest
+                ? `View opportunity details for ${opportunity.title}`
                 : `Express interest in ${opportunity.title}`
             }
           >
             {isLoading
               ? "Checking..."
+              : isExpressingInterest
+              ? "Expressing Interest..."
               : hasExpressedInterest
-              ? "Interest Expressed"
-              : `Express Interest`}
+              ? "View Opportunity"
+              : "Express Interest"}
           </button>
         </div>
       </div>

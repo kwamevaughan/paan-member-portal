@@ -17,6 +17,41 @@ import TabsSelector from "@/components/TabsSelector";
 import OpportunitiesSection from "@/components/OpportunitiesSection";
 import { supabase } from "@/lib/supabase";
 
+// Create a callback-based handleExpressInterest function
+const handleExpressInterest = useCallback(async (opportunity, user, router, toast) => {
+  try {
+    // Get authenticated user
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !authUser) {
+      toast.error("User not authenticated. Please log in.");
+      return;
+    }
+
+    // Insert interest directly without checking candidate profile first
+    const { error: insertError } = await supabase
+      .from("opportunity_interests")
+      .insert({
+        user_id: authUser.id,
+        opportunity_id: opportunity.id,
+      });
+
+    if (insertError) {
+      if (insertError.code === "23505") {
+        toast.error("You have already expressed interest in this opportunity.");
+      } else {
+        console.error("Insert error:", insertError);
+        toast.error("Failed to express interest. Please try again.");
+      }
+    } else {
+      toast.success(`Interest expressed for ${opportunity.title}!`);
+    }
+  } catch (err) {
+    console.error("Error saving interest:", err);
+    toast.error("Failed to express interest. Please try again.");
+  }
+}, []);
+
 export default function BusinessOpportunities({ mode = "light", toggleMode }) {
   const { isSidebarOpen, toggleSidebar, updateDragOffset, isMobile } =
     useSidebar();
@@ -139,62 +174,12 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
     });
   }, []);
 
-  const handleExpressInterest = useCallback(
-    async (opportunity) => {
-      if (!hasTierAccess(opportunity.tier_restriction, user)) {
-        toast.error(
-          `This opportunity requires ${normalizeTier(
-            opportunity.tier_restriction
-          )}. Consider upgrading.`
-        );
-        return;
-      }
-
-      try {
-        const {
-          data: { user: authUser },
-          error: authError,
-        } = await supabase.auth.getUser();
-        if (authError || !authUser) {
-          toast.error("User not authenticated. Please log in.");
-          return;
-        }
-
-        const { data: candidate, error: candidateError } = await supabase
-          .from("candidates")
-          .select("auth_user_id")
-          .eq("auth_user_id", authUser.id)
-          .single();
-
-        if (candidateError || !candidate) {
-          toast.error("Please complete your profile to express interest.");
-          router.push("/profile");
-          return;
-        }
-
-        const { error: insertError } = await supabase
-          .from("opportunity_interests")
-          .insert({
-            user_id: authUser.id,
-            opportunity_id: opportunity.id,
-          });
-
-        if (insertError) {
-          if (insertError.code === "23505") {
-            toast.error("You have already expressed interest in this gig.");
-          } else {
-            throw insertError;
-          }
-        } else {
-          toast.success(`Interest expressed for ${opportunity.title}!`);
-        }
-      } catch (err) {
-        console.error("Error saving interest:", err);
-        toast.error("Failed to express interest. Please try again.");
-      }
-    },
-    [user, router]
-  );
+  // Create a wrapper function that ensures nothing is returned
+  const handleExpressInterestWrapper = useCallback((opportunity) => {
+    // Call the function but don't return anything
+    handleExpressInterest(opportunity, user, router, toast);
+    return undefined; // Explicitly return undefined
+  }, [handleExpressInterest, user, router, toast]);
 
   if (userLoading) return LoadingComponent;
   if (!user) {
@@ -207,9 +192,6 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
         Error: {error}
       </div>
     );
-
-  console.log("[BusinessOpportunities] filters:", filters);
-  console.log("[BusinessOpportunities] filterOptions:", filterOptions);
 
   // Define main tabs like resources page
   const mainTabs = [
@@ -405,7 +387,7 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
                       <TabsSelector
                         tabs={[
                           { id: "", label: "All Tiers" },
-                          ...(filterOptions.tier_restrictions?.map((tier) => ({
+                          ...(filterOptions.tiers?.map((tier) => ({
                             id: tier,
                             label: tier,
                           })) || []),
@@ -500,7 +482,7 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
                           <TabsSelector
                             tabs={[
                               { id: "", label: "All Durations" },
-                              ...(filterOptions.estimatedDurations?.map((duration) => ({
+                              ...(filterOptions.durations?.map((duration) => ({
                                 id: duration,
                                 label: duration,
                               })) || []),
@@ -543,7 +525,7 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
               opportunitiesLoading={loading}
               opportunitiesError={error}
               user={user}
-              handleRestrictedClick={handleExpressInterest}
+              handleRestrictedClick={handleExpressInterestWrapper}
               mode={mode}
               Icon={Icon}
               opportunityFilterOptions={filterOptions}
@@ -551,6 +533,7 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
               handleOpportunityFilterChange={handleFilterChange}
               handleResetFilters={handleResetFilters}
               toast={toast}
+              router={router}
             />
           </div>
           <SimpleFooter mode={mode} isSidebarOpen={isSidebarOpen} />

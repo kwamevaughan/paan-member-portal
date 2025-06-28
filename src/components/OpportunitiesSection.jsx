@@ -74,6 +74,7 @@ const OpportunitiesSection = ({
   handleOpportunityFilterChange: handleFilterChange,
   handleResetFilters,
   toast,
+  router,
 }) => {
   const [viewMode] = useState("grid");
   const [statsFilter, setStatsFilter] = useState("total");
@@ -108,6 +109,13 @@ const OpportunitiesSection = ({
   const handleCloseModal = useCallback(() => {
     setSelectedOpportunity(null);
   }, []);
+
+  // Create a wrapper function for express interest that ensures nothing is returned
+  const handleExpressInterestWrapper = useCallback((opportunity) => {
+    // Call the function but don't return anything
+    handleExpressInterest(opportunity);
+    return undefined; // Explicitly return undefined
+  }, [handleExpressInterest]);
 
   const {
     searchedOpportunities,
@@ -176,7 +184,7 @@ const OpportunitiesSection = ({
     items: opportunities,
     user,
     hasTierAccess,
-    categories: filterOptions.jobTypes,
+    categories: opportunitiesByType,
     sectionName: itemLabel,
   });
 
@@ -444,32 +452,34 @@ const OpportunitiesSection = ({
 
         {sortedOpportunities.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {sortedOpportunities.map((opportunity, index) => (
-              <div
-                key={`${opportunity.id}-${index}`}
-                className="animate-fade-in-up h-full"
-                style={{
-                  animationDelay: `${index * 50}ms`,
-                  animationFillMode: "both",
-                }}
-              >
-                <OpportunityCard
-                  opportunity={opportunity}
-                  mode={mode}
-                  TierBadge={TierBadge}
-                  toast={toast}
-                  isRestricted={
-                    !hasTierAccess(
-                      opportunity.tier_restriction,
-                      user || { selected_tier: "Free Member" }
-                    )
-                  }
-                  onRestrictedClick={() => handleViewMoreInfo(opportunity)}
-                  isFreelancer={isFreelancer}
-                  showExpressInterestButton={false}
-                />
-              </div>
-            ))}
+            {sortedOpportunities.map((opportunity, index) => {
+              return (
+                <div
+                  key={`${opportunity.id}-${index}`}
+                  className="animate-fade-in-up h-full"
+                  style={{
+                    animationDelay: `${index * 50}ms`,
+                    animationFillMode: "both",
+                  }}
+                >
+                  <OpportunityCard
+                    opportunity={opportunity}
+                    mode={mode}
+                    TierBadge={TierBadge}
+                    toast={toast}
+                    isRestricted={
+                      !hasTierAccess(
+                        opportunity.tier_restriction,
+                        user || { selected_tier: "Free Member" }
+                      )
+                    }
+                    onRestrictedClick={handleViewMoreInfo}
+                    isFreelancer={isFreelancer}
+                    showExpressInterestButton={false}
+                  />
+                </div>
+              );
+            })}
           </div>
         ) : (
           renderEmptyState()
@@ -481,7 +491,7 @@ const OpportunitiesSection = ({
           opportunity={selectedOpportunity}
           mode={mode}
           user={user}
-          onExpressInterest={handleExpressInterest}
+          onExpressInterest={handleExpressInterestWrapper}
           isFreelancer={isFreelancer}
           toast={toast}
         />

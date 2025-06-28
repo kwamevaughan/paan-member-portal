@@ -134,14 +134,14 @@ export default function MarketIntelCard({ mode, intel, isAccessible = true }) {
         <div className="flex items-center gap-4 mb-4">
           <img
             src={
-              intel.icon_url || "https://www.paan.africa/assets/images/logo.png"
+              intel.icon_url || "https://paan.africa/assets/images/logo.png"
             }
             alt={intel.title}
             className={`w-10 h-10 rounded-full object-cover ${
               !isAccessible ? "grayscale" : ""
             }`}
             onError={(e) =>
-              (e.target.src = "https://www.paan.africa/assets/images/logo.png")
+              (e.target.src = "https://paan.africa/assets/images/logo.png")
             }
           />
           <div>

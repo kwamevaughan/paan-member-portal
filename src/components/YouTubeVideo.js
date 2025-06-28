@@ -19,7 +19,7 @@ const YouTubeVideo = ({ mode }) => {
             : "bg-white border-gray-200"
         }`}
       >
-        <Link href="https://www.paan.africa/" target="_blank">
+        <Link href="https://paan.africa/" target="_blank">
           <h2
             className={`text-xl font-normal mb-4 ${
               mode === "dark" ? "text-white" : "text-gray-800"
@@ -41,7 +41,7 @@ const YouTubeVideo = ({ mode }) => {
           : "bg-white border-gray-200"
       }`}
     >
-      <Link href="https://www.paan.africa/" target="_blank">
+      <Link href="https://paan.africa/" target="_blank">
         <h2
           className={`text-xl font-normal mb-4 ${
             mode === "dark" ? "text-white" : "text-gray-800"

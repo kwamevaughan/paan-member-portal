@@ -1118,12 +1118,12 @@ const AccessHubModalContent = ({ modalData, mode, onClose, handleAccessHubRegist
           ) : isRegistered ? (
             <div className="flex items-center space-x-2">
               <Icon icon="mdi:check-circle" className="text-lg" />
-              <span>Registered</span>
+              <span>Booked</span>
             </div>
           ) : (
             <div className="flex items-center space-x-2">
               <Icon icon="mdi:account-plus" className="text-lg" />
-              <span>Register Now</span>
+              <span>Book Now</span>
             </div>
           )}
         </button>

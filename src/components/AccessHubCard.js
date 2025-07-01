@@ -243,7 +243,7 @@ const AccessHubCard = ({
             </div>
           )}
           <button
-            onClick={handleRegisterClick}
+            onClick={handleClick}
             className={`px-4 py-2 rounded-full font-normal text-xs transition-colors ${
               isRestricted
                 ? "bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400"

@@ -153,6 +153,22 @@ const OpportunityDetailsModal = ({
     return `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`;
   }
 
+  // Helper to format date as '20th July, 2025'
+  function formatDateWithOrdinal(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const day = date.getDate();
+    const month = date.toLocaleString('default', { month: 'long' });
+    const year = date.getFullYear();
+    // Ordinal suffix
+    const j = day % 10, k = day % 100;
+    let ordinal = 'th';
+    if (j === 1 && k !== 11) ordinal = 'st';
+    else if (j === 2 && k !== 12) ordinal = 'nd';
+    else if (j === 3 && k !== 13) ordinal = 'rd';
+    return `${day}${ordinal} ${month}, ${year}`;
+  }
+
   return (
     <>
       <SimpleModal
@@ -501,7 +517,7 @@ const OpportunityDetailsModal = ({
       <SimpleModal
         isOpen={showDocViewer}
         onClose={() => setShowDocViewer(false)}
-        title={`Document: ${opportunity?.title || 'Viewer'}`}
+        title={`Organization: ${opportunity?.title || 'Viewer'} | Expires on: ${formatDateWithOrdinal(opportunity?.tender_closing)}`}
         mode={mode}
         width="max-w-7xl"
       >

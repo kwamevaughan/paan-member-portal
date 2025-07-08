@@ -218,7 +218,7 @@ export const useBusinessOpportunities = (
           let query = supabase
             .from("business_opportunities")
             .select(
-              "id, title, description, tier_restriction, location, application_link, deadline, created_at, updated_at, service_type, industry, project_type, job_type, skills_required, estimated_duration, budget_range, remote_work, is_tender, tender_organization, tender_category, tender_issued, tender_closing, tender_access_link"
+              "id, organization_name, gig_title, tender_title, description, tier_restriction, location, application_link, deadline, created_at, updated_at, service_type, industry, project_type, job_type, skills_required, estimated_duration, budget_range, remote_work, is_tender, tender_organization, tender_category, tender_issued, tender_closing, tender_access_link"
             )
             .gte("deadline", new Date().toISOString().split("T")[0])
             .ilike("job_type", `%${currentJobTypeFilter}%`);

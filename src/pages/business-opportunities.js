@@ -166,7 +166,12 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
           toast.error("Failed to express interest. Please try again.");
         }
       } else {
-        toast.success(`Interest expressed for ${opportunity.title}!`);
+        toast.success(`Interest expressed for ${opportunity.is_tender
+          ? (opportunity.tender_title || opportunity.organization_name)
+          : (opportunity.job_type === "Freelancer"
+              ? opportunity.gig_title
+              : opportunity.organization_name)
+        }!`);
       }
     } catch (err) {
       console.error("Error saving interest:", err);

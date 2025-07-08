@@ -133,7 +133,12 @@ const OpportunityDetailsModal = ({
           toast.error("Failed to express interest. Please try again.");
         }
       } else {
-        toast.success(`Interest expressed for ${opportunity.title}!`);
+        toast.success(`Interest expressed for ${isTender
+          ? (opportunity.tender_title || opportunity.organization_name)
+          : (opportunity.job_type === "Freelancer"
+              ? opportunity.gig_title
+              : opportunity.organization_name)
+        }!`);
         setHasExpressedInterest(true);
       }
     } catch (err) {
@@ -182,11 +187,22 @@ const OpportunityDetailsModal = ({
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <h3
-                className={`text-2xl font-medium mb-2 ${
+                className={`text-2xl font-medium mb-2  ${
                   mode === "dark" ? "text-white" : "text-gray-900"
                 }`}
+                title={isTender
+                  ? (opportunity.tender_title || opportunity.organization_name)
+                  : (opportunity.job_type === "Freelancer"
+                      ? opportunity.gig_title
+                      : opportunity.organization_name)
+                }
               >
-                {opportunity.title}
+                {isTender
+                  ? (opportunity.tender_title || opportunity.organization_name)
+                  : (opportunity.job_type === "Freelancer"
+                      ? opportunity.gig_title
+                      : opportunity.organization_name)
+                }
               </h3>
               {(opportunity.company || (isTender && opportunity.tender_organization)) && (
                 <p
@@ -495,11 +511,31 @@ const OpportunityDetailsModal = ({
               aria-label={
                 isButtonDisabled
                   ? isExpired
-                    ? `${opportunity.title} has expired`
-                    : `Checking interest status for ${opportunity.title}`
+                    ? `${isTender
+                        ? (opportunity.tender_title || opportunity.organization_name)
+                        : (opportunity.job_type === "Freelancer"
+                            ? opportunity.gig_title
+                            : opportunity.organization_name)
+                      } has expired`
+                    : `Checking interest status for ${isTender
+                        ? (opportunity.tender_title || opportunity.organization_name)
+                        : (opportunity.job_type === "Freelancer"
+                            ? opportunity.gig_title
+                            : opportunity.organization_name)
+                      }`
                   : hasExpressedInterest
-                  ? `View opportunity details for ${opportunity.title}`
-                  : `Express interest in ${opportunity.title}`
+                  ? `View opportunity details for ${isTender
+                      ? (opportunity.tender_title || opportunity.organization_name)
+                      : (opportunity.job_type === "Freelancer"
+                          ? opportunity.gig_title
+                          : opportunity.organization_name)
+                    }`
+                  : `Express interest in ${isTender
+                      ? (opportunity.tender_title || opportunity.organization_name)
+                      : (opportunity.job_type === "Freelancer"
+                          ? opportunity.gig_title
+                          : opportunity.organization_name)
+                    }`
               }
             >
               {isLoading
@@ -517,7 +553,12 @@ const OpportunityDetailsModal = ({
       <SimpleModal
         isOpen={showDocViewer}
         onClose={() => setShowDocViewer(false)}
-        title={`Organization: ${opportunity?.title || 'Viewer'} | Expires on: ${formatDateWithOrdinal(opportunity?.tender_closing)}`}
+        title={`Organization: ${isTender
+          ? (opportunity?.tender_title?.length > 50 ? opportunity?.tender_title?.substring(0, 50) + '...' : opportunity?.tender_title || opportunity?.organization_name || 'Viewer')
+          : (opportunity?.job_type === "Freelancer"
+              ? (opportunity?.gig_title?.length > 50 ? opportunity?.gig_title?.substring(0, 50) + '...' : opportunity?.gig_title || 'Viewer')
+              : (opportunity?.organization_name?.length > 50 ? opportunity?.organization_name?.substring(0, 50) + '...' : opportunity?.organization_name || 'Viewer'))
+        } | Expires on: ${formatDateWithOrdinal(opportunity?.tender_closing)}`}
         mode={mode}
         width="max-w-7xl"
       >

@@ -123,11 +123,16 @@ const OpportunitiesSection = ({
     restrictedOpportunities,
     opportunitiesByType,
   } = useMemo(() => {
-    const searched = opportunities.filter((opp) =>
-      `${opp.title} ${opp.description}`
+    const searched = opportunities.filter((opp) => {
+      const title = opp.is_tender
+        ? (opp.tender_title || opp.organization_name || '')
+        : (opp.job_type === "Freelancer"
+            ? opp.gig_title || ''
+            : opp.organization_name || '');
+      return `${title} ${opp.description || ''}`
         .toLowerCase()
-        .includes(searchQuery.toLowerCase())
-    );
+        .includes(searchQuery.toLowerCase());
+    });
     const userTier = user || { selected_tier: "Free Member" };
     return {
       searchedOpportunities: searched,
@@ -160,6 +165,17 @@ const OpportunitiesSection = ({
     opportunitiesByType,
   ]);
 
+  // Helper function to get the correct title for each opportunity type
+  const getOpportunityTitle = (opportunity) => {
+    if (opportunity.is_tender) {
+      return opportunity.tender_title || opportunity.organization_name || '';
+    } else if (opportunity.job_type === "Freelancer") {
+      return opportunity.gig_title || '';
+    } else {
+      return opportunity.organization_name || '';
+    }
+  };
+
   const sortedOpportunities = useMemo(
     () =>
       [...displayOpportunities].sort((a, b) => {
@@ -172,7 +188,7 @@ const OpportunitiesSection = ({
           user || { selected_tier: "Free Member" }
         );
         return aAccessible === bAccessible
-          ? a.title.localeCompare(b.title)
+          ? getOpportunityTitle(a).localeCompare(getOpportunityTitle(b))
           : aAccessible
           ? -1
           : 1;

@@ -90,8 +90,18 @@ const OpportunityCard = ({
       tabIndex={isRestricted ? -1 : 0}
       aria-label={
         isRestricted
-          ? `Restricted ${itemLabel}: ${opportunity.title}`
-          : `View ${itemLabel}: ${opportunity.title}`
+          ? `Restricted ${itemLabel}: ${isTender
+              ? (opportunity.tender_title || opportunity.organization_name)
+              : (opportunity.job_type === "Freelancer"
+                  ? opportunity.gig_title
+                  : opportunity.organization_name)
+            }`
+          : `View ${itemLabel}: ${isTender
+              ? (opportunity.tender_title || opportunity.organization_name)
+              : (opportunity.job_type === "Freelancer"
+                  ? opportunity.gig_title
+                  : opportunity.organization_name)
+            }`
       }
     >
       {/* Background Gradient Overlay */}
@@ -128,17 +138,27 @@ const OpportunityCard = ({
             <div className="flex-1 min-w-0">
               {/* Title Row */}
               <h3
-                className={`font-normal text-lg leading-tight mb-2 transition-colors duration-200 ${
+                className={`font-normal text-lg leading-tight mb-2 transition-colors duration-200 line-clamp-2 ${
                   mode === "dark" ? "text-white" : "text-white"
                 } ${isRestricted ? "text-gray-500 dark:text-gray-400" : ""} ${
                   isHovered ? "text-paan-blue dark:text-paan-blue" : ""
                 }`}
+                title={isTender
+                  ? (opportunity.tender_title || opportunity.organization_name)
+                  : (opportunity.job_type === "Freelancer"
+                      ? opportunity.gig_title
+                      : opportunity.organization_name)
+                }
               >
-                {opportunity.title}
+                {isTender
+                  ? (opportunity.tender_title || opportunity.organization_name)
+                  : (opportunity.job_type === "Freelancer"
+                      ? opportunity.gig_title
+                      : opportunity.organization_name)
+                }
                 {isRestricted && (
                   <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
                     <Icon icon="mdi:lock" className="text-sm" />
-                    
                   </span>
                 )}
               </h3>
@@ -410,7 +430,12 @@ const OpportunityCard = ({
                 : "bg-amber-400  hover:bg-amber-500 dark:bg-amber-400 dark:hover:bg-amber-500"
             }`}
             disabled={isRestricted}
-            aria-label={`View details for ${opportunity.title}`}
+            aria-label={`View details for ${isTender
+              ? (opportunity.tender_title || opportunity.organization_name)
+              : (opportunity.job_type === "Freelancer"
+                  ? opportunity.gig_title
+                  : opportunity.organization_name)
+            }`}
           >
             View Details
           </button>

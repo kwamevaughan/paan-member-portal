@@ -263,33 +263,42 @@ export default function WelcomeCard({
                   Your Membership
                 </div>
                 <div className="flex flex-wrap gap-2 pb-2 capitalize">
-                  {!isFreelancer && (
+                  {/* Show only one admin badge, or tier badge for non-freelancers, or job type badge for freelancers */}
+                  {user?.job_type?.toLowerCase() === "admin" ? (
+                    <div className="[&>span]:!bg-paan-blue/30 [&>span]:!text-gray-900 [&>span]:!border-paan-blue [&>span>svg]:!text-paan-blue dark:[&>span]:!bg-paan-blue/30 dark:[&>span]:!text-paan-blue dark:[&>span]:!border-paan-blue">
+                      <JobTypeBadge jobType={user?.job_type} mode={mode} />
+                    </div>
+                  ) : !isFreelancer ? (
                     <div className="[&>span]:!bg-amber-100 [&>span]:!text-gray-900 [&>span]:!border-amber-200 [&>span>svg]:!text-[#F25849] dark:[&>span]:!bg-amber-500/30 dark:[&>span]:!text-amber-100 dark:[&>span]:!border-amber-400">
                       <TierBadge tier={user?.selected_tier} mode={mode} />
                     </div>
+                  ) : (
+                    <div className="[&>span]:!bg-amber-100 [&>span]:!text-gray-900 [&>span]:!border-amber-200 [&>span>svg]:!text-[#F25849] dark:[&>span]:!bg-amber-500/30 dark:[&>span]:!text-amber-100 dark:[&>span]:!border-amber-400">
+                      <JobTypeBadge jobType={user?.job_type} mode={mode} />
+                    </div>
                   )}
-                  <div className="[&>span]:!bg-amber-100 [&>span]:!text-gray-900 [&>span]:!border-amber-200 [&>span>svg]:!text-[#F25849] dark:[&>span]:!bg-amber-500/30 dark:[&>span]:!text-amber-100 dark:[&>span]:!border-amber-400">
-                    <JobTypeBadge jobType={user?.job_type} mode={mode} />
+                </div>
+                {/* Only show member since for non-admin users */}
+                {user?.job_type?.toLowerCase() !== "admin" && (
+                  <div className="text-xs sm:text-sm">
+                    <span
+                      className={`font-semibold pr-2 ${
+                        mode === "dark" ? "text-gray-200" : "text-gray-700"
+                      }`}
+                    >
+                      Member since:
+                    </span>{" "}
+                    <span
+                      className={`inline-block px-6 py-2 rounded-full text-xs font-normal ${
+                        mode === "dark"
+                          ? "bg-blue-800 text-blue-100"
+                          : "bg-[#172840] text-white"
+                      }`}
+                    >
+                      {formatJoinDate(user?.created_at)}
+                    </span>
                   </div>
-                </div>
-                <div className="text-xs sm:text-sm">
-                  <span
-                    className={`font-semibold pr-2 ${
-                      mode === "dark" ? "text-gray-200" : "text-gray-700"
-                    }`}
-                  >
-                    Member since:
-                  </span>{" "}
-                  <span
-                    className={`inline-block px-6 py-2 rounded-full text-xs font-normal ${
-                      mode === "dark"
-                        ? "bg-blue-800 text-blue-100"
-                        : "bg-[#172840] text-white"
-                    }`}
-                  >
-                    {formatJoinDate(user?.created_at)}
-                  </span>
-                </div>
+                )}
               </div>
             </div>
           </div>

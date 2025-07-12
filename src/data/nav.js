@@ -65,26 +65,6 @@ export const sidebarNav = [
         icon: "mdi:calendar-star",
         label: "All Events",
       },
-      {
-        href: "/events?eventType=networking",
-        icon: "mdi:account-group",
-        label: "Networking Events",
-      },
-      {
-        href: "/events?eventType=workshop",
-        icon: "mdi:school",
-        label: "Workshops & Training",
-      },
-      {
-        href: "/events?eventType=webinar",
-        icon: "mdi:video",
-        label: "Webinars",
-      },
-      {
-        href: "/events?eventType=conference",
-        icon: "mdi:presentation",
-        label: "Conferences & Seminars",
-      },
     ],
   },
   {

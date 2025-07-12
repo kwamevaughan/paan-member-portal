@@ -11,12 +11,18 @@ const normalizeTier = (tier) => {
     "full member": "Full Member",
     "associate member": "Associate Member",
     "free member": "Free Member",
+    "admin": "Admin",
   };
   const cleanTier = tier.trim().toLowerCase();
   return tierMap[cleanTier] || "Free Member";
 };
 
 const hasTierAccess = (entityTier, user) => {
+  // Admin users have full access to all resources
+  if (user?.selected_tier === "Admin" || user?.job_type === "admin") {
+    return true;
+  }
+  
   const tiers = [
     "Gold Member", // Index 0 (highest tier)
     "Full Member", // Index 1

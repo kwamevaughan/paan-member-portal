@@ -3,6 +3,45 @@ import { supabase } from "@/lib/supabase";
 import { hasTierAccess, normalizeTier } from "@/utils/tierUtils";
 import toast from "react-hot-toast";
 
+// Helper function to find user in either candidates or hr_users table
+const findUserInTables = async (authUserId) => {
+  try {
+    // First, try to find user in candidates table
+    const { data: candidateData, error: candidateError } = await supabase
+      .from("candidates")
+      .select("id")
+      .eq("auth_user_id", authUserId)
+      .single();
+
+    if (candidateData && !candidateError) {
+      return {
+        id: candidateData.id,
+        userType: 'candidate'
+      };
+    }
+
+    // If not found in candidates, try hr_users table
+    const { data: hrUserData, error: hrUserError } = await supabase
+      .from("hr_users")
+      .select("id")
+      .eq("id", authUserId)
+      .single();
+
+    if (hrUserData && !hrUserError) {
+      return {
+        id: hrUserData.id,
+        userType: 'hr_user'
+      };
+    }
+
+    // User not found in either table
+    return null;
+  } catch (error) {
+    console.error("Error finding user in tables:", error);
+    return null;
+  }
+};
+
 const useAccessHubs = (
   filters = { spaceType: "", tier_restriction: "", city: "", country: "", is_available: "", pricing_range: "" },
   user = { selected_tier: "Free Member" }
@@ -154,15 +193,12 @@ const useAccessHubs = (
         return;
       }
 
-      const { data: candidate, error: candidateError } = await supabase
-        .from("candidates")
-        .select("id")
-        .eq("auth_user_id", authUser.id)
-        .single();
+      const userData = await findUserInTables(authUser.id);
 
-      if (candidateError || !candidate) {
-        console.error("[useAccessHubs] Candidate not found for user:", authUser.id);
-        throw new Error("Candidate not found for this user");
+      if (!userData) {
+        console.warn("[useAccessHubs] User not found in either table, skipping registered access hubs");
+        setRegisteredAccessHubs([]);
+        return;
       }
 
       const { data: registrations, error: regError } = await supabase
@@ -185,7 +221,7 @@ const useAccessHubs = (
           )
         `
         )
-        .eq("user_id", candidate.id)
+        .eq("user_id", userData.id)
         .order("registered_at", { ascending: false });
 
       if (regError) {
@@ -222,23 +258,19 @@ const useAccessHubs = (
         throw new Error("User not authenticated");
       }
 
-      const { data: candidate, error: candidateError } = await supabase
-        .from("candidates")
-        .select("id")
-        .eq("auth_user_id", authUser.id)
-        .single();
+      const userData = await findUserInTables(authUser.id);
 
-      if (candidateError || !candidate) {
-        throw new Error("Candidate not found for this user");
+      if (!userData) {
+        throw new Error("User not found for this account");
       }
 
-      const candidateId = candidate.id;
+      const userId = userData.id;
 
       const { data: existingRegistrations, error: checkError } = await supabase
         .from("access_hub_registrations")
         .select("id")
         .eq("access_hub_id", accessHubId)
-        .eq("user_id", candidateId);
+        .eq("user_id", userId);
 
       if (checkError) {
         throw checkError;
@@ -253,7 +285,7 @@ const useAccessHubs = (
         .from("access_hub_registrations")
         .insert({
           access_hub_id: accessHubId,
-          user_id: candidateId,
+          user_id: userId,
           registered_at: new Date().toISOString(),
           status: "pending",
         });

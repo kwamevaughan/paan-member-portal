@@ -7,6 +7,59 @@ import LoginErrorModal from "@/components/modals/LoginErrorModal";
 
 export const AuthContext = createContext();
 
+// Helper function to find user in either candidates or hr_users table
+const findUserInTables = async (authUserId) => {
+  try {
+    // First, try to find user in candidates table
+    const { data: candidateData, error: candidateError } = await supabase
+      .from("candidates")
+      .select(
+        "id, primaryContactEmail, primaryContactName, job_type, selected_tier, agencyName, auth_user_id, created_at"
+      )
+      .eq("auth_user_id", authUserId)
+      .single();
+
+    if (candidateData && !candidateError) {
+      return {
+        id: candidateData.id,
+        email: candidateData.primaryContactEmail,
+        name: candidateData.primaryContactName,
+        job_type: candidateData.job_type,
+        selected_tier: candidateData.selected_tier,
+        agencyName: candidateData.agencyName,
+        created_at: candidateData.created_at,
+        userType: 'candidate'
+      };
+    }
+
+    // If not found in candidates, try hr_users table
+    const { data: hrUserData, error: hrUserError } = await supabase
+      .from("hr_users")
+      .select("id, username, name")
+      .eq("id", authUserId)
+      .single();
+
+    if (hrUserData && !hrUserError) {
+      return {
+        id: hrUserData.id,
+        email: hrUserData.username,
+        name: hrUserData.name,
+        job_type: "admin",
+        selected_tier: "Admin",
+        agencyName: null,
+        created_at: null,
+        userType: 'hr_user'
+      };
+    }
+
+    // User not found in either table
+    return null;
+  } catch (error) {
+    console.error("Error finding user in tables:", error);
+    return null;
+  }
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -61,24 +114,9 @@ export const AuthProvider = ({ children }) => {
       const authUserId = user?.user?.id;
 
       if (user?.user && email && authUserId) {
-        const { data, error } = await supabase
-          .from("candidates")
-          .select(
-            "id, primaryContactEmail, primaryContactName, job_type, selected_tier, agencyName, auth_user_id, created_at"
-          )
-          .eq("auth_user_id", authUserId)
-          .single();
+        const userData = await findUserInTables(authUserId);
 
-        if (data && !error) {
-          const userData = {
-            id: data.id,
-            email: data.primaryContactEmail,
-            name: data.primaryContactName,
-            job_type: data.job_type,
-            selected_tier: data.selected_tier,
-            agencyName: data.agencyName,
-            created_at: data.created_at,
-          };
+        if (userData) {
           setUser(userData);
           localStorage.setItem("paan_user_data", JSON.stringify(userData));
           localStorage.setItem("paan_member_session", "authenticated");
@@ -153,16 +191,10 @@ export const AuthProvider = ({ children }) => {
       }
 
       const authUserId = authData.user.id;
-      const { data: userData, error } = await supabase
-        .from("candidates")
-        .select(
-          "id, primaryContactEmail, primaryContactName, job_type, selected_tier, agencyName, auth_user_id, created_at"
-        )
-        .eq("auth_user_id", authUserId)
-        .single();
+      const userData = await findUserInTables(authUserId);
 
-      if (error || !userData) {
-        console.error("AuthContext: User not found:", error);
+      if (!userData) {
+        console.error("AuthContext: User not found in either table");
         setLoginError(
           "No account found for this email. Please ensure your account is activated or contact support at support@paan.africa."
         );
@@ -182,8 +214,8 @@ export const AuthProvider = ({ children }) => {
 
       const user = {
         id: userData.id,
-        email: userData.primaryContactEmail,
-        name: userData.primaryContactName,
+        email: userData.email,
+        name: userData.name,
         job_type: userData.job_type,
         selected_tier: userData.selected_tier,
         agencyName: userData.agencyName,
@@ -291,17 +323,11 @@ export const AuthProvider = ({ children }) => {
             name,
           });
 
-          const { data: existingUser, error: fetchError } = await supabase
-            .from("candidates")
-            .select(
-              "id, primaryContactEmail, primaryContactName, job_type, selected_tier, agencyName, auth_user_id, created_at"
-            )
-            .eq("auth_user_id", authUserId)
-            .single();
+          const existingUser = await findUserInTables(authUserId);
 
-          if (fetchError || !existingUser) {
+          if (!existingUser) {
             console.log(
-              "AuthContext: No existing candidate, redirecting to membership page"
+              "AuthContext: No existing user found in either table, redirecting to membership page"
             );
             toast.error("No account found. Redirecting to Membership page.");
             setSkipRedirect(true);
@@ -336,15 +362,7 @@ export const AuthProvider = ({ children }) => {
           localStorage.setItem("paan_member_session", "authenticated");
           localStorage.setItem("user_email", email);
 
-          setUser({
-            id: existingUser.id,
-            email: existingUser.primaryContactEmail,
-            name: existingUser.primaryContactName,
-            job_type: existingUser.job_type,
-            selected_tier: existingUser.selected_tier,
-            agencyName: existingUser.agencyName,
-            created_at: existingUser.created_at,
-          });
+          setUser(existingUser);
 
           toast.success("Social login successful! Redirecting...");
           console.log(

@@ -1,7 +1,46 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import { hasTierAccess, normalizeTier } from "@/utils/tierUtils";
+import { normalizeTier, hasTierAccess } from "@/utils/tierUtils";
 import toast from "react-hot-toast";
+
+// Helper function to find user in either candidates or hr_users table
+const findUserInTables = async (authUserId) => {
+  try {
+    // First, try to find user in candidates table
+    const { data: candidateData, error: candidateError } = await supabase
+      .from("candidates")
+      .select("id")
+      .eq("auth_user_id", authUserId)
+      .single();
+
+    if (candidateData && !candidateError) {
+      return {
+        id: candidateData.id,
+        userType: 'candidate'
+      };
+    }
+
+    // If not found in candidates, try hr_users table
+    const { data: hrUserData, error: hrUserError } = await supabase
+      .from("hr_users")
+      .select("id")
+      .eq("id", authUserId)
+      .single();
+
+    if (hrUserData && !hrUserError) {
+      return {
+        id: hrUserData.id,
+        userType: 'hr_user'
+      };
+    }
+
+    // User not found in either table
+    return null;
+  } catch (error) {
+    console.error("Error finding user in tables:", error);
+    return null;
+  }
+};
 
 const useEvents = (
   filters = { eventType: "", tier: "" },
@@ -105,15 +144,12 @@ const useEvents = (
         return;
       }
 
-      const { data: candidate, error: candidateError } = await supabase
-        .from("candidates")
-        .select("id")
-        .eq("auth_user_id", authUser.id)
-        .single();
+      const userData = await findUserInTables(authUser.id);
 
-      if (candidateError || !candidate) {
-        console.error("[useEvents] Candidate not found for user:", authUser.id);
-        throw new Error("Candidate not found for this user");
+      if (!userData) {
+        console.warn("[useEvents] User not found in either table, skipping registered events");
+        setRegisteredEvents([]);
+        return;
       }
 
       const { data: registrations, error: regError } = await supabase
@@ -138,7 +174,7 @@ const useEvents = (
           )
         `
         )
-        .eq("user_id", candidate.id)
+        .eq("user_id", userData.id)
         .order("registered_at", { ascending: false });
 
       if (regError) {
@@ -174,23 +210,19 @@ const useEvents = (
         throw new Error("User not authenticated");
       }
 
-      const { data: candidate, error: candidateError } = await supabase
-        .from("candidates")
-        .select("id")
-        .eq("auth_user_id", authUser.id)
-        .single();
+      const userData = await findUserInTables(authUser.id);
 
-      if (candidateError || !candidate) {
-        throw new Error("Candidate not found for this user");
+      if (!userData) {
+        throw new Error("User not found for this account");
       }
 
-      const candidateId = candidate.id;
+      const userId = userData.id;
 
       const { data: existingRegistrations, error: checkError } = await supabase
         .from("event_registrations")
         .select("id")
         .eq("event_id", eventId)
-        .eq("user_id", candidateId);
+        .eq("user_id", userId);
 
       if (checkError) {
         throw checkError;
@@ -205,7 +237,7 @@ const useEvents = (
         .from("event_registrations")
         .insert({
           event_id: eventId,
-          user_id: candidateId,
+          user_id: userId,
           registered_at: new Date().toISOString(),
           status: "pending",
         });

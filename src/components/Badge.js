@@ -15,6 +15,7 @@ const tierIcons = {
   "Full Member": "mdi:check-decagram",
   "Gold Member": "mdi:star",
   "Free Member": "mdi:account",
+  "Admin": "mdi:shield-crown",
   default: "mdi:account",
 };
 
@@ -22,6 +23,7 @@ const tierIcons = {
 const jobTypeIcons = {
   freelancer: "mdi:account-star",
   agency: "mdi:domain",
+  admin: "mdi:shield-crown",
   default: "solar:question-circle-linear",
 };
 
@@ -68,6 +70,16 @@ const colorMaps = {
       solidDark: "bg-gray-600 text-white border-gray-600",
       solidLight: "bg-gray-600 text-white border-gray-600",
     },
+    "Admin": {
+      bgDark: "bg-paan-blue/30",
+      bgLight: "bg-paan-blue-50",
+      textDark: "text-paan-blue",
+      textLight: "text-paan-blue",
+      borderDark: "border-paan-blue",
+      borderLight: "border-paan-blue",
+      solidDark: "bg-paan-blue text-white border-paan-blue",
+      solidLight: "bg-paan-blue text-white border-paan-blue",
+    },
     default: {
       bgDark: "bg-gray-700/30",
       bgLight: "bg-gray-100",
@@ -95,6 +107,14 @@ const colorMaps = {
       textLight: "text-teal-800",
       borderDark: "border-teal-800",
       borderLight: "border-teal-200",
+    },
+    admin: {
+      bgDark: "bg-paan-blue/30",
+      bgLight: "bg-paan-blue-50",
+      textDark: "text-paan-blue",
+      textLight: "text-paan-blue",
+      borderDark: "border-paan-blue",
+      borderLight: "border-paan-blue",
     },
     default: {
       bgDark: "bg-gray-700/30",
@@ -243,6 +263,7 @@ const tierMap = {
   "full member": "Full Member",
   "associate member": "Associate Member",
   "free member": "Free Member",
+  "admin": "Admin",
 };
 
 // Normalize the tier name for consistency
@@ -312,7 +333,7 @@ const RegistrationStatusBadge = ({ status, mode }) => {
 
 // Job Type Badge Component
 const JobTypeBadge = ({ jobType, mode }) => {
-  const normalizedJobType = jobType || "Freelancer";
+  const normalizedJobType = jobType?.toLowerCase() || "freelancer";
   const colors = getBadgeColor(normalizedJobType, mode, colorMaps.jobType);
   const icon = jobTypeIcons[normalizedJobType] || jobTypeIcons["default"];
 
@@ -321,7 +342,7 @@ const JobTypeBadge = ({ jobType, mode }) => {
       className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${colors.bg} ${colors.text} ${colors.border}`}
     >
       <Icon icon={icon} className="mr-1 w-6 h-6" />
-      {normalizedJobType}
+      {normalizedJobType.charAt(0).toUpperCase() + normalizedJobType.slice(1)}
     </span>
   );
 };

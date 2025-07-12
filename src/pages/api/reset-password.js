@@ -26,7 +26,8 @@ export default async function handler(req, res) {
     }
 
     let firstName = "User";
-    // Query candidates table
+    
+    // First, try to find user in candidates table
     const { data: candidateData, error: candidateError } = await supabaseAdmin
       .from("candidates")
       .select("primaryContactName")
@@ -37,17 +38,31 @@ export default async function handler(req, res) {
       console.log("API: Found candidate:", candidateData);
       firstName = candidateData.primaryContactName?.split(" ")[0] || "User";
     } else {
-      console.log("API: Candidate error:", candidateError?.message);
-      // Fallback to auth.users
-      const { data: userData, error: userError } =
-        await supabaseAdmin.auth.admin.getUserByEmail(email);
-      if (userData?.user && !userError) {
-        console.log("API: Found auth user:", userData.user.user_metadata);
-        const metaData = userData.user.user_metadata || {};
-        firstName = metaData.full_name || metaData.name || "User";
-        firstName = firstName.split(" ")[0] || "User";
+      console.log("API: Candidate not found, checking hr_users table");
+      
+      // If not found in candidates, try hr_users table
+      const { data: hrUserData, error: hrUserError } = await supabaseAdmin
+        .from("hr_users")
+        .select("name")
+        .eq("username", email)
+        .single();
+
+      if (hrUserData && !hrUserError) {
+        console.log("API: Found HR user:", hrUserData);
+        firstName = hrUserData.name?.split(" ")[0] || "User";
       } else {
-        console.log("API: Auth user error:", userError?.message);
+        console.log("API: HR user not found, falling back to auth.users");
+        // Fallback to auth.users
+        const { data: userData, error: userError } =
+          await supabaseAdmin.auth.admin.getUserByEmail(email);
+        if (userData?.user && !userError) {
+          console.log("API: Found auth user:", userData.user.user_metadata);
+          const metaData = userData.user.user_metadata || {};
+          firstName = metaData.full_name || metaData.name || "User";
+          firstName = firstName.split(" ")[0] || "User";
+        } else {
+          console.log("API: Auth user error:", userError?.message);
+        }
       }
     }
 

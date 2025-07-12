@@ -3,6 +3,57 @@ import { useRouter } from "next/router";
 import { supabaseClient } from "@/lib/supabase";
 import toast from "react-hot-toast";
 
+// Helper function to find user in either candidates or hr_users table
+const findUserInTables = async (authUserId) => {
+  try {
+    // First, try to find user in candidates table
+    const { data: candidateData, error: candidateError } = await supabaseClient
+      .from("candidates")
+      .select(
+        "id, primaryContactEmail, primaryContactName, job_type, selected_tier, agencyName, auth_user_id"
+      )
+      .eq("auth_user_id", authUserId)
+      .single();
+
+    if (candidateData && !candidateError) {
+      return {
+        id: candidateData.id,
+        email: candidateData.primaryContactEmail,
+        name: candidateData.primaryContactName,
+        job_type: candidateData.job_type,
+        selected_tier: candidateData.selected_tier,
+        agencyName: candidateData.agencyName,
+        userType: 'candidate'
+      };
+    }
+
+    // If not found in candidates, try hr_users table
+    const { data: hrUserData, error: hrUserError } = await supabaseClient
+      .from("hr_users")
+      .select("id, username, name")
+      .eq("id", authUserId)
+      .single();
+
+    if (hrUserData && !hrUserError) {
+      return {
+        id: hrUserData.id,
+        email: hrUserData.username,
+        name: hrUserData.name,
+        job_type: "admin",
+        selected_tier: "Admin",
+        agencyName: null,
+        userType: 'hr_user'
+      };
+    }
+
+    // User not found in either table
+    return null;
+  } catch (error) {
+    console.error("Error finding user in tables:", error);
+    return null;
+  }
+};
+
 export default function AuthCallback() {
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(true);
@@ -28,20 +79,13 @@ export default function AuthCallback() {
         if (data.session) {
           console.log("[AuthCallback] Session found:", data.session.user.email);
 
-          // Verify user exists in candidates table
+          // Verify user exists in either candidates or hr_users table
           const authUserId = data.session.user.id;
-          const { data: userData, error: userError } = await supabaseClient
-            .from("candidates")
-            .select(
-              "id, primaryContactEmail, primaryContactName, job_type, selected_tier, agencyName, auth_user_id"
-            )
-            .eq("auth_user_id", authUserId)
-            .single();
+          const userData = await findUserInTables(authUserId);
 
-          if (userError || !userData) {
+          if (!userData) {
             console.error(
-              "[AuthCallback] User not found in candidates:",
-              userError
+              "[AuthCallback] User not found in either table"
             );
             toast.error(
               "No account found for this email. Please ensure your account is activated or contact support.",
@@ -54,12 +98,12 @@ export default function AuthCallback() {
 
           console.log(
             "[AuthCallback] User data found:",
-            userData.primaryContactEmail
+            userData.email
           );
 
           // Set localStorage items that AuthContext expects
           localStorage.setItem("paan_member_session", "authenticated");
-          localStorage.setItem("user_email", userData.primaryContactEmail);
+          localStorage.setItem("user_email", userData.email);
 
           // Wait a moment for cookies to be properly set by Supabase
           await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -117,19 +161,20 @@ export default function AuthCallback() {
     }
   }, [router, router.isReady]);
 
-  if (isProcessing) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Completing authentication...</p>
-          <p className="text-sm text-gray-500 mt-2">
-            Please wait while we redirect you...
+          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+            {isProcessing ? "Processing..." : "Authentication Complete"}
+          </h2>
+          <p className="mt-2 text-sm text-gray-600">
+            {isProcessing
+              ? "Please wait while we complete your authentication."
+              : "You will be redirected shortly."}
           </p>
         </div>
       </div>
-    );
-  }
-
-  return null;
+    </div>
+  );
 }

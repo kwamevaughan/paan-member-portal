@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { TierBadge, JobTypeBadge } from "@/components/Badge";
+import { TierBadge, JobTypeBadge, normalizeTier } from "@/components/Badge";
 import Image from "next/image";
 
 const TitleCard = ({
@@ -202,7 +202,7 @@ const TitleCard = ({
 
             {/* Main card */}
             <div
-              className={`relative rounded-lg p-4 sm:p-6 backdrop-blur-sm shadow-xl hover:shadow-none transition-all duration-300 w-full sm:min-w-[280px] 
+              className={`relative rounded-lg p-8 sm:p-6 backdrop-blur-sm shadow-xl hover:shadow-none transition-all duration-300 w-full sm:min-w-[280px] 
               border ${
                 mode === "dark"
                   ? "border-paan-blue/30"
@@ -226,7 +226,7 @@ const TitleCard = ({
                     </div>
                   ) : !isFreelancer ? (
                     <div className="[&>span]:!bg-amber-100 [&>span]:!text-gray-900 [&>span]:!border-amber-200 [&>span>svg]:!text-[#F25849] dark:[&>span]:!bg-amber-500/30 dark:[&>span]:!text-amber-100 dark:[&>span]:!border-amber-400">
-                      <TierBadge tier={user?.selected_tier} mode={mode} />
+                      <TierBadge tier={normalizeTier(user?.selected_tier)} mode={mode} />
                     </div>
                   ) : (
                     <div className="[&>span]:!bg-amber-100 [&>span]:!text-gray-900 [&>span]:!border-amber-200 [&>span>svg]:!text-[#F25849] dark:[&>span]:!bg-amber-500/30 dark:[&>span]:!text-amber-100 dark:[&>span]:!border-amber-400">

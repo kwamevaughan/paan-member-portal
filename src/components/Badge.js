@@ -269,7 +269,8 @@ const tierMap = {
 // Normalize the tier name for consistency
 const normalizeTier = (tier) => {
   if (!tier || typeof tier !== "string") return "Free Member";
-  const cleanTier = tier
+  // Remove anything after ' - ' (e.g., description)
+  const cleanTier = tier.split(" - ")[0]
     .replace(/\(.*?\)/g, "")
     .trim()
     .toLowerCase();

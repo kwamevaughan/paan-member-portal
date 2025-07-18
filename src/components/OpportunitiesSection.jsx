@@ -177,8 +177,11 @@ const OpportunitiesSection = ({
   };
 
   const sortedOpportunities = useMemo(
-    () =>
-      [...displayOpportunities].sort((a, b) => {
+    () => {
+      // If we're in the 'all' tab, preserve the order from the hook (active first, then expired)
+      if (statsFilter === 'total') return displayOpportunities;
+      // Otherwise, apply the local sorting
+      return [...displayOpportunities].sort((a, b) => {
         const aAccessible = hasTierAccess(
           a.tier_restriction,
           user || { selected_tier: "Free Member" }
@@ -192,8 +195,9 @@ const OpportunitiesSection = ({
           : aAccessible
           ? -1
           : 1;
-      }),
-    [displayOpportunities, user]
+      });
+    },
+    [displayOpportunities, user, statsFilter]
   );
 
   const statsConfig = createStatsConfig({

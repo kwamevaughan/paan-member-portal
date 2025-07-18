@@ -253,12 +253,9 @@ export default function Events({ mode = "light", toggleMode }) {
           toggleMode={toggleMode}
         />
         <div
-          className={`content-container flex-1 p-4 md:p-6 lg:p-8 transition-all duration-300 ${
-            isSidebarOpen && !isMobile ? "sidebar-open" : ""
+          className={`flex-1 p-4 md:p-6 lg:p-8 transition-all ${
+            isSidebarOpen && !isMobile ? "ml-52" : "ml-52"
           }`}
-          style={{
-            marginLeft: isMobile ? "0px" : isSidebarOpen ? "200px" : "80px",
-          }}
         >
           <div className="max-w-7xl mx-auto space-y-6">
             <TitleCard

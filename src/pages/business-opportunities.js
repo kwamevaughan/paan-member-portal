@@ -23,7 +23,6 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
   const router = useRouter();
   const { user, loading: userLoading, LoadingComponent } = useUser();
   const { handleLogout } = useLogout();
-
   const [filters, setFilters] = useState({
     country: "",
     serviceType: "",
@@ -36,15 +35,25 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
     estimatedDuration: "",
     tenderType: "",
   });
-  const [activeTab, setActiveTab] = useState("all");
+  const initialTab = router.query.tab === "expired" ? "expired" : "all";
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [tabChangeCount, setTabChangeCount] = useState(0);
+  useEffect(() => {
+    console.log('[BusinessOpportunities] activeTab changed:', activeTab);
+    setTabChangeCount((c) => c + 1);
+  }, [activeTab]);
+
+  let fetchMode = "active";
+  if (activeTab === "expired") fetchMode = "expired";
+  else if (activeTab === "all") fetchMode = "all";
 
   const {
     opportunities,
     filterOptions = {},
     loading,
     error,
-  } = useBusinessOpportunities(filters, user);
+  } = useBusinessOpportunities(filters, user, fetchMode);
   const isFreelancer = user?.job_type?.toLowerCase() === "freelancer";
 
   useEffect(() => {
@@ -104,6 +113,11 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
     () =>
       activeTab === "all"
         ? opportunities
+        : activeTab === "expired"
+        ? opportunities.filter((opp) => {
+            if (!opp.deadline) return false;
+            return new Date(opp.deadline) < new Date();
+          })
         : opportunities.filter((opp) => {
             if (activeTab === "accessible")
               return hasTierAccess(opp.tier_restriction, user);
@@ -202,6 +216,7 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
   const mainTabs = [
     { id: "all", label: "All Opportunities", icon: "mdi:view-grid" },
     { id: "accessible", label: "For Your Tier", icon: "mdi:accessibility" },
+    { id: "expired", label: "Past Opportunities", icon: "mdi:history" },
   ];
 
   return (
@@ -231,12 +246,9 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
           toggleMode={toggleMode}
         />
         <div
-          className={`content-container flex-1 p-4 md:p-6 lg:p-8 transition-all duration-300 ${
-            isSidebarOpen && !isMobile ? "sidebar-open" : ""
+          className={`flex-1 p-4 md:p-6 lg:p-8 transition-all ${
+            isSidebarOpen && !isMobile ? "ml-52" : "ml-52"
           }`}
-          style={{
-            marginLeft: isMobile ? "0px" : isSidebarOpen ? "200px" : "80px",
-          }}
         >
           <div className="max-w-7xl mx-auto space-y-6">
             <TitleCard

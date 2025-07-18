@@ -17,7 +17,8 @@ export const useBusinessOpportunities = (
     estimatedDuration: null,
     tenderType: null,
   },
-  user = null
+  user = null,
+  fetchMode = "active" // 'all', 'expired', or 'active'
 ) => {
   const [opportunities, setOpportunities] = useState([]);
   const [filterOptions, setFilterOptions] = useState({
@@ -210,7 +211,14 @@ export const useBusinessOpportunities = (
         if (fetching || !currentJobTypeFilter) return;
 
         setFetching(true);
-        if (isInitial) setLoading(true);
+        setLoading(true);
+        const fetchStart = Date.now();
+        console.log('[useBusinessOpportunities] Fetch started. Loading set to true.');
+        console.log('[useBusinessOpportunities] Query params:', {
+          filters: currentFilters,
+          fetchMode,
+          jobTypeFilter: currentJobTypeFilter,
+        });
 
         try {
           setError(null);
@@ -219,9 +227,14 @@ export const useBusinessOpportunities = (
             .from("business_opportunities")
             .select(
               "id, organization_name, gig_title, tender_title, description, tier_restriction, location, application_link, deadline, created_at, updated_at, service_type, industry, project_type, job_type, skills_required, estimated_duration, budget_range, remote_work, is_tender, tender_organization, tender_category, tender_issued, tender_closing, tender_access_link"
-            )
-            .gte("deadline", new Date().toISOString().split("T")[0])
-            .ilike("job_type", `%${currentJobTypeFilter}%`);
+            );
+          const today = new Date().toISOString().split("T")[0];
+          if (fetchMode === "expired") {
+            query = query.lt("deadline", today);
+          } else if (fetchMode === "active") {
+            query = query.gte("deadline", today);
+          } // fetchMode === 'all' does not filter by deadline
+          query = query.ilike("job_type", `%${currentJobTypeFilter}%`);
 
           // Apply filters
           if (currentFilters.country) {
@@ -269,7 +282,7 @@ export const useBusinessOpportunities = (
             throw new Error(`Failed to fetch opportunities: ${error.message}`);
           }
 
-         
+          console.log('[useBusinessOpportunities] Data received:', data);
 
           const userTierNormalized = normalizeTier(user?.selected_tier || "Free Member");
           const tierHierarchy = [
@@ -290,42 +303,56 @@ export const useBusinessOpportunities = (
             };
           });
 
-          const sortedData = transformedData.sort((a, b) => {
-            const aTier = normalizeTier(a.tier_restriction);
-            const bTier = normalizeTier(b.tier_restriction);
-            const aIndex = tierHierarchy.indexOf(aTier);
-            const bIndex = tierHierarchy.indexOf(bTier);
-            const userIndex = tierHierarchy.indexOf(userTierNormalized);
+          let sortedData;
+          if (fetchMode === "all") {
+            const todayStr = new Date().toISOString().split("T")[0];
+            const active = transformedData.filter(opp => opp.deadline >= todayStr);
+            const expired = transformedData.filter(opp => opp.deadline < todayStr);
+            // Sort each group by created_at descending
+            active.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            expired.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            sortedData = [...active, ...expired];
+          } else {
+            sortedData = transformedData.sort((a, b) => {
+              const aTier = normalizeTier(a.tier_restriction);
+              const bTier = normalizeTier(b.tier_restriction);
+              const aIndex = tierHierarchy.indexOf(aTier);
+              const bIndex = tierHierarchy.indexOf(bTier);
+              const userIndex = tierHierarchy.indexOf(userTierNormalized);
 
-            if (a.isAccessible && b.isAccessible) {
-              const aIsExact = aIndex === userIndex;
-              const bIsExact = bIndex === userIndex;
-              if (aIsExact !== bIsExact) {
-                return aIsExact ? -1 : 1;
+              if (a.isAccessible && b.isAccessible) {
+                const aIsExact = aIndex === userIndex;
+                const bIsExact = bIndex === userIndex;
+                if (aIsExact !== bIsExact) {
+                  return aIsExact ? -1 : 1;
+                }
+                return new Date(b.created_at) - new Date(a.created_at);
               }
+
+              if (a.isAccessible !== b.isAccessible) {
+                return a.isAccessible ? -1 : 1;
+              }
+
               return new Date(b.created_at) - new Date(a.created_at);
-            }
-
-            if (a.isAccessible !== b.isAccessible) {
-              return a.isAccessible ? -1 : 1;
-            }
-
-            return new Date(b.created_at) - new Date(a.created_at);
-          });
+            });
+          }
 
           setOpportunities(sortedData);
+          console.log('[useBusinessOpportunities] Opportunities set:', sortedData.length);
         } catch (err) {
           console.error("[useBusinessOpportunities] Unexpected error:", err);
           setError("An unexpected error occurred: " + err.message);
         } finally {
           setFetching(false);
           setLoading(false);
+          const fetchEnd = Date.now();
+          console.log('[useBusinessOpportunities] Fetch finished. Loading set to false. Time taken:', fetchEnd - fetchStart, 'ms');
           if (isInitial) setIsInitialFetch(false);
         }
       },
       300
     ),
-    [user]
+    [user, fetchMode]
   );
 
   useEffect(() => {
@@ -352,6 +379,7 @@ export const useBusinessOpportunities = (
     jobTypeFilter,
     fetchOpportunities,
     isInitialFetch,
+    fetchMode,
   ]);
 
   return {

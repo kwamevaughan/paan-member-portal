@@ -275,12 +275,9 @@ export default function AccessHubs({ mode = "light", toggleMode }) {
           toggleMode={toggleMode}
         />
         <div
-          className={`content-container flex-1 p-4 md:p-6 lg:p-8 transition-all duration-300 ${
-            isSidebarOpen && !isMobile ? "sidebar-open" : ""
+          className={`flex-1 p-4 md:p-6 lg:p-8 transition-all ${
+            isSidebarOpen && !isMobile ? "ml-52" : "ml-52"
           }`}
-          style={{
-            marginLeft: isMobile ? "0px" : isSidebarOpen ? "200px" : "80px",
-          }}
         >
           <div className="max-w-7xl mx-auto space-y-6">
             <TitleCard
@@ -365,42 +362,42 @@ export default function AccessHubs({ mode = "light", toggleMode }) {
                         icon: "mdi:office-building",
                         label: "Space Type",
                         options: filterOptions.spaceTypes || [],
-                        optionLabel: "All Space Types"
+                        optionLabel: "All Space Types",
                       },
                       {
                         key: "tier_restriction",
                         icon: "mdi:crown-outline",
                         label: "Tier",
                         options: filterOptions.tiers || [],
-                        optionLabel: "All Tiers"
+                        optionLabel: "All Tiers",
                       },
                       {
                         key: "city",
                         icon: "mdi:city",
                         label: "City",
                         options: filterOptions.cities || [],
-                        optionLabel: "All Cities"
+                        optionLabel: "All Cities",
                       },
                       {
                         key: "country",
                         icon: "mdi:earth",
                         label: "Country",
                         options: filterOptions.countries || [],
-                        optionLabel: "All Countries"
+                        optionLabel: "All Countries",
                       },
                       {
                         key: "is_available",
                         icon: "mdi:check-circle-outline",
                         label: "Availability",
                         options: filterOptions.availability || [],
-                        optionLabel: "All Availability"
+                        optionLabel: "All Availability",
                       },
                       {
                         key: "pricing_range",
                         icon: "mdi:currency-usd",
                         label: "Price Range",
                         options: filterOptions.pricingRanges || [],
-                        optionLabel: "All Prices"
+                        optionLabel: "All Prices",
                       },
                     ].map(({ key, icon, label, options, optionLabel }) => (
                       <div key={key} className="space-y-1">
@@ -477,14 +474,19 @@ export default function AccessHubs({ mode = "light", toggleMode }) {
                         />
                       </div>
                       <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                        {accessHub.city && accessHub.country ? `${accessHub.city}, ${accessHub.country}` : ''}
+                        {accessHub.city && accessHub.country
+                          ? `${accessHub.city}, ${accessHub.country}`
+                          : ""}
                       </p>
                       <div className="flex items-center gap-2 mt-2">
                         <span className="text-xs font-medium px-2 py-1 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                           {accessHub.status}
                         </span>
                         <p className="text-xs text-gray-500 dark:text-gray-400">
-                          Registered on {accessHub.registered_at ? formatDate(accessHub.registered_at) : 'N/A'}
+                          Registered on{" "}
+                          {accessHub.registered_at
+                            ? formatDate(accessHub.registered_at)
+                            : "N/A"}
                         </p>
                       </div>
                     </div>
@@ -529,8 +531,13 @@ export default function AccessHubs({ mode = "light", toggleMode }) {
                     mode={mode}
                     onRegister={handleAccessHubRegistration}
                     isRegistered={registeredAccessHubs.some(
-                      (reg) => reg.access_hub_id === accessHub.id && reg.status === 'registered')}
-                    isRestricted={!hasTierAccess(accessHub.tier_restriction, user)}
+                      (reg) =>
+                        reg.access_hub_id === accessHub.id &&
+                        reg.status === "registered"
+                    )}
+                    isRestricted={
+                      !hasTierAccess(accessHub.tier_restriction, user)
+                    }
                     onRestrictedClick={() => {
                       toast.error(
                         `This access hub is available to ${normalizeTier(
@@ -554,7 +561,9 @@ export default function AccessHubs({ mode = "light", toggleMode }) {
                   icon="mdi:calendar-remove"
                   className="inline-block text-5xl text-gray-400 mb-4"
                 />
-                <h3 className="text-xl font-semibold mb-2">No Access Hubs Found</h3>
+                <h3 className="text-xl font-semibold mb-2">
+                  No Access Hubs Found
+                </h3>
                 <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
                   No access hubs match your current filters. Try adjusting your
                   search criteria or check back later for new access hubs.

@@ -78,16 +78,16 @@ const OpportunityCard = ({
           ? "bg-paan-dark-blue border-gray-700/60 hover:border-gray-600/80"
           : "bg-paan-dark-blue border-gray-200/70 hover:border-gray-300/80"
       } ${
-        isRestricted
+        isRestricted || isExpired || isTenderExpired
           ? "opacity-50 cursor-not-allowed"
           : "hover:shadow-2xl cursor-pointer hover:scale-[1.02] hover:-translate-y-2"
       }`}
-      onClick={handleClick}
+      onClick={isExpired || isTenderExpired ? undefined : handleClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      aria-disabled={isRestricted}
+      aria-disabled={isRestricted || isExpired || isTenderExpired}
       role="button"
-      tabIndex={isRestricted ? -1 : 0}
+      tabIndex={isRestricted || isExpired || isTenderExpired ? -1 : 0}
       aria-label={
         isRestricted
           ? `Restricted ${itemLabel}: ${isTender
@@ -104,6 +104,15 @@ const OpportunityCard = ({
             }`
       }
     >
+      {/* Expired Badge */}
+      {(isExpired || isTenderExpired) && !isRestricted && (
+        <div className="absolute top-2 right-2 z-10">
+          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-400 text-white">
+            <Icon icon="mdi:clock-alert" className="mr-1 text-sm" />
+            Expired
+          </span>
+        </div>
+      )}
       {/* Background Gradient Overlay */}
       <div
         className={`absolute inset-0 bg-paan-dark-blue opacity-5 transition-opacity duration-300 ${

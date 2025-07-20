@@ -84,7 +84,7 @@ export default function PaanSummit({ mode = "light", toggleMode }) {
         />
         <div
           className={`flex-1 p-4 md:p-6 lg:p-8 transition-all mt-10 ${
-            isSidebarOpen && !isMobile ? "ml-52" : "ml-52"
+            isSidebarOpen && !isMobile ? "ml-60" : "ml-60"
           }`}
         >
           <div className="max-w-7xl mx-auto space-y-10">
@@ -107,7 +107,7 @@ export default function PaanSummit({ mode = "light", toggleMode }) {
                   campaigns, and the best of African innovation.
                 </p>
                 <Link href="https://paan.africa/summit" target="_blank">
-                  <button className="mt-4 px-6 py-2 bg-paan-red hover:bg-paan-red/80 text-white rounded-full w-full md:w-auto transition-all duration-300">
+                  <button className="mt-4 px-6 py-3 bg-paan-red hover:bg-paan-red/80 text-white rounded-full w-full md:w-auto transition-all duration-300">
                     Join the 2025 PAAN Summit
                   </button>
                 </Link>
@@ -136,7 +136,7 @@ export default function PaanSummit({ mode = "light", toggleMode }) {
                 </p>
 
                 <Link href="https://paan.africa/summit#tickets" target="_blank">
-                  <button className="mt-6 px-14 py-4 bg-paan-red hover:bg-paan-red/80 text-white rounded-full transition-all duration-300 flex items-center justify-center w-fit">
+                  <button className="mt-6 px-10 py-3 bg-paan-red hover:bg-paan-red/80 text-white rounded-full transition-all duration-300 flex items-center justify-center w-fit">
                     Register Now
                   </button>
                 </Link>
@@ -155,10 +155,10 @@ export default function PaanSummit({ mode = "light", toggleMode }) {
                   shaping Africa’s creative future.
                 </p>
                 <div className="flex gap-4 mt-6">
-                  <button className="mt-auto px-10 py-4 bg-paan-dark-blue hover:bg-paan-dark-blue/80 text-white rounded-full transition-all duration-300 flex items-center justify-center w-fit">
+                  <button className="mt-auto px-6 py-3 bg-paan-dark-blue hover:bg-paan-dark-blue/80 text-white rounded-full transition-all duration-300 flex items-center justify-center w-fit">
                     View Award Categories
                   </button>
-                  <button className="mt-6 px-14 py-4 bg-paan-yellow hover:bg-paan-yellow/80 text-white rounded-full transition-all duration-300 flex items-center justify-center w-fit">
+                  <button className="mt-6 px-6 py-3 bg-paan-yellow hover:bg-paan-yellow/80 text-white rounded-full transition-all duration-300 flex items-center justify-center w-fit">
                     Nominate a Campaign
                   </button>
                 </div>
@@ -172,7 +172,7 @@ export default function PaanSummit({ mode = "light", toggleMode }) {
                 Want to be part of Africa’s most inspiring creative movement?
               </span>
               <Link href="https://paan.africa/summit" target="_blank">
-                <button className="px-8 py-2 bg-paan-red hover:bg-paan-red/80 text-white rounded-full w-full md:w-auto transition-all duration-300">
+                <button className="px-8 py-3 bg-paan-red hover:bg-paan-red/80 text-white rounded-full w-full md:w-auto transition-all duration-300">
                   Join the PAAN Summit
                 </button>
               </Link>

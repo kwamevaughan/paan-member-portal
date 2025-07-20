@@ -46,7 +46,7 @@ const HrHeader = ({
     <header
       ref={headerRef}
       className={`fixed top-0 z-10 transition-all duration-300 ${
-        !isMobile ? "left-56 right-0" : "left-0 right-0"
+        !isMobile ? "left-60 right-0" : "left-0 right-0"
       } ${
         mode === "dark" ? "bg-[#101827]" : "bg-transparent"
       }`}

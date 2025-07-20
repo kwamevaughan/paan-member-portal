@@ -22,10 +22,32 @@ const HrSidebar = ({
 
   // By default, all categories are collapsed (expandedCategories is empty)
 
-  // Auto-scroll to active item when page loads
+  // Auto-scroll to active item and expand active category when page loads
   useEffect(() => {
-    // This will be handled by the callback ref
-  }, [router.asPath]);
+    // Find the active category and expand it (only for categorized items)
+    const activeCategory = filteredNav.find((navItem) => {
+      if (!navItem.category) return false; // Skip non-categorized items
+      
+      return navItem.items.some(({ href }) => {
+        const pathname = href.split('?')[0];
+        if (pathname === "/business-opportunities") {
+          if (href.includes("opportunityType=tender")) {
+            return router.asPath.includes("opportunityType=tender");
+          } else {
+            return router.pathname === "/business-opportunities" && !router.asPath.includes("opportunityType=tender");
+          }
+        }
+        return router.pathname === pathname;
+      });
+    });
+    
+    if (activeCategory && activeCategory.category && !expandedCategories[activeCategory.category]) {
+      setExpandedCategories(prev => ({
+        ...prev,
+        [activeCategory.category]: true
+      }));
+    }
+  }, [router.asPath, router.pathname, filteredNav, expandedCategories]);
 
   const toggleCategory = (category) => {
     setExpandedCategories((prev) => ({
@@ -140,7 +162,7 @@ const HrSidebar = ({
           ${mode === "dark" ? "bg-[#05050a]" : "bg-[#172840]"}
           group shadow-lg shadow-black/20 custom-scrollbar`}
         style={{
-          width: isMobile ? "100vw" : "200px",
+          width: isMobile ? "100vw" : "240px",
           height: isMobile ? "100vh" : "calc(100vh - 24px)",
         }}
       >
@@ -151,7 +173,7 @@ const HrSidebar = ({
               alt="PAAN Logo"
               width={120}
               height={75}
-              className="object-contain w-auto"
+              className="object-contain w-40"
               priority
             />
             {/* Mobile close arrow */}
@@ -167,44 +189,84 @@ const HrSidebar = ({
           </div>
 
           <div className="flex-grow px-2 overflow-y-auto flex flex-col scrollbar-thin">
-            {filteredNav.map(({ category, items }, index) => (
-              <div key={category} className="w-full mb-1">
-                {/* Section heading, not clickable */}
-                <div className="text-xs tracking-wide font-semibold text-gray-300 px-2 pb-1 uppercase">
-                  {category}
-                </div>
-                <ul>
-                  {Array.isArray(items) && items.length > 0 ? (
-                    items.map(({ href, icon, label }) => {
-                      const isActiveItem = isActive(href);
-                      return (
-                        <li
-                          key={href}
-                          ref={setActiveItemRef}
-                          data-href={href}
-                          onClick={() => handleNavigation(href, label)}
-                          className={`relative py-3 px-2 flex items-center font-normal text-sm w-full text-white cursor-pointer rounded-lg hover:shadow-md transition-all duration-200 group mb-1 ${isActiveItem}`}
-                        >
-                          <Icon
-                            icon={icon}
-                            className="h-5 w-5 mr-3 text-gray-300 group-hover:scale-110 group-hover:text-white transition-all"
-                          />
-                          <span className="text-sm">
-                            {typeof label === "function"
-                              ? label(user?.job_type)
-                              : label}
-                          </span>
-                        </li>
-                      );
-                    })
-                  ) : (
-                    <li className="py-3 px-2 text-gray-500 text-sm">
-                      No items available
+            {filteredNav.map((navItem, index) => {
+              // Check if this nav item has a category (grouped items)
+              if (navItem.category) {
+                return (
+                  <div key={navItem.category} className="w-full mb-4 mt-4">
+                                    {/* Section heading, clickable for collapse/expand */}
+                <div 
+                  className="text-xs tracking-wide font-semibold text-gray-300 px-2 py-2 uppercase cursor-pointer hover:text-white transition-colors flex items-center justify-between border-t border-b border-gray-600/30"
+                  onClick={() => toggleCategory(navItem.category)}
+                >
+                      <span>{navItem.category}</span>
+                      <Icon 
+                        icon={expandedCategories[navItem.category] ? "mdi:chevron-up" : "mdi:chevron-down"} 
+                        className="w-4 h-4 transition-transform"
+                      />
+                    </div>
+                    <div className={`transition-all duration-300 overflow-hidden ${
+                      expandedCategories[navItem.category] ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                    }`}>
+                      <ul className="ml-4 mt-2">
+                        {Array.isArray(navItem.items) && navItem.items.length > 0 ? (
+                          navItem.items.map(({ href, icon, label }) => {
+                            const isActiveItem = isActive(href);
+                            return (
+                              <li
+                                key={href}
+                                ref={setActiveItemRef}
+                                data-href={href}
+                                onClick={() => handleNavigation(href, label)}
+                                className={`relative py-3 px-2 flex items-center font-normal text-sm w-full text-white cursor-pointer rounded-lg hover:shadow-md transition-all duration-200 group mb-1 ${isActiveItem}`}
+                              >
+                                <Icon
+                                  icon={icon}
+                                  className="h-5 w-5 mr-3 text-gray-300 group-hover:scale-110 group-hover:text-white transition-all"
+                                />
+                                <span className="text-sm">
+                                  {typeof label === "function"
+                                    ? label(user?.job_type)
+                                    : label}
+                                </span>
+                              </li>
+                            );
+                          })
+                        ) : (
+                          <li className="py-3 px-2 text-gray-500 text-sm">
+                            No items available
+                          </li>
+                        )}
+                      </ul>
+                    </div>
+                  </div>
+                );
+              } else {
+                // Single item without category - render directly
+                return navItem.items.map(({ href, icon, label }) => {
+                  const isActiveItem = isActive(href);
+                  return (
+                    <li
+                      key={href}
+                      ref={setActiveItemRef}
+                      data-href={href}
+                      onClick={() => handleNavigation(href, label)}
+                      className={`relative py-3 px-2 flex items-center font-normal text-sm w-full text-white cursor-pointer rounded-lg hover:shadow-md transition-all duration-200 group mb-1 ${isActiveItem}`}
+                    >
+                      <Icon
+                        icon={icon}
+                        className="h-5 w-5 mr-3 text-gray-300 group-hover:scale-110 group-hover:text-white transition-all"
+                      />
+                      <span className="text-sm">
+                        {typeof label === "function"
+                          ? label(user?.job_type)
+                          : label}
+                      </span>
                     </li>
-                  )}
-                </ul>
-              </div>
-            ))}
+                  );
+                });
+              }
+            })}
           </div>
 
           <div

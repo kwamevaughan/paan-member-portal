@@ -1,44 +1,35 @@
 export const sidebarNav = [
   {
-    category: "Dashboard",
     items: [
       {
         href: "/dashboard",
         icon: "mdi:view-dashboard",
-        label: "Dashboard Overview",
+        label: "Dashboard",
       },
     ],
   },
   {
-    category: "Business Opportunities",
     items: [
       {
         href: "/business-opportunities",
         icon: "mdi:briefcase",
         label: (jobType) =>
           jobType?.toLowerCase() === "freelancer"
-            ? "View Gigs"
-            : "View Opportunities",
-      },
-      {
-        href: "/business-opportunities?opportunityType=tender",
-        icon: "mdi:clipboard-text",
-        label: "View Tenders",
+            ? "Gigs"
+            : "Opportunities",
       },
     ],
   },
   {
-    category: "Access Hubs",
     items: [
       {
         href: "/access-hubs",
         icon: "mdi:office-building",
-        label: "View Access Hubs",
+        label: "Access Hubs",
       },
     ],
   },
   {
-    category: "Updates",
     items: [
       {
         href: "/updates",
@@ -48,7 +39,6 @@ export const sidebarNav = [
     ],
   },
   {
-    category: "Market Intelligence",
     items: [
       {
         href: "/market-intel",
@@ -58,32 +48,65 @@ export const sidebarNav = [
     ],
   },
   {
-    category: "Events",
     items: [
       {
         href: "/events",
         icon: "mdi:calendar-star",
-        label: "All Events",
+        label: "Events & Training",
       },
     ],
   },
   {
-    category: "Resources",
     items: [
       {
         href: "/resources",
         icon: "mdi:book-open",
-        label: "Knowledge Hub",
+        label: "Resources",
       },
     ],
   },
   {
-    category: "Offers",
     items: [
       {
         href: "/offers",
         icon: "mdi:tag",
-        label: "Exclusive Offers",
+        label: "Offers",
+      },
+    ],
+  },
+  {
+    items: [
+      {
+        href: "/matchmaking",
+        icon: "mdi:account-group",
+        label: "Matchmaking",
+      },
+    ],
+  },
+  {
+    items: [
+      {
+        href: "/mentorship",
+        icon: "mdi:account-group",
+        label: "Mentorship",
+      },
+    ],
+  },
+  {
+    items: [
+      {
+        href: "/support",
+        icon: "mdi:headset",
+        label: "Support",
+      },
+    ],
+  },
+  {
+    items: [
+      {
+        href: "/legal-compliance",
+        icon: "mdi:gavel",
+        label: "Legal & Compliance",
       },
     ],
   },
@@ -93,7 +116,7 @@ export const sidebarNav = [
 export const getFilteredNav = (jobType) => {
   if (jobType?.toLowerCase() === "freelancer") {
     return sidebarNav.filter((item) =>
-      ["Dashboard", "Business Opportunities"].includes(item.category)
+      ["Dashboard", "Opportunities"].includes(item.category)
     );
   }
   return sidebarNav;

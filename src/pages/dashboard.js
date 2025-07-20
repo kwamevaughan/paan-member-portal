@@ -217,7 +217,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
 
   // Memoize the main dashboard content to prevent unnecessary re-renders
   const dashboardContent = useMemo(() => (
-    <div className="max-w-7xl mx-auto space-y-8 pb-10 pt-14">
+    <div className="max-w-7xl mx-auto space-y-8 pb-10">
       <WelcomeCard
         mode={mode}
         user={memoizedUser}
@@ -441,7 +441,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
           toggleMode={toggleMode}
         />
         <div
-          className={`flex-1 p-4 md:p-6 lg:p-8 transition-all ${
+          className={`flex-1 p-4 md:p-6 lg:p-8 transition-all mt-10 ${
             isSidebarOpen && !isMobile ? "ml-52" : "ml-52"
           }`}
         >

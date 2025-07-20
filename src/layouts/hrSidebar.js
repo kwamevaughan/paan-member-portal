@@ -20,19 +20,7 @@ const HrSidebar = ({
 
   const filteredNav = getFilteredNav(user?.job_type);
 
-  useEffect(() => {
-    if (
-      filteredNav &&
-      filteredNav.length > 0 &&
-      Object.keys(expandedCategories).length === 0
-    ) {
-      const allExpanded = {};
-      filteredNav.forEach(({ category }) => {
-        allExpanded[category] = true;
-      });
-      setExpandedCategories(allExpanded);
-    }
-  }, [filteredNav]);
+  // By default, all categories are collapsed (expandedCategories is empty)
 
   // Auto-scroll to active item when page loads
   useEffect(() => {
@@ -148,7 +136,7 @@ const HrSidebar = ({
       <div
         ref={sidebarRef}
         className={`fixed left-0 top-0 z-50 rounded-xl m-0 md:m-3 transition-all duration-300
-          ${isMobile ? "block" : "block"}
+          ${isMobile ? (isOpen ? "block" : "hidden") : "block"}
           ${mode === "dark" ? "bg-[#05050a]" : "bg-[#172840]"}
           group shadow-lg shadow-black/20 custom-scrollbar`}
         style={{
@@ -166,69 +154,55 @@ const HrSidebar = ({
               className="object-contain w-auto"
               priority
             />
+            {/* Mobile close arrow */}
+            {isMobile && (
+              <button
+                onClick={toggleSidebar}
+                className="ml-2 p-2 rounded-full hover:bg-gray-700/30 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label="Close sidebar"
+              >
+                <Icon icon="mdi:arrow-left" className="w-6 h-6 text-white" />
+              </button>
+            )}
           </div>
 
           <div className="flex-grow px-2 overflow-y-auto flex flex-col scrollbar-thin">
             {filteredNav.map(({ category, items }, index) => (
               <div key={category} className="w-full mb-1">
-                {index !== 0 && (
-                  <hr className="border-t border-gray-600 my-2" />
-                )}
-
-                <div
-                  className="flex items-center justify-between text-xs tracking-wide font-semibold text-gray-300 px-2 pt-4 pb-1 cursor-pointer hover:text-white"
-                  onClick={() => toggleCategory(category)}
-                >
-                  <span className="uppercase">{category}</span>
-                  <Icon
-                    icon={
-                      expandedCategories[category]
-                        ? "mdi:chevron-down"
-                        : "mdi:chevron-right"
-                    }
-                    className="w-4 h-4 transition-transform duration-200"
-                  />
+                {/* Section heading, not clickable */}
+                <div className="text-xs tracking-wide font-semibold text-gray-300 px-2 pb-1 uppercase">
+                  {category}
                 </div>
-
-                <div
-                  className={`overflow-hidden transition-all duration-300 ${
-                    expandedCategories[category]
-                      ? "max-h-96 opacity-100"
-                      : "max-h-0 opacity-0"
-                  }`}
-                >
-                  <ul>
-                    {Array.isArray(items) && items.length > 0 ? (
-                      items.map(({ href, icon, label }) => {
-                        const isActiveItem = isActive(href);
-                        
-                        return (
-                          <li
-                            key={href}
-                            ref={setActiveItemRef}
-                            data-href={href}
-                            onClick={() => handleNavigation(href, label)}
-                            className={`relative py-3 px-2 flex items-center font-normal text-sm w-full text-white cursor-pointer rounded-lg hover:shadow-md transition-all duration-200 group mb-1 ${isActiveItem}`}
-                          >
-                            <Icon
-                              icon={icon}
-                              className="h-5 w-5 mr-3 text-gray-300 group-hover:scale-110 group-hover:text-white transition-all"
-                            />
-                            <span className="text-sm">
-                              {typeof label === "function"
-                                ? label(user?.job_type)
-                                : label}
-                            </span>
-                          </li>
-                        );
-                      })
-                    ) : (
-                      <li className="py-3 px-2 text-gray-500 text-sm">
-                        No items available
-                      </li>
-                    )}
-                  </ul>
-                </div>
+                <ul>
+                  {Array.isArray(items) && items.length > 0 ? (
+                    items.map(({ href, icon, label }) => {
+                      const isActiveItem = isActive(href);
+                      return (
+                        <li
+                          key={href}
+                          ref={setActiveItemRef}
+                          data-href={href}
+                          onClick={() => handleNavigation(href, label)}
+                          className={`relative py-3 px-2 flex items-center font-normal text-sm w-full text-white cursor-pointer rounded-lg hover:shadow-md transition-all duration-200 group mb-1 ${isActiveItem}`}
+                        >
+                          <Icon
+                            icon={icon}
+                            className="h-5 w-5 mr-3 text-gray-300 group-hover:scale-110 group-hover:text-white transition-all"
+                          />
+                          <span className="text-sm">
+                            {typeof label === "function"
+                              ? label(user?.job_type)
+                              : label}
+                          </span>
+                        </li>
+                      );
+                    })
+                  ) : (
+                    <li className="py-3 px-2 text-gray-500 text-sm">
+                      No items available
+                    </li>
+                  )}
+                </ul>
               </div>
             ))}
           </div>

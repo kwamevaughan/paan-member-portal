@@ -44,16 +44,16 @@ const HrHeader = ({
   return (
     <header
       ref={headerRef}
-      className={`fixed top-0 left-0 right-0 z-10 transition-transform duration-300 ${
+      className={`fixed top-0 z-10 transition-all duration-300 ${
+        !isMobile ? "left-56 right-0" : "left-0 right-0"
+      } ${
         mode === "dark" ? "bg-[#101827]" : "bg-transparent"
       }`}
     >
       <div
         className={`
           p-2 m-4 transition-transform duration-300
-          ${
-            isMobile ? "ml-0" : isSidebarOpen ? "md:ml-[240px]" : "md:ml-[80px]"
-          }
+          ${!isMobile ? "ml-4" : ""}
           ${
             mode === "dark"
               ? "bg-[#101827]/50 text-white"
@@ -180,7 +180,8 @@ const HrHeader = ({
                       </div>
                       <button
                         onClick={() => {
-                          const badgeUrl = "/assets/images/paan-member-badge.png";
+                          const badgeUrl =
+                            "/assets/images/paan-member-badge.png";
                           const link = document.createElement("a");
                           link.href = badgeUrl;
                           link.download = "paan-member-badge.png";

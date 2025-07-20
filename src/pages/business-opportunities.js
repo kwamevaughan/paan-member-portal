@@ -246,7 +246,7 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
           toggleMode={toggleMode}
         />
         <div
-          className={`flex-1 p-4 md:p-6 lg:p-8 transition-all ${
+          className={`flex-1 p-4 md:p-6 lg:p-8 transition-all mt-10 ${
             isSidebarOpen && !isMobile ? "ml-52" : "ml-52"
           }`}
         >

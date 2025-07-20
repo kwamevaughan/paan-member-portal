@@ -5,6 +5,7 @@ import Search from "@/components/Search";
 import FullscreenToggle from "@/components/FullscreenToggle";
 import TooltipIconButton from "@/components/TooltipIconButton";
 import LanguageSwitch from "@/components/LanguageSwitch";
+import Link from "next/link";
 
 const HrHeader = ({
   mode,
@@ -195,6 +196,12 @@ const HrHeader = ({
                         />
                         <span>Download Member Badge</span>
                       </button>
+                      <Link href="/support">
+                        <button className="flex items-center w-full gap-2 font-thin text-sm text-gray-500 hover:text-gray-600 transition-colors hover:bg-gray-100 rounded-lg p-2 mt-4">
+                          <Icon icon="mdi:headset" className="h-5 w-5" />
+                          <span>Support</span>
+                        </button>
+                      </Link>
                       <button
                         onClick={onLogout}
                         className="flex items-center w-full gap-2 border-t h-10 mt-4 font-thin text-sm text-red-500 hover:text-red-600 transition-colors hover:bg-gray-100 rounded-lg p-2"

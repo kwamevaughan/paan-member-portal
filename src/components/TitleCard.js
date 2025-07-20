@@ -12,6 +12,7 @@ const TitleCard = ({
   toast,
   pageTable,
   lastUpdated,
+  hideLastUpdated = false,
 }) => {
   const [windowWidth, setWindowWidth] = useState(null);
 
@@ -150,34 +151,36 @@ const TitleCard = ({
                 </p>
               ))}
               {/* Last Updated Section moved here */}
-              <div
-                className={`w-full sm:w-fit rounded-xl text-xs sm:text-sm ${
-                  mode === "dark" ? "bg-blue-500/20 border border-blue-400/30" : ""
-                } sm:mt-2`}
-              >
+              {!hideLastUpdated && (
                 <div
-                  className={`flex flex-row items-center space-x-2 ${
-                    isMobile ? "truncate max-w-[90%] overflow-hidden" : ""
-                  }`}
+                  className={`w-full sm:w-fit rounded-xl text-xs sm:text-sm ${
+                    mode === "dark" ? "bg-blue-500/20 border border-blue-400/30" : ""
+                  } sm:mt-2`}
                 >
-                  <span
-                    className={`px-2 py-1 sm:py-2 rounded-xl flex-shrink-0 ${
-                      mode === "dark"
-                        ? "bg-orange-500/20 border border-orange-400/30 text-orange-300"
-                        : "bg-gradient-to-br from-amber-100 to-orange-100 border border-amber-200 text-gray-700"
+                  <div
+                    className={`flex flex-row items-center space-x-2 ${
+                      isMobile ? "truncate max-w-[90%] overflow-hidden" : ""
                     }`}
                   >
-                    Last Updated:
-                  </span>
-                  <div className="px-2">
                     <span
-                      className={mode === "dark" ? "text-white" : "text-gray-900"}
+                      className={`px-2 py-1 sm:py-2 rounded-xl flex-shrink-0 ${
+                        mode === "dark"
+                          ? "bg-orange-500/20 border border-orange-400/30 text-orange-300"
+                          : "bg-gradient-to-br from-amber-100 to-orange-100 border border-amber-200 text-gray-700"
+                      }`}
                     >
-                      {formatDate(lastUpdated)}
+                      Last Updated:
                     </span>
+                    <div className="px-2">
+                      <span
+                        className={mode === "dark" ? "text-white" : "text-gray-900"}
+                      >
+                        {formatDate(lastUpdated)}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 

@@ -250,7 +250,7 @@ export default function LegalCompliance({ mode = "light", toggleMode }) {
               JobTypeBadge={JobTypeBadge}
               toast={toast}
               pageTable=""
-              lastUpdated={new Date().toISOString()}
+              hideLastUpdated={true}
             />
 
             {/* Tabs */}

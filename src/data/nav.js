@@ -14,9 +14,7 @@ export const sidebarNav = [
         href: "/business-opportunities",
         icon: "mdi:briefcase",
         label: (jobType) =>
-          jobType?.toLowerCase() === "freelancer"
-            ? "Gigs"
-            : "Opportunities",
+          jobType?.toLowerCase() === "freelancer" ? "Gigs" : "Opportunities",
       },
     ],
   },
@@ -95,18 +93,18 @@ export const sidebarNav = [
   {
     items: [
       {
-        href: "/support",
-        icon: "mdi:headset",
-        label: "Support",
+        href: "/legal-compliance",
+        icon: "mdi:gavel",
+        label: "Legal & Compliance",
       },
     ],
   },
   {
     items: [
       {
-        href: "/legal-compliance",
-        icon: "mdi:gavel",
-        label: "Legal & Compliance",
+        href: "/mergers-acquisitions",
+        icon: "mdi:merge",
+        label: "Mergers & Acquisitions",
       },
     ],
   },

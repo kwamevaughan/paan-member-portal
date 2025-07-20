@@ -3,7 +3,7 @@ export const sidebarNav = [
     items: [
       {
         href: "/dashboard",
-        icon: "mdi:view-dashboard",
+        icon: "material-symbols:home-outline",
         label: "Dashboard",
       },
     ],
@@ -12,7 +12,7 @@ export const sidebarNav = [
     items: [
       {
         href: "/business-opportunities",
-        icon: "mdi:briefcase",
+        icon: "charm:lightbulb",
         label: (jobType) =>
           jobType?.toLowerCase() === "freelancer" ? "Gigs" : "Opportunities",
       },
@@ -53,7 +53,7 @@ export const sidebarNav = [
     items: [
       {
         href: "/resources",
-        icon: "mdi:book-open",
+        icon: "mdi:toolbox-outline",
         label: "Resources",
       },
       {
@@ -73,7 +73,7 @@ export const sidebarNav = [
     items: [
       {
         href: "/matchmaking",
-        icon: "mdi:account-group",
+        icon: "fluent:handshake-16-regular",
         label: "Matchmaking",
       },
       {

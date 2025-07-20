@@ -167,7 +167,7 @@ export default function Updates({ mode = "light", toggleMode }) {
         />
         <div
           className={`flex-1 p-4 md:p-6 lg:p-8 transition-all mt-10 ${
-            isSidebarOpen && !isMobile ? "ml-52" : "ml-52"
+            isSidebarOpen && !isMobile ? "ml-60" : "ml-60"
           }`}
         >
           <div className="max-w-7xl mx-auto space-y-6">

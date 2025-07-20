@@ -46,11 +46,17 @@ export const sidebarNav = [
     ],
   },
   {
+    category: "Events & Training",
     items: [
       {
         href: "/events",
         icon: "mdi:calendar-star",
-        label: "Events & Training",
+        label: "Events",
+      },
+      {
+        href: "/paan-summit",
+        icon: "mdi:calendar-star",
+          label: "PAAN Summit",
       },
     ],
   },

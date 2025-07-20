@@ -196,7 +196,7 @@ const HrSidebar = ({
                   <div key={navItem.category} className="w-full mb-4 mt-4">
                                     {/* Section heading, clickable for collapse/expand */}
                 <div 
-                  className="text-xs tracking-wide font-semibold text-gray-300 px-2 py-2 uppercase cursor-pointer hover:text-white transition-colors flex items-center justify-between border-t border-b border-gray-600/30"
+                  className="text-sm tracking-wide font-normal text-gray-300 px-2 py-2 cursor-pointer hover:text-white transition-colors flex items-center justify-between border-t border-b border-gray-600/30"
                   onClick={() => toggleCategory(navItem.category)}
                 >
                       <span>{navItem.category}</span>

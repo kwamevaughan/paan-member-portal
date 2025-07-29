@@ -14,6 +14,7 @@ import { TierBadge, JobTypeBadge } from "@/components/Badge";
 import Link from "next/link";
 import SimpleModal from "@/components/SimpleModal";
 import UnifiedModalContent from "@/components/UnifiedModalContent";
+import ContactFormModal from "@/components/ContactFormModal";
 
 export default function MergersAcquisitions({ mode = "light", toggleMode }) {
   const {
@@ -34,6 +35,13 @@ export default function MergersAcquisitions({ mode = "light", toggleMode }) {
   const [modalData, setModalData] = useState(null);
   const [isUnifiedModalOpen, setIsUnifiedModalOpen] = useState(false);
 
+  // Contact form modal state
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+
+  // M&A services modal state
+  const [isMaServicesModalOpen, setIsMaServicesModalOpen] = useState(false);
+  const [maServicesData, setMaServicesData] = useState(null);
+
   const title = "Mergers & Acquisitions";
   const description =
     "Whether you're looking to buy, sell, or merge, PAAN makes agency growth strategic, transparent, and aligned with Africa’s evolving creative landscape. Our expert-led process helps agencies transition smoothly — with guidance every step of the way.";
@@ -41,6 +49,15 @@ export default function MergersAcquisitions({ mode = "light", toggleMode }) {
   const handleCloseModal = () => {
     setIsUnifiedModalOpen(false);
     setModalData(null);
+  };
+
+  const handleContactClick = () => {
+    setIsContactModalOpen(true);
+  };
+
+  const handleMaServicesClick = (type, title, description) => {
+    setMaServicesData({ type, title, description });
+    setIsMaServicesModalOpen(true);
   };
 
   if (userLoading) {
@@ -124,7 +141,10 @@ export default function MergersAcquisitions({ mode = "light", toggleMode }) {
                   Discover vetted African agencies ready for acquisition — with
                   insights to help you choose the right fit.
                 </p>
-                <button className="mt-6 px-10 py-2 bg-paan-yellow hover:bg-paan-yellow/80 text-paan-dark-blue rounded-full transition-all duration-300 flex items-center justify-center w-fit">
+                <button 
+                  onClick={() => handleMaServicesClick('buy', 'Buy an Agency', 'Discover vetted African agencies ready for acquisition — with insights to help you choose the right fit.')}
+                  className="mt-6 px-10 py-2 bg-paan-yellow hover:bg-paan-yellow/80 text-paan-dark-blue rounded-full transition-all duration-300 flex items-center justify-center w-fit"
+                >
                   Explore Agencies
                 </button>
               </div>
@@ -142,7 +162,10 @@ export default function MergersAcquisitions({ mode = "light", toggleMode }) {
                   List your agency confidentially and connect with serious
                   buyers across the PAAN network.
                 </p>
-                <button className="mt-auto px-10 py-2 bg-paan-yellow hover:bg-paan-yellow/80 text-paan-dark-blue rounded-full transition-all duration-300 flex items-center justify-center w-fit">
+                <button 
+                  onClick={() => handleMaServicesClick('sell', 'Sell Your Agency', 'List your agency confidentially and connect with serious buyers across the PAAN network.')}
+                  className="mt-auto px-10 py-2 bg-paan-yellow hover:bg-paan-yellow/80 text-paan-dark-blue rounded-full transition-all duration-300 flex items-center justify-center w-fit"
+                >
                   List for Sale
                 </button>
               </div>
@@ -160,7 +183,10 @@ export default function MergersAcquisitions({ mode = "light", toggleMode }) {
                   Join forces with aligned partners to scale, diversify, or
                   enter new markets.
                 </p>
-                <button className="mt-auto px-10 py-2 bg-paan-yellow hover:bg-paan-yellow/80 text-paan-dark-blue rounded-full transition-all duration-300 flex items-center justify-center w-fit">
+                <button 
+                  onClick={() => handleMaServicesClick('merge', 'Merge with Another Agency', 'Join forces with aligned partners to scale, diversify, or enter new markets.')}
+                  className="mt-auto px-10 py-2 bg-paan-yellow hover:bg-paan-yellow/80 text-paan-dark-blue rounded-full transition-all duration-300 flex items-center justify-center w-fit"
+                >
                   Explore Mergers
                 </button>
               </div>
@@ -177,7 +203,10 @@ export default function MergersAcquisitions({ mode = "light", toggleMode }) {
                   build a plan that aligns with your agency’s goals.
                 </span>
               </span>
-              <button className="px-6 py-2 bg-paan-red hover:bg-paan-red/80 text-white rounded-full w-full md:w-auto transition-all duration-300">
+              <button 
+                onClick={handleContactClick}
+                className="px-6 py-2 bg-paan-red hover:bg-paan-red/80 text-white rounded-full w-full md:w-auto transition-all duration-300"
+              >
                 Book a Free Strategy Call
               </button>
             </div>
@@ -199,6 +228,114 @@ export default function MergersAcquisitions({ mode = "light", toggleMode }) {
           mode={mode}
           onClose={handleCloseModal}
         />
+      </SimpleModal>
+
+      {/* Contact Form Modal */}
+      <ContactFormModal
+        isOpen={isContactModalOpen}
+        onClose={() => setIsContactModalOpen(false)}
+        mode={mode}
+        title="Book a Free M&A Strategy Call"
+        user={user}
+        description="Ready to explore buying, selling, or merging your agency? Book a free strategy call with our M&A experts to discuss your options and create a personalized growth plan for your agency."
+      />
+
+      {/* M&A Services Modal */}
+      <SimpleModal
+        isOpen={isMaServicesModalOpen}
+        onClose={() => setIsMaServicesModalOpen(false)}
+        title={maServicesData?.title || "M&A Services"}
+        mode={mode}
+        width="max-w-2xl"
+      >
+        <div className="space-y-6">
+          <div className="text-center">
+            <div className="mx-auto w-16 h-16 bg-paan-yellow/10 rounded-full flex items-center justify-center mb-4">
+              <Icon icon="mdi:briefcase" className="w-8 h-8 text-paan-yellow" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              Coming Soon!
+            </h3>
+            <p className="text-gray-600 dark:text-gray-300">
+              We're currently preparing our {maServicesData?.title?.toLowerCase()} service for launch. 
+              Our M&A team is working hard to make these services available to all PAAN members.
+            </p>
+          </div>
+          
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+            <h4 className="font-medium text-gray-900 dark:text-white mb-2">
+              What's included:
+            </h4>
+            <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+              {maServicesData?.type === 'buy' && (
+                <>
+                  <li className="flex items-center">
+                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    Vetted African agencies ready for acquisition
+                  </li>
+                  <li className="flex items-center">
+                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    Detailed financial and operational insights
+                  </li>
+                  <li className="flex items-center">
+                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    Expert guidance through the acquisition process
+                  </li>
+                </>
+              )}
+              {maServicesData?.type === 'sell' && (
+                <>
+                  <li className="flex items-center">
+                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    Confidential agency listing platform
+                  </li>
+                  <li className="flex items-center">
+                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    Access to serious buyers across PAAN network
+                  </li>
+                  <li className="flex items-center">
+                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    Professional valuation and marketing support
+                  </li>
+                </>
+              )}
+              {maServicesData?.type === 'merge' && (
+                <>
+                  <li className="flex items-center">
+                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    Strategic partnership matching
+                  </li>
+                  <li className="flex items-center">
+                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    Merger structure and negotiation support
+                  </li>
+                  <li className="flex items-center">
+                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    Post-merger integration guidance
+                  </li>
+                </>
+              )}
+            </ul>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={() => setIsMaServicesModalOpen(false)}
+              className="flex-1 px-6 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg font-medium transition-colors"
+            >
+              Got it
+            </button>
+            <button
+              onClick={() => {
+                setIsMaServicesModalOpen(false);
+                setIsContactModalOpen(true);
+              }}
+              className="flex-1 px-6 py-3 bg-paan-yellow hover:bg-paan-yellow/80 text-paan-dark-blue rounded-lg font-medium transition-colors"
+            >
+              Book a Strategy Call
+            </button>
+          </div>
+        </div>
       </SimpleModal>
     </div>
   );

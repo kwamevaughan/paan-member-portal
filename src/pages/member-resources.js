@@ -14,6 +14,7 @@ import { TierBadge, JobTypeBadge } from "@/components/Badge";
 import Link from "next/link";
 import SimpleModal from "@/components/SimpleModal";
 import UnifiedModalContent from "@/components/UnifiedModalContent";
+import ContactFormModal from "@/components/ContactFormModal";
 
 export default function MemberResources({ mode = "light", toggleMode }) {
   const {
@@ -38,6 +39,9 @@ export default function MemberResources({ mode = "light", toggleMode }) {
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
   const [downloadModalData, setDownloadModalData] = useState(null);
 
+  // Contact form modal state
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+
   const title = "Member Resources";
   const description =
     "Show off your PAAN membership with branding assets, badges, and creative merch templates.";
@@ -55,6 +59,10 @@ export default function MemberResources({ mode = "light", toggleMode }) {
   const handleDownloadClick = (type, title) => {
     setDownloadModalData({ type, title });
     setIsDownloadModalOpen(true);
+  };
+
+  const handleContactClick = () => {
+    setIsContactModalOpen(true);
   };
 
   if (userLoading) {
@@ -218,7 +226,10 @@ export default function MemberResources({ mode = "light", toggleMode }) {
               <span className="text-xl md:text-2xl">
                 Need help applying the assets? <span className="font-semibold">Message the PAAN Team</span>
               </span>
-              <button className="px-6 py-2 bg-paan-red hover:bg-paan-red/80 text-white rounded-full w-full md:w-auto transition-all duration-300">
+              <button 
+                onClick={handleContactClick}
+                className="px-6 py-2 bg-paan-red hover:bg-paan-red/80 text-white rounded-full w-full md:w-auto transition-all duration-300"
+              >
                 Contact Us
               </button>
             </div>
@@ -356,6 +367,14 @@ export default function MemberResources({ mode = "light", toggleMode }) {
           </div>
         </div>
       </SimpleModal>
+
+      {/* Contact Form Modal */}
+      <ContactFormModal
+        isOpen={isContactModalOpen}
+        onClose={() => setIsContactModalOpen(false)}
+        mode={mode}
+        title="Contact PAAN Support"
+      />
     </div>
   );
 }

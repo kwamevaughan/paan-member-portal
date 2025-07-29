@@ -52,9 +52,9 @@ export const sidebarNav = [
     category: "Resources & Support",
     items: [
       {
-        href: "/resources",
+        href: "/member-resources",
         icon: "mdi:toolbox-outline",
-        label: "Resources",
+        label: "Member Resources",
       },
       {
         href: "/offers",

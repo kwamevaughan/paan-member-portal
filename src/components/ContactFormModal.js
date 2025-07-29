@@ -4,7 +4,7 @@ import SimpleModal from "./SimpleModal";
 import toast from "react-hot-toast";
 import TooltipIconButton from "./TooltipIconButton";
 
-const ContactFormModal = ({ isOpen, onClose, mode, title = "Contact Us", user = null }) => {
+const ContactFormModal = ({ isOpen, onClose, mode, title = "Contact Us", user = null, showLegalSubjects = false, description = "Have a question or need assistance? Send us a message and we'll respond as soon as possible." }) => {
   const [formData, setFormData] = useState({
     name: user?.full_name || user?.name || "",
     email: user?.email || "",
@@ -30,6 +30,12 @@ const ContactFormModal = ({ isOpen, onClose, mode, title = "Contact Us", user = 
       return;
     }
 
+    // Validate custom subject if "Other" is selected (only for legal subjects)
+    if (showLegalSubjects && formData.subject === "Other" && !formData.customSubject) {
+      toast.error("Please specify your subject");
+      return;
+    }
+
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
@@ -45,15 +51,19 @@ const ContactFormModal = ({ isOpen, onClose, mode, title = "Contact Us", user = 
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          subject: formData.subject === "Other" ? formData.customSubject : formData.subject
+        }),
       });
 
       if (response.ok) {
         toast.success("Message sent successfully! We'll get back to you soon.");
         setFormData({
-          name: "",
-          email: "",
+          name: user?.full_name || user?.name || "",
+          email: user?.email || "",
           subject: "",
+          customSubject: "",
           message: "",
         });
         onClose();
@@ -75,6 +85,7 @@ const ContactFormModal = ({ isOpen, onClose, mode, title = "Contact Us", user = 
         name: user?.full_name || user?.name || "",
         email: user?.email || "",
         subject: "",
+        customSubject: "",
         message: "",
       });
       onClose();
@@ -88,6 +99,7 @@ const ContactFormModal = ({ isOpen, onClose, mode, title = "Contact Us", user = 
         name: user?.full_name || user?.name || "",
         email: user?.email || "",
         subject: "",
+        customSubject: "",
         message: "",
       });
     }
@@ -110,7 +122,7 @@ const ContactFormModal = ({ isOpen, onClose, mode, title = "Contact Us", user = 
             Get in Touch
           </h3>
           <p className="text-gray-600 dark:text-gray-300">
-            Have a question or need assistance? Send us a message and we'll respond as soon as possible.
+            {description}
           </p>
         </div>
 
@@ -163,16 +175,47 @@ const ContactFormModal = ({ isOpen, onClose, mode, title = "Contact Us", user = 
             <label htmlFor="subject" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Subject *
             </label>
-            <input
-              type="text"
-              id="subject"
-              name="subject"
-              value={formData.subject}
-              onChange={handleInputChange}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-paan-blue focus:border-transparent dark:bg-gray-800 dark:text-white transition-colors"
-              placeholder="What is this regarding?"
-              required
-            />
+            {showLegalSubjects ? (
+              <>
+                <select
+                  id="subject"
+                  name="subject"
+                  value={formData.subject}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-paan-blue focus:border-transparent dark:bg-gray-800 dark:text-white transition-colors"
+                  required
+                >
+                  <option value="">Select a subject</option>
+                  <option value="Legal">Legal</option>
+                  <option value="IP Protection">IP Protection</option>
+                  <option value="Data & Privacy">Data & Privacy</option>
+                  <option value="Tax Compliance">Tax Compliance</option>
+                  <option value="Other">Other - Specify</option>
+                </select>
+                {formData.subject === "Other" && (
+                  <input
+                    type="text"
+                    name="customSubject"
+                    placeholder="Please specify your subject"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-paan-blue focus:border-transparent dark:bg-gray-800 dark:text-white transition-colors mt-2"
+                    onChange={(e) => setFormData(prev => ({ ...prev, customSubject: e.target.value }))}
+                    value={formData.customSubject || ""}
+                    required
+                  />
+                )}
+              </>
+            ) : (
+              <input
+                type="text"
+                id="subject"
+                name="subject"
+                value={formData.subject}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-paan-blue focus:border-transparent dark:bg-gray-800 dark:text-white transition-colors"
+                placeholder="What is this regarding?"
+                required
+              />
+            )}
           </div>
 
           <div>

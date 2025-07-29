@@ -14,6 +14,7 @@ import { TierBadge, JobTypeBadge } from "@/components/Badge";
 import Link from "next/link";
 import SimpleModal from "@/components/SimpleModal";
 import UnifiedModalContent from "@/components/UnifiedModalContent";
+import ContactFormModal from "@/components/ContactFormModal";
 
 export default function LegalCompliance({ mode = "light", toggleMode }) {
   const {
@@ -34,6 +35,9 @@ export default function LegalCompliance({ mode = "light", toggleMode }) {
   const [modalData, setModalData] = useState(null);
   const [isUnifiedModalOpen, setIsUnifiedModalOpen] = useState(false);
 
+  // Contact form modal state
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+
   const title = "Legal & Compliance";
   const description =
     "Running an agency in Africa comes with unique legal and regulatory considerations. This section gives you access to region-specific documents, best-practice templates, and expert advice — so you can focus on growth, not red tape.";
@@ -41,6 +45,10 @@ export default function LegalCompliance({ mode = "light", toggleMode }) {
   const handleCloseModal = () => {
     setIsUnifiedModalOpen(false);
     setModalData(null);
+  };
+
+  const handleContactClick = () => {
+    setIsContactModalOpen(true);
   };
 
   const handlePreviewClick = (doc) => {
@@ -299,7 +307,10 @@ export default function LegalCompliance({ mode = "light", toggleMode }) {
               <span className="text-xl md:text-2xl">
                 Need legal help in Africa?
               </span>
-              <button className="px-6 py-2 bg-paan-red hover:bg-paan-red/80 text-white rounded-full w-full md:w-auto transition-all duration-300">
+              <button 
+                onClick={handleContactClick}
+                className="px-6 py-2 bg-paan-red hover:bg-paan-red/80 text-white rounded-full w-full md:w-auto transition-all duration-300"
+              >
                 Book a Free Strategy Call
               </button>
             </div>
@@ -355,6 +366,17 @@ export default function LegalCompliance({ mode = "light", toggleMode }) {
           />
         )}
       </SimpleModal>
+
+      {/* Contact Form Modal */}
+      <ContactFormModal
+        isOpen={isContactModalOpen}
+        onClose={() => setIsContactModalOpen(false)}
+        mode={mode}
+        title="Book a Free Strategy Call"
+        user={user}
+        showLegalSubjects={true}
+        description="Need legal guidance for your agency in Africa? Book a free strategy call with our legal experts to discuss your specific compliance needs and get personalized advice."
+      />
     </div>
   );
 }

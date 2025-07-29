@@ -375,6 +375,7 @@ export default function MemberResources({ mode = "light", toggleMode }) {
         mode={mode}
         title="Contact PAAN Support"
         user={user}
+        description="Need help with PAAN branding assets, badges, or templates? Our team is here to assist you with any questions about using and applying our member resources."
       />
     </div>
   );

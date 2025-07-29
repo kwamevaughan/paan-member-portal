@@ -34,6 +34,10 @@ export default function MemberResources({ mode = "light", toggleMode }) {
   const [modalData, setModalData] = useState(null);
   const [isUnifiedModalOpen, setIsUnifiedModalOpen] = useState(false);
 
+  // Download modal state
+  const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
+  const [downloadModalData, setDownloadModalData] = useState(null);
+
   const title = "Member Resources";
   const description =
     "Show off your PAAN membership with branding assets, badges, and creative merch templates.";
@@ -41,6 +45,16 @@ export default function MemberResources({ mode = "light", toggleMode }) {
   const handleCloseModal = () => {
     setIsUnifiedModalOpen(false);
     setModalData(null);
+  };
+
+  const handleCloseDownloadModal = () => {
+    setIsDownloadModalOpen(false);
+    setDownloadModalData(null);
+  };
+
+  const handleDownloadClick = (type, title) => {
+    setDownloadModalData({ type, title });
+    setIsDownloadModalOpen(true);
   };
 
   if (userLoading) {
@@ -89,7 +103,7 @@ export default function MemberResources({ mode = "light", toggleMode }) {
           toggleMode={toggleMode}
         />
         <div
-          className={`flex-1 p-4 md:p-6 lg:p-8 transition-all mt-10 ${
+          className={`flex-1 p-4 md:p-6 lg:p-12 transition-all mt-10 ${
             isSidebarOpen && !isMobile ? "ml-60" : "ml-60"
           }`}
         >
@@ -124,7 +138,10 @@ export default function MemberResources({ mode = "light", toggleMode }) {
                   Download official PAAN logos and brand guidelines in multiple
                   formats.
                 </p>
-                <button className="mt-6 px-6 py-2 bg-paan-red hover:bg-paan-red/80 text-white rounded-full transition-all duration-300 flex items-center justify-center w-fit">
+                <button 
+                  onClick={() => handleDownloadClick('brand-pack', 'PAAN Logos & Brand Assets')}
+                  className="mt-6 px-6 py-2 bg-paan-red hover:bg-paan-red/80 text-white rounded-full transition-all duration-300 flex items-center justify-center w-fit"
+                >
                   Download Brand Pack
                 </button>
               </div>
@@ -142,7 +159,10 @@ export default function MemberResources({ mode = "light", toggleMode }) {
                   Display your verified PAAN status with downloadable badge
                   graphics and certificates.
                 </p>
-                <button className="mt-6 px-6 py-2 bg-paan-red hover:bg-paan-red/80 text-white rounded-full transition-all duration-300 flex items-center justify-center w-fit">
+                <button 
+                  onClick={() => handleDownloadClick('badges', 'Verified Member Badges')}
+                  className="mt-6 px-6 py-2 bg-paan-red hover:bg-paan-red/80 text-white rounded-full transition-all duration-300 flex items-center justify-center w-fit"
+                >
                   Download Badges
                 </button>
               </div>
@@ -161,7 +181,10 @@ export default function MemberResources({ mode = "light", toggleMode }) {
                   Print-ready designs for shirts, caps, and tote bags — ideal
                   for team swag or events.
                 </p>
-                <button className="mt-6 px-6 py-2 bg-paan-red hover:bg-paan-red/80 text-white rounded-full transition-all duration-300 flex items-center justify-center w-fit">
+                <button 
+                  onClick={() => handleDownloadClick('templates', 'Merch Print Templates')}
+                  className="mt-6 px-6 py-2 bg-paan-red hover:bg-paan-red/80 text-white rounded-full transition-all duration-300 flex items-center justify-center w-fit"
+                >
                   View Templates
                 </button>
               </div>
@@ -180,7 +203,10 @@ export default function MemberResources({ mode = "light", toggleMode }) {
                   Editable social post designs for project launches, team
                   intros, or brand promos.
                 </p>
-                <button className="mt-6 px-6 py-2 bg-paan-red hover:bg-paan-red/80 text-white rounded-full transition-all duration-300 flex items-center justify-center w-fit">
+                <button 
+                  onClick={() => handleDownloadClick('social-media', 'Social Media Templates')}
+                  className="mt-6 px-6 py-2 bg-paan-red hover:bg-paan-red/80 text-white rounded-full transition-all duration-300 flex items-center justify-center w-fit"
+                >
                   Download social media kit
                 </button>
               </div>
@@ -214,6 +240,121 @@ export default function MemberResources({ mode = "light", toggleMode }) {
           mode={mode}
           onClose={handleCloseModal}
         />
+      </SimpleModal>
+
+      {/* Download Modal */}
+      <SimpleModal
+        isOpen={isDownloadModalOpen}
+        onClose={handleCloseDownloadModal}
+        title={downloadModalData?.title || "Download Assets"}
+        mode={mode}
+        width="max-w-2xl"
+      >
+        <div className="space-y-6">
+          <div className="text-center">
+            <div className="mx-auto w-16 h-16 bg-paan-blue/10 rounded-full flex items-center justify-center mb-4">
+              <Icon icon="mdi:download" className="w-8 h-8 text-paan-blue" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              Coming Soon!
+            </h3>
+            <p className="text-gray-600 dark:text-gray-300">
+              We're currently preparing the <span className="capitalize">{downloadModalData?.title?.toLowerCase()}</span> for download. 
+              Our team is working hard to make these assets available to all PAAN members.
+            </p>
+          </div>
+          
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+            <h4 className="font-medium text-gray-900 dark:text-white mb-2">
+              What's included:
+            </h4>
+            <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+              {downloadModalData?.type === 'brand-pack' && (
+                <>
+                  <li className="flex items-center">
+                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    High-resolution PAAN logos (PNG, SVG, PDF)
+                  </li>
+                  <li className="flex items-center">
+                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    Brand guidelines and color palettes
+                  </li>
+                  <li className="flex items-center">
+                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    Typography and spacing guidelines
+                  </li>
+                </>
+              )}
+              {downloadModalData?.type === 'badges' && (
+                <>
+                  <li className="flex items-center">
+                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    Verified member badge graphics
+                  </li>
+                  <li className="flex items-center">
+                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    Digital certificates and credentials
+                  </li>
+                  <li className="flex items-center">
+                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    Social media profile badges
+                  </li>
+                </>
+              )}
+              {downloadModalData?.type === 'templates' && (
+                <>
+                  <li className="flex items-center">
+                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    Print-ready shirt designs
+                  </li>
+                  <li className="flex items-center">
+                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    Cap and tote bag templates
+                  </li>
+                  <li className="flex items-center">
+                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    Event merchandise layouts
+                  </li>
+                </>
+              )}
+              {downloadModalData?.type === 'social-media' && (
+                <>
+                  <li className="flex items-center">
+                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    Editable social post templates
+                  </li>
+                  <li className="flex items-center">
+                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    Project launch announcements
+                  </li>
+                  <li className="flex items-center">
+                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    Team introduction graphics
+                  </li>
+                </>
+              )}
+            </ul>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={handleCloseDownloadModal}
+              className="flex-1 px-6 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg font-medium transition-colors"
+            >
+              Got it
+            </button>
+            <button
+              onClick={() => {
+                handleCloseDownloadModal();
+                // You can add navigation to contact page here
+                toast.success("We'll notify you when assets are ready!");
+              }}
+              className="flex-1 px-6 py-3 bg-paan-red hover:bg-paan-red/80 text-white rounded-lg font-medium transition-colors"
+            >
+              Notify me when ready
+            </button>
+          </div>
+        </div>
       </SimpleModal>
     </div>
   );

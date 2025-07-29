@@ -78,16 +78,18 @@ const OpportunityCard = ({
           ? "bg-paan-dark-blue border-gray-700/60 hover:border-gray-600/80"
           : "bg-paan-dark-blue border-gray-200/70 hover:border-gray-300/80"
       } ${
-        isRestricted || isExpired || isTenderExpired
+        isRestricted
           ? "opacity-50 cursor-not-allowed"
+          : (isExpired || isTenderExpired)
+          ? "opacity-60 grayscale hover:shadow-lg cursor-pointer hover:scale-[1.01]"
           : "hover:shadow-2xl cursor-pointer hover:scale-[1.02] hover:-translate-y-2"
       }`}
-      onClick={isExpired || isTenderExpired ? undefined : handleClick}
+      onClick={handleClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      aria-disabled={isRestricted || isExpired || isTenderExpired}
+      aria-disabled={isRestricted}
       role="button"
-      tabIndex={isRestricted || isExpired || isTenderExpired ? -1 : 0}
+      tabIndex={isRestricted ? -1 : 0}
       aria-label={
         isRestricted
           ? `Restricted ${itemLabel}: ${isTender

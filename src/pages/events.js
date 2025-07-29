@@ -179,6 +179,7 @@ export default function Events({ mode = "light", toggleMode }) {
     { id: "accessible", label: "For Your Tier", icon: "mdi:accessibility" },
     { id: "trending", label: "Trending", icon: "mdi:trending-up" },
     { id: "upcoming", label: "Upcoming", icon: "mdi:clock-fast" },
+    { id: "past", label: "Past Events", icon: "mdi:history" },
     {
       id: "registrations",
       label: "My Registrations",
@@ -189,7 +190,25 @@ export default function Events({ mode = "light", toggleMode }) {
 
   const filteredByTab =
     activeTab === "all"
-      ? events
+      ? events.sort((a, b) => {
+          const aDate = new Date(a.date);
+          const bDate = new Date(b.date);
+          const today = new Date();
+          
+          // Upcoming events first (future dates)
+          const aIsUpcoming = aDate > today;
+          const bIsUpcoming = bDate > today;
+          
+          if (aIsUpcoming && !bIsUpcoming) return -1;
+          if (!aIsUpcoming && bIsUpcoming) return 1;
+          
+          // Within each group, sort by date (earliest first for upcoming, latest first for past)
+          if (aIsUpcoming && bIsUpcoming) {
+            return aDate - bDate; // Upcoming: earliest first
+          } else {
+            return bDate - aDate; // Past: latest first
+          }
+        })
       : events.filter((event) => {
           if (activeTab === "accessible") {
             return hasTierAccess(event.tier_restriction, user);
@@ -197,9 +216,12 @@ export default function Events({ mode = "light", toggleMode }) {
           if (activeTab === "upcoming") {
             const eventDate = new Date(event.date);
             const today = new Date();
-            const diffTime = eventDate - today;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            return diffDays <= 7 && diffDays >= 0;
+            return eventDate > today;
+          }
+          if (activeTab === "past") {
+            const eventDate = new Date(event.date);
+            const today = new Date();
+            return eventDate < today;
           }
           if (activeTab === "trending") {
             return event.trending;

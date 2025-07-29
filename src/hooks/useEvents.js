@@ -66,7 +66,6 @@ const useEvents = (
         .select(
           "id, title, description, start_date, end_date, location, event_type, tier_restriction, updated_at, is_virtual, registration_link, banner_image"
         )
-        .gte("start_date", new Date().toISOString())
         .order("start_date", { ascending: true });
 
       if (filters.eventType) {

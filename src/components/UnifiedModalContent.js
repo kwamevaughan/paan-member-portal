@@ -632,9 +632,12 @@ const IntelligenceModalContent = ({ modalData, mode, onClose }) => {
 
 const EventModalContent = ({ modalData, mode, onClose, registeredEvents = [], handleEventRegistration }) => {
   const isRegistered = registeredEvents.some(reg => reg.id === modalData.id);
+  const eventDate = new Date(modalData.date);
+  const today = new Date();
+  const isPast = eventDate < today;
   const actions = [];
   
-  if (!isRegistered) {
+  if (!isRegistered && !isPast) {
     actions.push({
       label: modalData.registration_link ? "Register Online" : "Register Now",
       onClick: () => {
@@ -660,6 +663,16 @@ const EventModalContent = ({ modalData, mode, onClose, registeredEvents = [], ha
         mode={mode}
         bannerImage={modalData.banner_image}
       />
+
+      {/* Past Event Indicator */}
+      {isPast && (
+        <div className="mb-6 p-4 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+            <Icon icon="mdi:clock-alert" className="text-lg text-gray-500" />
+            <span className="font-medium">This event has already taken place</span>
+          </div>
+        </div>
+      )}
 
       <InfoGrid mode={mode}>
         <InfoCard
@@ -694,13 +707,16 @@ const EventModalContent = ({ modalData, mode, onClose, registeredEvents = [], ha
         )}
         
         <InfoCard
-          icon={isRegistered ? "mdi:check-circle" : "mdi:account-plus"}
+          icon={isPast ? "mdi:clock-alert" : (isRegistered ? "mdi:check-circle" : "mdi:account-plus")}
           label="Registration Status"
-          value={isRegistered ? "Registered" : "Not Registered"}
-          iconColor={isRegistered ? "text-green-500" : "text-paan-yellow"}
-          iconBgColor={isRegistered 
-            ? (mode === "dark" ? "bg-green-900/30" : "bg-green-50")
-            : (mode === "dark" ? "bg-yellow-900/30" : "bg-yellow-50")
+          value={isPast ? "Past Event" : (isRegistered ? "Registered" : "Not Registered")}
+          iconColor={isPast ? "text-gray-500" : (isRegistered ? "text-green-500" : "text-paan-yellow")}
+          iconBgColor={isPast 
+            ? (mode === "dark" ? "bg-gray-800" : "bg-gray-100")
+            : (isRegistered 
+              ? (mode === "dark" ? "bg-green-900/30" : "bg-green-50")
+              : (mode === "dark" ? "bg-yellow-900/30" : "bg-yellow-50")
+            )
           }
           mode={mode}
         />

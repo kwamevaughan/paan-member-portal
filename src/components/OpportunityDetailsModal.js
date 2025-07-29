@@ -149,7 +149,7 @@ const OpportunityDetailsModal = ({
     }
   };
 
-  const isButtonDisabled = isLoading || isExpired || (isExpressingInterest && !hasExpressedInterest);
+  const isButtonDisabled = isLoading || isExpired || isTenderExpired || (isExpressingInterest && !hasExpressedInterest);
 
   // Helper to get Google Docs Viewer URL
   function getGoogleViewerUrl(url) {
@@ -183,6 +183,16 @@ const OpportunityDetailsModal = ({
         mode={mode}
       >
         <div className="space-y-4">
+          {/* Past Opportunity Indicator */}
+          {(isExpired || isTenderExpired) && (
+            <div className="mb-4 p-4 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                <Icon icon="mdi:clock-alert" className="text-lg text-gray-500" />
+                <span className="font-medium">This opportunity has already expired</span>
+              </div>
+            </div>
+          )}
+
           {/* Header */}
           <div className="flex items-start justify-between">
             <div className="flex-1">
@@ -540,6 +550,8 @@ const OpportunityDetailsModal = ({
             >
               {isLoading
                 ? "Checking..."
+                : isExpired || isTenderExpired
+                ? "Expired"
                 : isExpressingInterest
                 ? "Expressing Interest..."
                 : hasExpressedInterest

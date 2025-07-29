@@ -46,6 +46,7 @@ const EventCard = ({
   );
   const isUpcoming = daysUntilEvent > 0;
   const isPast = daysUntilEvent < 0;
+  const isUrgent = daysUntilEvent <= 7 && daysUntilEvent > 0;
 
   return (
     <div
@@ -56,6 +57,8 @@ const EventCard = ({
       } ${
         isRestricted
           ? "opacity-50 cursor-not-allowed"
+          : isPast
+          ? "opacity-60 grayscale hover:shadow-lg cursor-pointer hover:scale-[1.01]"
           : "hover:shadow-2xl cursor-pointer hover:scale-[1.02] hover:-translate-y-2"
       }`}
       onClick={handleClick}
@@ -87,6 +90,8 @@ const EventCard = ({
           }`}
         ></div>
       )}
+
+
 
       <div className="relative p-6 flex-1 flex flex-col">
         {/* Banner Image */}
@@ -170,10 +175,10 @@ const EventCard = ({
                 </div>
               )}
 
-              {/* Past Badge */}
-              {isPast && !isRestricted && (
-                <div className="bg-gradient-to-r from-gray-500 to-gray-600 text-white text-xs font-semibold px-2 py-1 rounded-full">
-                  Past
+              {/* Urgent Badge */}
+              {isUrgent && !isRestricted && (
+                <div className="bg-gradient-to-r from-paan-red to-paan-red text-white text-xs font-semibold px-2 py-1 rounded-full animate-pulse">
+                  URGENT
                 </div>
               )}
             </div>
@@ -248,15 +253,15 @@ const EventCard = ({
             </div>
           )}
           <button
-            onClick={handleRegisterClick}
+            onClick={isPast ? undefined : handleRegisterClick}
             className={`px-4 py-2 rounded-full font-normal text-xs transition-colors ${
-              isRestricted
+              isRestricted || isPast
                 ? "bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400"
                 : isRegistered
                 ? "bg-paan-yellow hover:bg-paan-yellow/80 dark:bg-paan-yellow dark:hover:bg-paan-yellow/80"
                 : "bg-paan-yellow hover:bg-paan-yellow/80 dark:bg-paan-yellow dark:hover:bg-paan-yellow/80"
             }`}
-            disabled={isRestricted}
+            disabled={isRestricted || isPast}
             aria-label={
               isRestricted
                 ? `Restricted event: ${event.title}`
@@ -267,6 +272,8 @@ const EventCard = ({
           >
             {isRestricted
               ? "Restricted"
+              : isPast
+              ? "Past Event"
               : isRegistered
               ? "Registered"
               : event.registration_link

@@ -39,6 +39,7 @@ export const useBusinessOpportunities = (
   const [fetching, setFetching] = useState(false);
   const [error, setError] = useState(null);
   const [isInitialFetch, setIsInitialFetch] = useState(true);
+  const [lastFetchParams, setLastFetchParams] = useState(null);
 
   const jobType = user?.job_type?.toLowerCase();
   const isFreelancer = jobType === "freelancer";
@@ -210,6 +211,13 @@ export const useBusinessOpportunities = (
       async (currentFilters, currentJobTypeFilter, isInitial = false) => {
         if (fetching || !currentJobTypeFilter) return;
 
+        // Check if parameters have changed
+        const currentParams = JSON.stringify({ currentFilters, currentJobTypeFilter, fetchMode });
+        if (lastFetchParams === currentParams && opportunities.length > 0) {
+          console.log('[useBusinessOpportunities] Skipping fetch - parameters unchanged');
+          return;
+        }
+
         setFetching(true);
         setLoading(true);
         const fetchStart = Date.now();
@@ -338,6 +346,7 @@ export const useBusinessOpportunities = (
           }
 
           setOpportunities(sortedData);
+          setLastFetchParams(currentParams);
           console.log('[useBusinessOpportunities] Opportunities set:', sortedData.length);
         } catch (err) {
           console.error("[useBusinessOpportunities] Unexpected error:", err);
@@ -352,7 +361,7 @@ export const useBusinessOpportunities = (
       },
       300
     ),
-    [user, fetchMode]
+    [user?.selected_tier, fetchMode, isFreelancer]
   );
 
   useEffect(() => {

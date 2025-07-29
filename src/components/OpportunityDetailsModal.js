@@ -25,6 +25,56 @@ const OpportunityDetailsModal = ({
   isFreelancer,
   toast,
 }) => {
+  // Function to generate description from available data
+  const generateDescription = (opp, isTender, isFreelancer) => {
+    const sentenceParts = [];
+    
+    // Add organization/company name using the same logic as title
+    let organizationName = '';
+    if (isTender) {
+      organizationName = opp.tender_organization;
+    } else if (isFreelancer) {
+      organizationName = opp.gig_title;
+    } else {
+      organizationName = opp.tender_organization;
+    }
+    
+    if (organizationName) {
+      sentenceParts.push(`${organizationName}`);
+    }
+    
+    // Add service type to the main sentence
+    if (opp.project_type) {
+      sentenceParts.push(`is seeking ${opp.project_type} services`);
+    } else if (opp.service_type) {
+      sentenceParts.push(`is seeking ${opp.service_type} services`);
+    }
+    
+    // Add industry to the main sentence
+    if (opp.industry) {
+      sentenceParts.push(`in the ${opp.industry} industry`);
+    }
+    
+    // Add deadline information
+    if (opp.deadline) {
+      const deadline = new Date(opp.deadline);
+      sentenceParts.push(`The deadline is ${deadline.toLocaleDateString()}`);
+    }
+    
+    // Combine sentence parts
+    let description = '';
+    if (sentenceParts.length > 0) {
+      description = sentenceParts.join(' ');
+    }
+    
+    if (description) {
+      description += '. Apply to this opportunity';
+      return description;
+    }
+    
+    // Fallback description
+    return `New ${isTender ? 'tender' : isFreelancer ? 'gig' : 'opportunity'} available. Apply now`;
+  };
   const [hasExpressedInterest, setHasExpressedInterest] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isExpressingInterest, setIsExpressingInterest] = useState(false);
@@ -273,7 +323,7 @@ const OpportunityDetailsModal = ({
           </div>
 
           {/* Description */}
-          {opportunity.description && (
+          {(opportunity.description || true) && (
             <div>
               <h4
                 className={`text-lg font-medium mb-2 ${
@@ -282,13 +332,14 @@ const OpportunityDetailsModal = ({
               >
                 Description
               </h4>
-              <p
-                className={`text-sm leading-relaxed ${
-                  mode === "dark" ? "text-gray-400" : "text-gray-600"
+              <div
+                className={`text-sm leading-relaxed prose prose-sm max-w-none ${
+                  mode === "dark" ? "text-gray-400 prose-invert" : "text-gray-600"
                 }`}
-              >
-                {opportunity.description}
-              </p>
+                dangerouslySetInnerHTML={{ 
+                  __html: opportunity.description || generateDescription(opportunity, isTender, isFreelancer)
+                }}
+              />
             </div>
           )}
 

@@ -11,6 +11,56 @@ const OpportunityCard = ({
   showExpressInterestButton,
   toast,
 }) => {
+  // Function to generate description from available data
+  const generateDescription = (opp, isTender, isFreelancer) => {
+    const sentenceParts = [];
+    
+    // Add organization/company name using the same logic as title
+    let organizationName = '';
+    if (isTender) {
+      organizationName = opp.tender_organization;
+    } else if (isFreelancer) {
+      organizationName = opp.gig_title;
+    } else {
+      organizationName = opp.tender_organization;
+    }
+    
+    if (organizationName) {
+      sentenceParts.push(`${organizationName}`);
+    }
+    
+    // Add service type to the main sentence
+    if (opp.project_type) {
+      sentenceParts.push(`is seeking <strong>${opp.project_type}</strong> services`);
+    } else if (opp.service_type) {
+      sentenceParts.push(`is seeking <strong>${opp.service_type}</strong> services`);
+    }
+    
+    // Add industry to the main sentence
+    if (opp.industry) {
+      sentenceParts.push(`in the ${opp.industry} industry`);
+    }
+    
+    // Add deadline information
+    if (opp.deadline) {
+      const deadline = new Date(opp.deadline);
+      sentenceParts.push(`The deadline is ${deadline.toLocaleDateString()}`);
+    }
+    
+    // Combine sentence parts
+    let description = '';
+    if (sentenceParts.length > 0) {
+      description = sentenceParts.join(' ');
+    }
+    
+    if (description) {
+      description += '. Apply to this opportunity';
+      return description;
+    }
+    
+    // Fallback description
+    return `New ${isTender ? 'tender' : isFreelancer ? 'gig' : 'opportunity'} available. Apply now`;
+  };
   const [isHovered, setIsHovered] = useState(false);
 
   const handleClick = () => {
@@ -210,12 +260,14 @@ const OpportunityCard = ({
         </div>
 
         {/* Description */}
-        {opportunity.description && (
+        {(opportunity.description || true) && (
           <div
             className={`text-sm mb-4 line-clamp-3 leading-relaxed prose prose-sm max-w-none ${
               mode === "dark" ? "text-gray-400 prose-invert" : "text-white"
             } ${isRestricted ? "text-gray-400 dark:text-gray-500" : ""}`}
-            dangerouslySetInnerHTML={{ __html: opportunity.description }}
+            dangerouslySetInnerHTML={{ 
+              __html: opportunity.description || generateDescription(opportunity, isTender, isFreelancer)
+            }}
           />
         )}
 

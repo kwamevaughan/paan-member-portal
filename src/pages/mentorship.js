@@ -109,24 +109,34 @@ export default function Mentorship({ mode = "light", toggleMode }) {
             />
 
             {/* New Layout Section */}
-            <div className="grid grid-cols-1 md:grid-cols-1 gap-6 mt-6">
-              <div className="bg-white p-6 rounded-lg shadow-sm hover:translate-y-[-5px] transition-all duration-200 flex flex-col h-full items-center justify-center">
-                
-                <h3 className="text-4xl font-semibold text-gray-800 mt-4 text-center">
-                  Coming Soon
-                </h3>
-                <p className="text-gray-600 mt-2">
-                  We are working on this feature. Please check back soon.
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-6 mt-6 py-10">
+              <div className="flex flex-col items-center justify-center h-full w-full ">
+                <div className="mb-2">
+                  <Icon
+                    icon="mdi:account-group-outline"
+                    width="96"
+                    height="96"
+                    className="text-paan-blue"
+                  />
+                </div>
+
+                <p className="text-lg text-center max-w-xl mb-8 text-gray-500 dark:text-gray-300">
+                  We&apos;re finalizing the Mentorship content to ensure you
+                  get the best resources and experience. Please check back soon!
                 </p>
-
-                
+                <div className="flex justify-center">
+                  <span className="inline-block animate-bounce rounded-full bg-paan-blue h-4 w-4 mr-2"></span>
+                  <span
+                    className="inline-block animate-bounce rounded-full bg-paan-blue h-4 w-4 mr-2"
+                    style={{ animationDelay: "0.2s" }}
+                  ></span>
+                  <span
+                    className="inline-block animate-bounce rounded-full bg-paan-blue h-4 w-4"
+                    style={{ animationDelay: "0.4s" }}
+                  ></span>
+                </div>
               </div>
-              
-              
             </div>
-
-            
-            
           </div>
           <SimpleFooter mode={mode} isSidebarOpen={isSidebarOpen} />
         </div>

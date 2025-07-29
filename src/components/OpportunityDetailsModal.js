@@ -68,7 +68,7 @@ const OpportunityDetailsModal = ({
     }
     
     if (description) {
-      description += '. Apply to this opportunity';
+    description += '. Apply to this opportunity';
       return description;
     }
     

@@ -14,7 +14,7 @@ const ContactFormModal = ({ isOpen, onClose, mode, title = "Contact Us", user = 
     budgetRange: "",
     timeline: "",
     skillsNeeded: "",
-    companyName: user?.agency_name || "",
+    companyName: user?.agencyName || "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -80,7 +80,7 @@ const ContactFormModal = ({ isOpen, onClose, mode, title = "Contact Us", user = 
           budgetRange: "",
           timeline: "",
           skillsNeeded: "",
-          companyName: user?.agency_name || "",
+          companyName: user?.agencyName || "",
         });
         onClose();
       } else {
@@ -107,7 +107,7 @@ const ContactFormModal = ({ isOpen, onClose, mode, title = "Contact Us", user = 
         budgetRange: "",
         timeline: "",
         skillsNeeded: "",
-        companyName: user?.agency_name || "",
+        companyName: user?.agencyName || "",
       });
       onClose();
     }
@@ -126,7 +126,7 @@ const ContactFormModal = ({ isOpen, onClose, mode, title = "Contact Us", user = 
         budgetRange: "",
         timeline: "",
         skillsNeeded: "",
-        companyName: user?.agency_name || "",
+        companyName: user?.agencyName || "",
       });
     }
   }, [isOpen, user]);

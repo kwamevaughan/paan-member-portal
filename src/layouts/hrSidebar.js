@@ -20,6 +20,8 @@ const HrSidebar = ({
 
   const filteredNav = getFilteredNav(user?.job_type);
 
+
+
   // By default, all categories are collapsed (expandedCategories is empty)
 
   // Auto-scroll to active item and expand active category when page loads
@@ -50,10 +52,16 @@ const HrSidebar = ({
   }, [router.asPath, router.pathname, filteredNav, expandedCategories]);
 
   const toggleCategory = (category) => {
-    setExpandedCategories((prev) => ({
-      ...prev,
-      [category]: !prev[category],
-    }));
+    setExpandedCategories((prev) => {
+      // If the clicked category is already expanded, close it
+      if (prev[category]) {
+        const newState = { ...prev };
+        delete newState[category];
+        return newState;
+      }
+      // If it's not expanded, close all others and expand this one
+      return { [category]: true };
+    });
   };
 
   const setActiveItemRef = useCallback((element) => {
@@ -199,12 +207,12 @@ const HrSidebar = ({
                   className="text-sm tracking-wide font-normal text-gray-300 px-2 py-2 cursor-pointer hover:text-white transition-colors flex items-center justify-between border-t border-b border-gray-600/30"
                   onClick={() => toggleCategory(navItem.category)}
                 >
-                      <span>{navItem.category}</span>
-                      <Icon 
-                        icon={expandedCategories[navItem.category] ? "mdi:chevron-up" : "mdi:chevron-down"} 
-                        className="w-4 h-4 transition-transform"
-                      />
-                    </div>
+                  <span>{navItem.category}</span>
+                  <Icon 
+                    icon={expandedCategories[navItem.category] ? "mdi:chevron-up" : "mdi:chevron-down"} 
+                    className="w-4 h-4 transition-transform"
+                  />
+                </div>
                     <div className={`transition-all duration-300 overflow-hidden ${
                       expandedCategories[navItem.category] ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
                     }`}>

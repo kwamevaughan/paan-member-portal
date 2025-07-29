@@ -5,6 +5,7 @@ import "../styles/globals.css";
 import { sidebarNav } from "@/data/nav";
 import { Poppins } from "next/font/google";
 import { AuthProvider } from "@/context/authContext";
+import { DarkModeProvider } from "@/components/GlobalDarkMode";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
@@ -22,6 +23,12 @@ function MyApp({ Component, pageProps }) {
     setMode(newMode);
     if (typeof window !== "undefined") {
       window.localStorage.setItem("mode", newMode);
+      // Toggle the dark class on the document
+      if (newMode === "dark") {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
     }
   };
 
@@ -31,6 +38,12 @@ function MyApp({ Component, pageProps }) {
     const savedMode = window.localStorage.getItem("mode");
     if (savedMode) {
       setMode(savedMode);
+      // Apply the saved mode to the document
+      if (savedMode === "dark") {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
     } else {
       const systemMode = window.matchMedia("(prefers-color-scheme: dark)")
         .matches
@@ -38,6 +51,12 @@ function MyApp({ Component, pageProps }) {
         : "light";
       setMode(systemMode);
       window.localStorage.setItem("mode", systemMode);
+      // Apply the system mode to the document
+      if (systemMode === "dark") {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
     }
 
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
@@ -157,15 +176,16 @@ function MyApp({ Component, pageProps }) {
   return (
     <div className={`${mode === "dark" ? "dark" : ""} ${poppins.variable} font-sans`}>
       <Toaster position="top-center" reverseOrder={false} />
-        <AuthProvider>
+      <AuthProvider>
+        <DarkModeProvider>
           <Component
             {...pageProps}
             mode={mode}
             toggleMode={toggleMode}
             breadcrumbs={breadcrumbs}
           />
-
-        </AuthProvider>
+        </DarkModeProvider>
+      </AuthProvider>
     </div>
   );
 }

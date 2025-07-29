@@ -9,6 +9,8 @@ export const sidebarNav = [
     ],
   },
   {
+    category: "Business Opportunities",
+    description: "Find gigs, tenders, and business opportunities to grow your agency",
     items: [
       {
         href: "/business-opportunities",
@@ -19,7 +21,20 @@ export const sidebarNav = [
     ],
   },
   {
+    category: "Talent & Recruitment",
+    description: "Hire skilled freelancers and build your dream team",
+    items: [
+      {
+        href: "/hire-freelancer",
+        icon: "hugeicons:job-search",
+        label: "Hire a Freelancer",
+      },
+    ],
+  },
+
+  {
     category: "Market Intelligence",
+    description: "Stay updated with industry reports and latest market news",
     items: [
       {
         href: "/market-intel",
@@ -35,6 +50,7 @@ export const sidebarNav = [
   },
   {
     category: "Events & Training",
+    description: "Attend events, training sessions, and the annual PAAN Summit",
     items: [
       {
         href: "/events",
@@ -50,6 +66,7 @@ export const sidebarNav = [
   },
   {
     category: "Resources & Support",
+    description: "Access member resources, exclusive offers, and support hubs",
     items: [
       {
         href: "/member-resources",
@@ -70,6 +87,7 @@ export const sidebarNav = [
   },
   {
     category: "Networking & Growth",
+    description: "Connect with other agencies through matchmaking and mentorship",
     items: [
       {
         href: "/matchmaking",
@@ -85,6 +103,7 @@ export const sidebarNav = [
   },
   {
     category: "Business Services",
+    description: "Get legal compliance support and M&A advisory services",
     items: [
       {
         href: "/legal-compliance",

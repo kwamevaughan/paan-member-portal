@@ -4,12 +4,17 @@ import SimpleModal from "./SimpleModal";
 import toast from "react-hot-toast";
 import TooltipIconButton from "./TooltipIconButton";
 
-const ContactFormModal = ({ isOpen, onClose, mode, title = "Contact Us", user = null, showLegalSubjects = false, description = "Have a question or need assistance? Send us a message and we'll respond as soon as possible." }) => {
+const ContactFormModal = ({ isOpen, onClose, mode, title = "Contact Us", user = null, showLegalSubjects = false, showHireFields = false, description = "Have a question or need assistance? Send us a message and we'll respond as soon as possible." }) => {
   const [formData, setFormData] = useState({
     name: user?.full_name || user?.name || "",
     email: user?.email || "",
     subject: "",
     message: "",
+    projectType: "",
+    budgetRange: "",
+    timeline: "",
+    skillsNeeded: "",
+    companyName: user?.agency_name || "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -25,8 +30,14 @@ const ContactFormModal = ({ isOpen, onClose, mode, title = "Contact Us", user = 
     e.preventDefault();
     
     // Basic validation
-    if (!formData.name || !formData.email || !formData.subject || !formData.message) {
-      toast.error("Please fill in all fields");
+    const requiredFields = ['name', 'email', 'subject', 'message'];
+    if (showHireFields) {
+      requiredFields.push('projectType', 'budgetRange', 'timeline');
+    }
+    
+    const missingFields = requiredFields.filter(field => !formData[field]);
+    if (missingFields.length > 0) {
+      toast.error("Please fill in all required fields");
       return;
     }
 
@@ -65,6 +76,11 @@ const ContactFormModal = ({ isOpen, onClose, mode, title = "Contact Us", user = 
           subject: "",
           customSubject: "",
           message: "",
+          projectType: "",
+          budgetRange: "",
+          timeline: "",
+          skillsNeeded: "",
+          companyName: user?.agency_name || "",
         });
         onClose();
       } else {
@@ -87,6 +103,11 @@ const ContactFormModal = ({ isOpen, onClose, mode, title = "Contact Us", user = 
         subject: "",
         customSubject: "",
         message: "",
+        projectType: "",
+        budgetRange: "",
+        timeline: "",
+        skillsNeeded: "",
+        companyName: user?.agency_name || "",
       });
       onClose();
     }
@@ -101,6 +122,11 @@ const ContactFormModal = ({ isOpen, onClose, mode, title = "Contact Us", user = 
         subject: "",
         customSubject: "",
         message: "",
+        projectType: "",
+        budgetRange: "",
+        timeline: "",
+        skillsNeeded: "",
+        companyName: user?.agency_name || "",
       });
     }
   }, [isOpen, user]);
@@ -217,6 +243,115 @@ const ContactFormModal = ({ isOpen, onClose, mode, title = "Contact Us", user = 
               />
             )}
           </div>
+
+          {/* Hire-specific fields */}
+          {showHireFields && (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="companyName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Company Name
+                  </label>
+                  <input
+                    type="text"
+                    id="companyName"
+                    name="companyName"
+                    value={formData.companyName}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-paan-blue focus:border-transparent dark:bg-gray-800 dark:text-white transition-colors"
+                    placeholder="Your company name"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="projectType" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Project Type *
+                  </label>
+                  <select
+                    id="projectType"
+                    name="projectType"
+                    value={formData.projectType}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-paan-blue focus:border-transparent dark:bg-gray-800 dark:text-white transition-colors"
+                    required
+                  >
+                    <option value="">Select project type</option>
+                    <option value="Web Development">Web Development</option>
+                    <option value="Mobile App Development">Mobile App Development</option>
+                    <option value="UI/UX Design">UI/UX Design</option>
+                    <option value="Graphic Design">Graphic Design</option>
+                    <option value="Content Writing">Content Writing</option>
+                    <option value="Digital Marketing">Digital Marketing</option>
+                    <option value="Data Analysis">Data Analysis</option>
+                    <option value="Video Production">Video Production</option>
+                    <option value="Translation">Translation</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="budgetRange" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Budget Range *
+                  </label>
+                  <select
+                    id="budgetRange"
+                    name="budgetRange"
+                    value={formData.budgetRange}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-paan-blue focus:border-transparent dark:bg-gray-800 dark:text-white transition-colors"
+                    required
+                  >
+                    <option value="">Select budget range</option>
+                    <option value="$500 - $1,000">$500 - $1,000</option>
+                    <option value="$1,000 - $2,500">$1,000 - $2,500</option>
+                    <option value="$2,500 - $5,000">$2,500 - $5,000</option>
+                    <option value="$5,000 - $10,000">$5,000 - $10,000</option>
+                    <option value="$10,000 - $25,000">$10,000 - $25,000</option>
+                    <option value="$25,000+">$25,000+</option>
+                    <option value="To be discussed">To be discussed</option>
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="timeline" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Timeline *
+                  </label>
+                  <select
+                    id="timeline"
+                    name="timeline"
+                    value={formData.timeline}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-paan-blue focus:border-transparent dark:bg-gray-800 dark:text-white transition-colors"
+                    required
+                  >
+                    <option value="">Select timeline</option>
+                    <option value="1-2 weeks">1-2 weeks</option>
+                    <option value="2-4 weeks">2-4 weeks</option>
+                    <option value="1-2 months">1-2 months</option>
+                    <option value="2-3 months">2-3 months</option>
+                    <option value="3+ months">3+ months</option>
+                    <option value="Ongoing">Ongoing</option>
+                    <option value="Flexible">Flexible</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="skillsNeeded" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Specific Skills Needed
+                </label>
+                <textarea
+                  id="skillsNeeded"
+                  name="skillsNeeded"
+                  value={formData.skillsNeeded}
+                  onChange={handleInputChange}
+                  rows={3}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-paan-blue focus:border-transparent dark:bg-gray-800 dark:text-white transition-colors resize-none"
+                  placeholder="e.g., React, Figma, SEO, Content Writing, etc."
+                />
+              </div>
+            </>
+          )}
 
           <div>
             <label htmlFor="message" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">

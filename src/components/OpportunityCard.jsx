@@ -211,13 +211,12 @@ const OpportunityCard = ({
 
         {/* Description */}
         {opportunity.description && (
-          <p
-            className={`text-sm mb-4 line-clamp-3 leading-relaxed ${
-              mode === "dark" ? "text-gray-400" : "text-white"
+          <div
+            className={`text-sm mb-4 line-clamp-3 leading-relaxed prose prose-sm max-w-none ${
+              mode === "dark" ? "text-gray-400 prose-invert" : "text-white"
             } ${isRestricted ? "text-gray-400 dark:text-gray-500" : ""}`}
-          >
-            {opportunity.description}
-          </p>
+            dangerouslySetInnerHTML={{ __html: opportunity.description }}
+          />
         )}
 
         {/* Tags */}
@@ -427,12 +426,20 @@ const OpportunityCard = ({
 
         {/* Footer */}
         <div className="flex items-center justify-between pt-4 mt-auto">
-          {opportunity.applicant_count && (
-            <div className="flex items-center space-x-1.5 text-xs text-gray-500 dark:text-gray-400">
-              <Icon icon="mdi:account-group" className="text-sm" />
-              <span>{opportunity.applicant_count} applicants</span>
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            {opportunity.applicant_count && (
+              <div className="flex items-center space-x-1.5 text-xs text-gray-500 dark:text-gray-400">
+                <Icon icon="mdi:account-group" className="text-sm" />
+                <span>{opportunity.applicant_count} applicants</span>
+              </div>
+            )}
+            {/* URGENT Badge */}
+            {(isUrgent || isTenderUrgent) && !isRestricted && (
+              <div className="bg-gradient-to-r from-paan-red to-paan-red text-white text-xs font-semibold px-2 py-1 rounded-full animate-pulse">
+                URGENT
+              </div>
+            )}
+          </div>
           <button
             onClick={handleViewMoreInfo}
             className={`px-4 py-2 rounded-full font-normal text-xs transition-colors ${
@@ -462,14 +469,7 @@ const OpportunityCard = ({
         )}
       </div>
 
-      {/* URGENT Badge */}
-      {(isUrgent || isTenderUrgent) && !isRestricted && (
-        <div className="absolute top-4 right-4">
-          <div className="bg-gradient-to-r from-paan-red to-paan-red text-white text-xs font-semibold px-2 py-1 rounded-full animate-pulse">
-            URGENT
-          </div>
-        </div>
-      )}
+
 
       {/* NEW Badge */}
       {opportunity.is_new && !isRestricted && (

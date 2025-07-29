@@ -6,73 +6,138 @@ import toast from "react-hot-toast";
 import ImageGallery from "./ImageGallery";
 
 // Shared Components
-const ModalHero = ({ title, subtitle, icon, tier, mode, bannerImage, children }) => (
-  <div className="relative">
-    {bannerImage ? (
-      <div className="relative w-full h-64 rounded-2xl overflow-hidden mb-6">
-        <Image
-          src={bannerImage}
-          width={1200}
-          height={0}
-          alt={`Banner for ${title}`}
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            e.target.style.display = "none";
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-        <div className="absolute bottom-4 left-4 right-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-3xl font-bold mb-2 text-white">{title}</h2>
+const ModalHero = ({ title, subtitle, icon, tier, mode, bannerImage, children }) => {
+  const [isFullScreen, setIsFullScreen] = useState(false);
+
+  const openFullScreen = () => {
+    if (bannerImage) {
+      setIsFullScreen(true);
+    }
+  };
+
+  const closeFullScreen = () => {
+    setIsFullScreen(false);
+  };
+
+  // Handle keyboard navigation in full-screen mode
+  const handleKeyDown = (e) => {
+    if (!isFullScreen) return;
+    
+    if (e.key === 'Escape') {
+      closeFullScreen();
+    }
+  };
+
+  return (
+    <div className="relative">
+      {bannerImage ? (
+        <div className="relative w-full h-64 rounded-2xl overflow-hidden mb-6">
+          <div 
+            className="relative w-full h-full cursor-pointer"
+            onClick={openFullScreen}
+          >
+            <Image
+              src={bannerImage}
+              width={1200}
+              height={0}
+              alt={`Banner for ${title}`}
+              className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+              onError={(e) => {
+                e.target.style.display = "none";
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none"></div>
+            
+            {/* Click to expand indicator */}
+            <div className="absolute top-4 left-4 px-2 py-1 rounded-full bg-black/50 backdrop-blur-sm text-white text-xs font-medium flex items-center gap-1 pointer-events-none">
+              <Icon icon="mdi:fullscreen" className="text-sm" />
+              Click to expand
+            </div>
+          </div>
+          <div className="absolute bottom-4 left-4 right-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-3xl font-bold mb-2 text-white">{title}</h2>
+                {subtitle && (
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white/20 backdrop-blur-sm text-white border border-white/30">
+                    <Icon icon={icon} className="mr-2 text-lg" />
+                    {subtitle}
+                  </span>
+                )}
+              </div>
+              <div className="text-right">
+                <span className={`inline-flex items-center px-4 py-2 rounded-xl text-sm font-semibold ${
+                  mode === "dark" 
+                    ? "bg-blue-900/80 text-blue-100 border border-blue-700/50 backdrop-blur-sm" 
+                    : "bg-white/90 text-blue-800 border border-white/20 backdrop-blur-sm"
+                }`}>
+                  {tier || "All Members"}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="mb-6">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <h2 className={`text-3xl font-bold mb-3 ${mode === "dark" ? "text-white" : "text-gray-900"}`}>
+                {title}
+              </h2>
               {subtitle && (
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white/20 backdrop-blur-sm text-white border border-white/30">
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-paan-blue text-white">
                   <Icon icon={icon} className="mr-2 text-lg" />
                   {subtitle}
                 </span>
               )}
             </div>
-            <div className="text-right">
+            <div>
               <span className={`inline-flex items-center px-4 py-2 rounded-xl text-sm font-semibold ${
                 mode === "dark" 
-                  ? "bg-blue-900/80 text-blue-100 border border-blue-700/50 backdrop-blur-sm" 
-                  : "bg-white/90 text-blue-800 border border-white/20 backdrop-blur-sm"
+                  ? "bg-blue-900/30 text-blue-400 border border-blue-700/50" 
+                  : "bg-blue-100 text-blue-800 border border-blue-200"
               }`}>
                 {tier || "All Members"}
               </span>
             </div>
           </div>
         </div>
-      </div>
-    ) : (
-      <div className="mb-6">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <h2 className={`text-3xl font-bold mb-3 ${mode === "dark" ? "text-white" : "text-gray-900"}`}>
-              {title}
-            </h2>
-            {subtitle && (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-paan-blue text-white">
-                <Icon icon={icon} className="mr-2 text-lg" />
-                {subtitle}
-              </span>
-            )}
-          </div>
-          <div>
-            <span className={`inline-flex items-center px-4 py-2 rounded-xl text-sm font-semibold ${
-              mode === "dark" 
-                ? "bg-blue-900/30 text-blue-400 border border-blue-700/50" 
-                : "bg-blue-100 text-blue-800 border border-blue-200"
-            }`}>
-              {tier || "All Members"}
-            </span>
+      )}
+      {children}
+
+      {/* Full Screen Modal */}
+      {isFullScreen && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center"
+          onKeyDown={handleKeyDown}
+          tabIndex={-1}
+        >
+          {/* Close Button */}
+          <button
+            onClick={closeFullScreen}
+            className="absolute top-4 right-4 w-12 h-12 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-all duration-200 backdrop-blur-sm z-10"
+          >
+            <Icon icon="mdi:close" className="text-2xl" />
+          </button>
+
+          {/* Main Image */}
+          <div className="relative max-w-[90vw] max-h-[90vh] flex items-center justify-center">
+            <Image
+              src={bannerImage}
+              width={1920}
+              height={1080}
+              alt={`${title} - Full Screen`}
+              className="max-w-full max-h-full object-contain"
+              onError={(e) => {
+                e.target.style.display = "none";
+              }}
+            />
           </div>
         </div>
-      </div>
-    )}
-    {children}
-  </div>
-);
+      )}
+    </div>
+  );
+};
 
 const InfoCard = ({ icon, label, value, iconColor, iconBgColor, mode }) => (
   <div className={`p-4 rounded-xl border ${
@@ -114,11 +179,12 @@ const DescriptionSection = ({ title, description, mode }) => {
       }`}>
         {title}
       </h3>
-      <p className={`text-sm leading-relaxed ${
-        mode === "dark" ? "text-gray-300" : "text-gray-700"
-      }`}>
-        {description}
-      </p>
+      <div 
+        className={`text-sm leading-relaxed prose prose-sm max-w-none ${
+          mode === "dark" ? "text-gray-300 prose-invert" : "text-gray-700"
+        }`}
+        dangerouslySetInnerHTML={{ __html: description }}
+      />
     </div>
   );
 };

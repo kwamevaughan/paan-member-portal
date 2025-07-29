@@ -187,13 +187,31 @@ const EventCard = ({
 
         {/* Description */}
         {event.description && (
-          <p
-            className={`text-sm mb-4 line-clamp-3 leading-relaxed ${
-              mode === "dark" ? "text-gray-400" : "text-white"
+          <div
+            className={`text-sm mb-4 line-clamp-3 leading-relaxed prose prose-sm max-w-none prose-p:text-white prose-strong:text-white prose-em:text-white prose-li:text-white prose-ul:text-white prose-ol:text-white ${
+              mode === "dark" ? "text-gray-400 prose-invert" : "text-white"
             } ${isRestricted ? "text-gray-400 dark:text-gray-500" : ""}`}
-          >
-            {event.description}
-          </p>
+            style={{
+              '--tw-prose-body': 'rgb(255, 255, 255)',
+              '--tw-prose-headings': 'rgb(255, 255, 255)',
+              '--tw-prose-links': 'rgb(255, 255, 255)',
+              '--tw-prose-bold': 'rgb(255, 255, 255)',
+              '--tw-prose-counters': 'rgb(255, 255, 255)',
+              '--tw-prose-bullets': 'rgb(255, 255, 255)',
+              '--tw-prose-hr': 'rgb(255, 255, 255)',
+              '--tw-prose-quotes': 'rgb(255, 255, 255)',
+              '--tw-prose-quote-borders': 'rgb(255, 255, 255)',
+              '--tw-prose-captions': 'rgb(255, 255, 255)',
+              '--tw-prose-code': 'rgb(255, 255, 255)',
+              '--tw-prose-pre-code': 'rgb(255, 255, 255)',
+              '--tw-prose-pre-bg': 'transparent',
+              '--tw-prose-th-borders': 'rgb(255, 255, 255)',
+              '--tw-prose-td-borders': 'rgb(255, 255, 255)',
+            }}
+            dangerouslySetInnerHTML={{ 
+              __html: event.description.replace(/style="color:\s*rgb\(0,\s*0,\s*0\)"/g, 'style="color: rgb(255, 255, 255)"')
+            }}
+          />
         )}
 
         {/* Details Row */}

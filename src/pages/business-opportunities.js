@@ -38,22 +38,14 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
   const initialTab = router.query.tab === "expired" ? "expired" : "all";
   const [activeTab, setActiveTab] = useState(initialTab);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
-  const [tabChangeCount, setTabChangeCount] = useState(0);
-  useEffect(() => {
-    console.log('[BusinessOpportunities] activeTab changed:', activeTab);
-    setTabChangeCount((c) => c + 1);
-  }, [activeTab]);
 
-  let fetchMode = "active";
-  if (activeTab === "expired") fetchMode = "expired";
-  else if (activeTab === "all") fetchMode = "all";
 
   const {
     opportunities,
     filterOptions = {},
     loading,
     error,
-  } = useBusinessOpportunities(filters, user, fetchMode);
+  } = useBusinessOpportunities(filters, user, "all");
   const isFreelancer = user?.job_type?.toLowerCase() === "freelancer";
 
   useEffect(() => {
@@ -121,13 +113,6 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
         : opportunities.filter((opp) => {
             if (activeTab === "accessible")
               return hasTierAccess(opp.tier_restriction, user);
-            if (activeTab === "trending") return opp.trending;
-            if (activeTab === "deadlineSoon") {
-              const diffDays = Math.ceil(
-                (new Date(opp.deadline) - new Date()) / (1000 * 60 * 60 * 24)
-              );
-              return diffDays <= 7 && diffDays >= 0;
-            }
             return true;
           }),
     [activeTab, opportunities, user]

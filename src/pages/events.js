@@ -177,7 +177,6 @@ export default function Events({ mode = "light", toggleMode }) {
   const tabs = [
     { id: "all", label: "All Events", icon: "mdi:view-grid" },
     { id: "accessible", label: "For Your Tier", icon: "mdi:accessibility" },
-    { id: "trending", label: "Trending", icon: "mdi:trending-up" },
     { id: "upcoming", label: "Upcoming", icon: "mdi:clock-fast" },
     { id: "past", label: "Past Events", icon: "mdi:history" },
     {
@@ -223,9 +222,7 @@ export default function Events({ mode = "light", toggleMode }) {
             const today = new Date();
             return eventDate < today;
           }
-          if (activeTab === "trending") {
-            return event.trending;
-          }
+
           return true;
         });
 

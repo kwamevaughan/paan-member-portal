@@ -374,6 +374,7 @@ export default function MemberResources({ mode = "light", toggleMode }) {
         onClose={() => setIsContactModalOpen(false)}
         mode={mode}
         title="Contact PAAN Support"
+        user={user}
       />
     </div>
   );

@@ -2,11 +2,12 @@ import React, { useState } from "react";
 import { Icon } from "@iconify/react";
 import SimpleModal from "./SimpleModal";
 import toast from "react-hot-toast";
+import TooltipIconButton from "./TooltipIconButton";
 
-const ContactFormModal = ({ isOpen, onClose, mode, title = "Contact Us" }) => {
+const ContactFormModal = ({ isOpen, onClose, mode, title = "Contact Us", user = null }) => {
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
+    name: user?.full_name || user?.name || "",
+    email: user?.email || "",
     subject: "",
     message: "",
   });
@@ -71,14 +72,26 @@ const ContactFormModal = ({ isOpen, onClose, mode, title = "Contact Us" }) => {
   const handleClose = () => {
     if (!isSubmitting) {
       setFormData({
-        name: "",
-        email: "",
+        name: user?.full_name || user?.name || "",
+        email: user?.email || "",
         subject: "",
         message: "",
       });
       onClose();
     }
   };
+
+  // Update form data when user changes or modal opens
+  React.useEffect(() => {
+    if (isOpen) {
+      setFormData({
+        name: user?.full_name || user?.name || "",
+        email: user?.email || "",
+        subject: "",
+        message: "",
+      });
+    }
+  }, [isOpen, user]);
 
   return (
     <SimpleModal
@@ -118,19 +131,30 @@ const ContactFormModal = ({ isOpen, onClose, mode, title = "Contact Us" }) => {
                 required
               />
             </div>
-            <div>
+            <div className="relative">
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Email Address *
               </label>
+              {user?.email && (
+                <div className="absolute top-[-10px] right-0">
+                  <TooltipIconButton
+                    icon="mdi:information-outline"
+                    label="Email pre-filled from your account"
+                    mode={mode}
+                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  />
+                </div>
+              )}
               <input
                 type="email"
                 id="email"
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-paan-blue focus:border-transparent dark:bg-gray-800 dark:text-white transition-colors"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-paan-blue focus:border-transparent dark:bg-gray-800 dark:text-white transition-colors bg-gray-50 dark:bg-gray-700"
                 placeholder="Enter your email address"
                 required
+                readOnly={!!user?.email}
               />
             </div>
           </div>

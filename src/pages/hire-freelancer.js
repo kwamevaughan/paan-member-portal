@@ -201,15 +201,11 @@ export default function HireFreelancer({ mode = "light", toggleMode }) {
                   <h3 className="text-xl font-semibold text-gray-700 mb-2">
                     Request for Freelancer Services
                   </h3>
-                  <p className="text-gray-600 max-w-md">
-                    We're currently building our freelancer directory. Soon you'll
-                    be able to browse and hire from our verified talent pool.
+                  <p className="text-gray-600 max-w-2xl">
+                    Looking for specific talent or can't find the right freelancer?
+                    Let us know your project requirements and we'll connect you
+                    with the perfect PAAN-verified freelancer for your needs.
                   </p>
-                  <div className="flex items-center justify-center">
-                    <button className="mt-6 px-6 py-2 bg-paan-red hover:bg-paan-red/80 text-white rounded-full transition-all duration-300 flex items-center justify-center w-fit">
-                      Request for Freelancer Services
-                    </button>
-                  </div>
                 </div>
               </div>
               <div className="bg-white px-8 py-12 rounded-lg shadow-sm transition-all duration-200 flex flex-col h-full relative opacity-50 pointer-events-none">
@@ -311,24 +307,8 @@ export default function HireFreelancer({ mode = "light", toggleMode }) {
             </div>
 
             {/* Direct Contact Form */}
-            <div className="bg-white rounded-lg shadow-sm p-6 md:p-8">
-              <div className="text-center mb-6">
-                <div className="mx-auto w-16 h-16 bg-paan-blue/10 rounded-full flex items-center justify-center mb-4">
-                  <Icon
-                    icon="mdi:account-group"
-                    className="w-8 h-8 text-paan-blue"
-                  />
-                </div>
-                <h3 className="text-2xl font-semibold text-gray-900 mb-2">
-                  Hire a Freelancer
-                </h3>
-                <p className="text-gray-600">
-                  Looking for specific talent or can't find the right
-                  freelancer? Let us know your project requirements and we'll
-                  connect you with the perfect PAAN-verified freelancer for your
-                  needs.
-                </p>
-              </div>
+            <div className="bg-white rounded-lg shadow-sm p-6 md:p-8 max-w-4xl mx-auto">
+
 
               <form onSubmit={handleContactClick} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -549,156 +529,7 @@ export default function HireFreelancer({ mode = "light", toggleMode }) {
       </SimpleModal>
 
       {/* Download Modal */}
-      <SimpleModal
-        isOpen={isDownloadModalOpen}
-        onClose={handleCloseDownloadModal}
-        title={downloadModalData?.title || "Download Assets"}
-        mode={mode}
-        width="max-w-2xl"
-      >
-        <div className="space-y-6">
-          <div className="text-center">
-            <div className="mx-auto w-16 h-16 bg-paan-blue/10 rounded-full flex items-center justify-center mb-4">
-              <Icon icon="mdi:download" className="w-8 h-8 text-paan-blue" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-              Request for Freelancer Services
-            </h3>
-            <p className="text-gray-600 dark:text-gray-300">
-              We're currently preparing the request for freelancer services. Our
-              team is working hard to make these assets available to all PAAN
-              members.
-            </p>
-          </div>
-
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-            <h4 className="font-medium text-gray-900 dark:text-white mb-2">
-              What's included:
-            </h4>
-            <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
-              {downloadModalData?.type === "brand-pack" && (
-                <>
-                  <li className="flex items-center">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="w-4 h-4 text-green-500 mr-2"
-                    />
-                    High-resolution PAAN logos (PNG, SVG, PDF)
-                  </li>
-                  <li className="flex items-center">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="w-4 h-4 text-green-500 mr-2"
-                    />
-                    Brand guidelines and color palettes
-                  </li>
-                  <li className="flex items-center">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="w-4 h-4 text-green-500 mr-2"
-                    />
-                    Typography and spacing guidelines
-                  </li>
-                </>
-              )}
-              {downloadModalData?.type === "badges" && (
-                <>
-                  <li className="flex items-center">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="w-4 h-4 text-green-500 mr-2"
-                    />
-                    Verified member badge graphics
-                  </li>
-                  <li className="flex items-center">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="w-4 h-4 text-green-500 mr-2"
-                    />
-                    Digital certificates and credentials
-                  </li>
-                  <li className="flex items-center">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="w-4 h-4 text-green-500 mr-2"
-                    />
-                    Social media profile badges
-                  </li>
-                </>
-              )}
-              {downloadModalData?.type === "templates" && (
-                <>
-                  <li className="flex items-center">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="w-4 h-4 text-green-500 mr-2"
-                    />
-                    Print-ready shirt designs
-                  </li>
-                  <li className="flex items-center">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="w-4 h-4 text-green-500 mr-2"
-                    />
-                    Cap and tote bag templates
-                  </li>
-                  <li className="flex items-center">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="w-4 h-4 text-green-500 mr-2"
-                    />
-                    Event merchandise layouts
-                  </li>
-                </>
-              )}
-              {downloadModalData?.type === "social-media" && (
-                <>
-                  <li className="flex items-center">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="w-4 h-4 text-green-500 mr-2"
-                    />
-                    Editable social post templates
-                  </li>
-                  <li className="flex items-center">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="w-4 h-4 text-green-500 mr-2"
-                    />
-                    Project launch announcements
-                  </li>
-                  <li className="flex items-center">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="w-4 h-4 text-green-500 mr-2"
-                    />
-                    Team introduction graphics
-                  </li>
-                </>
-              )}
-            </ul>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-3">
-            <button
-              onClick={handleCloseDownloadModal}
-              className="flex-1 px-6 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg font-medium transition-colors"
-            >
-              Got it
-            </button>
-            <button
-              onClick={() => {
-                handleCloseDownloadModal();
-                // You can add navigation to contact page here
-                toast.success("We'll notify you when assets are ready!");
-              }}
-              className="flex-1 px-6 py-3 bg-paan-red hover:bg-paan-red/80 text-white rounded-lg font-medium transition-colors"
-            >
-              Notify me when ready
-            </button>
-          </div>
-        </div>
-      </SimpleModal>
+      
 
       {/* Contact Form Modal */}
       <ContactFormModal
@@ -708,7 +539,7 @@ export default function HireFreelancer({ mode = "light", toggleMode }) {
         title="Hire a Freelancer"
         user={user}
         showHireFields={true}
-        description="Looking for specific talent or can't find the right freelancer? Let us know your project requirements and we'll connect you with the perfect PAAN-verified freelancer for your needs."
+        description=""
       />
     </div>
   );

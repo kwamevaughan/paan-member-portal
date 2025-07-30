@@ -29,9 +29,9 @@ export const sidebarNav = [
         icon: "hugeicons:job-search",
         label: "Hire a Freelancer",
       },
-    ],
-  },
-
+  ],
+},
+  
   {
     category: "Market Intelligence",
     description: "Stay updated with industry reports and latest market news",

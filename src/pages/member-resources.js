@@ -135,7 +135,7 @@ export default function MemberResources({ mode = "light", toggleMode }) {
               <div className="bg-white px-8 py-20 rounded-lg shadow-sm hover:translate-y-[-5px] transition-all duration-200 flex flex-col h-full relative">
                 <div className="absolute top-4 right-4">
                   <span className="inline-flex items-center px-6 py-1 rounded-full text-sm font-normal bg-paan-blue">
-                    Assets
+                  Assets
                   </span>
                 </div>
 

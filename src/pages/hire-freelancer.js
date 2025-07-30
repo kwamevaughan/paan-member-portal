@@ -17,6 +17,8 @@ import SimpleModal from "@/components/SimpleModal";
 import UnifiedModalContent from "@/components/UnifiedModalContent";
 import ContactFormModal from "@/components/ContactFormModal";
 import FreelancerForm from "@/components/FreelancerForm";
+import TestimonialQuote from "@/components/testimonialQuote";
+import AgencyLogosGrid from "@/components/AgencyLogosGrid";
 
 export default function HireFreelancer({ mode = "light", toggleMode }) {
   const {
@@ -229,10 +231,14 @@ export default function HireFreelancer({ mode = "light", toggleMode }) {
                     </button>
                   ))}
                 </div>
+
+                <TestimonialQuote />
               </div>
             </div>
 
-            <div className="relative top-6 mt-6 p-4 md:p-6 bg-paan-blue rounded-lg flex flex-col md:flex-row items-center justify-between gap-4 transition-all duration-300">
+            <AgencyLogosGrid />
+
+            <div className="relative top-6  mt-6 mb-20 p-4 md:p-6 bg-paan-blue rounded-lg flex flex-col md:flex-row items-center justify-between gap-4 transition-all duration-300">
               <span className="text-xl md:text-2xl">
                 Can't find who you're looking for?{" "}
                 <span
@@ -244,8 +250,11 @@ export default function HireFreelancer({ mode = "light", toggleMode }) {
                 and we'll recommend top talent for your project.
               </span>
             </div>
+
+            <div className="pt-2">
+              <SimpleFooter mode={mode} isSidebarOpen={isSidebarOpen} />
+            </div>
           </div>
-          <SimpleFooter mode={mode} isSidebarOpen={isSidebarOpen} />
         </div>
       </div>
     </div>

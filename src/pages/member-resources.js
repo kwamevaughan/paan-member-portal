@@ -42,6 +42,9 @@ export default function MemberResources({ mode = "light", toggleMode }) {
   // Contact form modal state
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
 
+  // Onboarding kit modal state
+  const [isOnboardingKitModalOpen, setIsOnboardingKitModalOpen] = useState(false);
+
   const title = "Member Resources";
   const description =
     "Show off your PAAN membership with branding assets, badges, and creative merch templates.";
@@ -63,6 +66,10 @@ export default function MemberResources({ mode = "light", toggleMode }) {
 
   const handleContactClick = () => {
     setIsContactModalOpen(true);
+  };
+
+  const handleOnboardingKitClick = () => {
+    setIsOnboardingKitModalOpen(true);
   };
 
   if (userLoading) {
@@ -135,7 +142,30 @@ export default function MemberResources({ mode = "light", toggleMode }) {
               <div className="bg-white px-8 py-20 rounded-lg shadow-sm hover:translate-y-[-5px] transition-all duration-200 flex flex-col h-full relative">
                 <div className="absolute top-4 right-4">
                   <span className="inline-flex items-center px-6 py-1 rounded-full text-sm font-normal bg-paan-blue">
-                  Assets
+                    Toolkit
+                  </span>
+                </div>
+
+                <h3 className="text-2xl font-semibold text-gray-800 mt-4">
+                  PAAN Onboarding Kit
+                </h3>
+                <p className="text-gray-600 mt-2">
+                  A comprehensive onboarding kit for new PAAN members, including
+                  a welcome letter, a member handbook, and a list of resources
+                  to help you get started.
+                </p>
+                <button
+                  onClick={handleOnboardingKitClick}
+                  className="mt-6 px-6 py-2 bg-paan-red hover:bg-paan-red/80 text-white rounded-full transition-all duration-300 flex items-center justify-center w-fit"
+                >
+                  View Onboarding Kit
+                </button>
+              </div>
+              
+              <div className="bg-white px-8 py-20 rounded-lg shadow-sm hover:translate-y-[-5px] transition-all duration-200 flex flex-col h-full relative">
+                <div className="absolute top-4 right-4">
+                  <span className="inline-flex items-center px-6 py-1 rounded-full text-sm font-normal bg-paan-blue">
+                    Assets
                   </span>
                 </div>
 
@@ -146,8 +176,13 @@ export default function MemberResources({ mode = "light", toggleMode }) {
                   Download official PAAN logos and brand guidelines in multiple
                   formats.
                 </p>
-                <button 
-                  onClick={() => handleDownloadClick('brand-pack', 'PAAN Logos & Brand Assets')}
+                <button
+                  onClick={() =>
+                    handleDownloadClick(
+                      "brand-pack",
+                      "PAAN Logos & Brand Assets"
+                    )
+                  }
                   className="mt-6 px-6 py-2 bg-paan-red hover:bg-paan-red/80 text-white rounded-full transition-all duration-300 flex items-center justify-center w-fit"
                 >
                   Download Brand Pack
@@ -167,8 +202,10 @@ export default function MemberResources({ mode = "light", toggleMode }) {
                   Display your verified PAAN status with downloadable badge
                   graphics and certificates.
                 </p>
-                <button 
-                  onClick={() => handleDownloadClick('badges', 'Verified Member Badges')}
+                <button
+                  onClick={() =>
+                    handleDownloadClick("badges", "Verified Member Badges")
+                  }
                   className="mt-6 px-6 py-2 bg-paan-red hover:bg-paan-red/80 text-white rounded-full transition-all duration-300 flex items-center justify-center w-fit"
                 >
                   Download Badges
@@ -189,8 +226,10 @@ export default function MemberResources({ mode = "light", toggleMode }) {
                   Print-ready designs for shirts, caps, and tote bags — ideal
                   for team swag or events.
                 </p>
-                <button 
-                  onClick={() => handleDownloadClick('templates', 'Merch Print Templates')}
+                <button
+                  onClick={() =>
+                    handleDownloadClick("templates", "Merch Print Templates")
+                  }
                   className="mt-6 px-6 py-2 bg-paan-red hover:bg-paan-red/80 text-white rounded-full transition-all duration-300 flex items-center justify-center w-fit"
                 >
                   View Templates
@@ -211,8 +250,13 @@ export default function MemberResources({ mode = "light", toggleMode }) {
                   Editable social post designs for project launches, team
                   intros, or brand promos.
                 </p>
-                <button 
-                  onClick={() => handleDownloadClick('social-media', 'Social Media Templates')}
+                <button
+                  onClick={() =>
+                    handleDownloadClick(
+                      "social-media",
+                      "Social Media Templates"
+                    )
+                  }
                   className="mt-6 px-6 py-2 bg-paan-red hover:bg-paan-red/80 text-white rounded-full transition-all duration-300 flex items-center justify-center w-fit"
                 >
                   Download social media kit
@@ -224,9 +268,10 @@ export default function MemberResources({ mode = "light", toggleMode }) {
 
             <div className="mt-6 p-4 md:p-6 bg-paan-yellow text-paan-dark-blue rounded-lg flex flex-col md:flex-row items-center justify-between gap-4 transition-all duration-300">
               <span className="text-xl md:text-2xl">
-                Need help applying the assets? <span className="font-semibold">Message the PAAN Team</span>
+                Need help applying the assets?{" "}
+                <span className="font-semibold">Message the PAAN Team</span>
               </span>
-              <button 
+              <button
                 onClick={handleContactClick}
                 className="px-6 py-2 bg-paan-red hover:bg-paan-red/80 text-white rounded-full w-full md:w-auto transition-all duration-300"
               >
@@ -270,76 +315,116 @@ export default function MemberResources({ mode = "light", toggleMode }) {
               Coming Soon!
             </h3>
             <p className="text-gray-600 dark:text-gray-300">
-              We're currently preparing the <span className="capitalize">{downloadModalData?.title?.toLowerCase()}</span> for download. 
-              Our team is working hard to make these assets available to all PAAN members.
+              We're currently preparing the{" "}
+              <span className="capitalize">
+                {downloadModalData?.title?.toLowerCase()}
+              </span>{" "}
+              for download. Our team is working hard to make these assets
+              available to all PAAN members.
             </p>
           </div>
-          
+
           <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
             <h4 className="font-medium text-gray-900 dark:text-white mb-2">
               What's included:
             </h4>
             <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
-              {downloadModalData?.type === 'brand-pack' && (
+              {downloadModalData?.type === "brand-pack" && (
                 <>
                   <li className="flex items-center">
-                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    <Icon
+                      icon="mdi:check-circle"
+                      className="w-4 h-4 text-green-500 mr-2"
+                    />
                     High-resolution PAAN logos (PNG, SVG, PDF)
                   </li>
                   <li className="flex items-center">
-                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    <Icon
+                      icon="mdi:check-circle"
+                      className="w-4 h-4 text-green-500 mr-2"
+                    />
                     Brand guidelines and color palettes
                   </li>
                   <li className="flex items-center">
-                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    <Icon
+                      icon="mdi:check-circle"
+                      className="w-4 h-4 text-green-500 mr-2"
+                    />
                     Typography and spacing guidelines
                   </li>
                 </>
               )}
-              {downloadModalData?.type === 'badges' && (
+              {downloadModalData?.type === "badges" && (
                 <>
                   <li className="flex items-center">
-                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    <Icon
+                      icon="mdi:check-circle"
+                      className="w-4 h-4 text-green-500 mr-2"
+                    />
                     Verified member badge graphics
                   </li>
                   <li className="flex items-center">
-                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    <Icon
+                      icon="mdi:check-circle"
+                      className="w-4 h-4 text-green-500 mr-2"
+                    />
                     Digital certificates and credentials
                   </li>
                   <li className="flex items-center">
-                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    <Icon
+                      icon="mdi:check-circle"
+                      className="w-4 h-4 text-green-500 mr-2"
+                    />
                     Social media profile badges
                   </li>
                 </>
               )}
-              {downloadModalData?.type === 'templates' && (
+              {downloadModalData?.type === "templates" && (
                 <>
                   <li className="flex items-center">
-                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    <Icon
+                      icon="mdi:check-circle"
+                      className="w-4 h-4 text-green-500 mr-2"
+                    />
                     Print-ready shirt designs
                   </li>
                   <li className="flex items-center">
-                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    <Icon
+                      icon="mdi:check-circle"
+                      className="w-4 h-4 text-green-500 mr-2"
+                    />
                     Cap and tote bag templates
                   </li>
                   <li className="flex items-center">
-                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    <Icon
+                      icon="mdi:check-circle"
+                      className="w-4 h-4 text-green-500 mr-2"
+                    />
                     Event merchandise layouts
                   </li>
                 </>
               )}
-              {downloadModalData?.type === 'social-media' && (
+              {downloadModalData?.type === "social-media" && (
                 <>
                   <li className="flex items-center">
-                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    <Icon
+                      icon="mdi:check-circle"
+                      className="w-4 h-4 text-green-500 mr-2"
+                    />
                     Editable social post templates
                   </li>
                   <li className="flex items-center">
-                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    <Icon
+                      icon="mdi:check-circle"
+                      className="w-4 h-4 text-green-500 mr-2"
+                    />
                     Project launch announcements
                   </li>
                   <li className="flex items-center">
-                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    <Icon
+                      icon="mdi:check-circle"
+                      className="w-4 h-4 text-green-500 mr-2"
+                    />
                     Team introduction graphics
                   </li>
                 </>
@@ -377,6 +462,43 @@ export default function MemberResources({ mode = "light", toggleMode }) {
         user={user}
         description="Need help with PAAN branding assets, badges, or templates? Our team is here to assist you with any questions about using and applying our member resources."
       />
+
+      {/* Onboarding Kit Modal */}
+      <SimpleModal
+        isOpen={isOnboardingKitModalOpen}
+        onClose={() => setIsOnboardingKitModalOpen(false)}
+        title="PAAN Onboarding Kit"
+        mode={mode}
+        width="max-w-6xl"
+      >
+        <div className="space-y-8">
+          <div className="relative w-full h-[600px] bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden">
+            <iframe
+              src="https://ik.imagekit.io/2crwrt8s6/General/PAAN%20Onboarding%20KIT%202025.pdf?updatedAt=1753975546701"
+              className="w-full h-full border-0"
+              title="PAAN Onboarding Kit 2025"
+            />
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={() => setIsOnboardingKitModalOpen(false)}
+              className="flex-1 px-6 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg font-medium transition-colors"
+            >
+              Close
+            </button>
+            <a
+              href="https://ik.imagekit.io/2crwrt8s6/General/PAAN%20Onboarding%20KIT%202025.pdf?updatedAt=1753975546701"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 px-6 py-3 bg-paan-red hover:bg-paan-red/80 text-white rounded-lg font-medium transition-colors text-center"
+            >
+              <Icon icon="mdi:download" className="w-4 h-4 inline mr-2" />
+              Download PDF
+            </a>
+          </div>
+        </div>
+      </SimpleModal>
     </div>
   );
 }

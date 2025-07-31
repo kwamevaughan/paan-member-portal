@@ -10,13 +10,30 @@ export const sidebarNav = [
   },
   {
     category: "Business Opportunities",
-    description: "Find gigs, tenders, and business opportunities to grow your agency",
+    description:
+      "Find gigs, tenders, and business opportunities to grow your agency",
     items: [
       {
         href: "/business-opportunities",
         icon: "charm:lightbulb",
         label: (jobType) =>
           jobType?.toLowerCase() === "freelancer" ? "Gigs" : "Opportunities",
+      },
+    ],
+  },
+  {
+    category: "Business Services",
+    description: "Get legal compliance support and M&A advisory services",
+    items: [
+      {
+        href: "/legal-compliance",
+        icon: "mdi:gavel",
+        label: "Legal & Compliance",
+      },
+      {
+        href: "/mergers-acquisitions",
+        icon: "mdi:merge",
+        label: "Mergers & Acquisitions",
       },
     ],
   },
@@ -28,23 +45,6 @@ export const sidebarNav = [
         href: "/hire-freelancer",
         icon: "hugeicons:job-search",
         label: "Hire a Freelancer",
-      },
-  ],
-},
-  
-  {
-    category: "Market Intelligence",
-    description: "Stay updated with industry reports and latest market news",
-    items: [
-      {
-        href: "/market-intel",
-        icon: "mdi:chart-bar",
-        label: "Industry Reports",
-      },
-      {
-        href: "/updates",
-        icon: "mdi:bullhorn",
-        label: "Latest News",
       },
     ],
   },
@@ -64,6 +64,24 @@ export const sidebarNav = [
       },
     ],
   },
+
+  // {
+  //   category: "Market Intelligence",
+  //   description: "Stay updated with industry reports and latest market news",
+  //   items: [
+  //     {
+  //       href: "/market-intel",
+  //       icon: "mdi:chart-bar",
+  //       label: "Industry Reports",
+  //     },
+  //     {
+  //       href: "/updates",
+  //       icon: "mdi:bullhorn",
+  //       label: "Latest News",
+  //     },
+  //   ],
+  // },
+
   {
     category: "Resources & Support",
     description: "Access member resources, exclusive offers, and support hubs",
@@ -87,7 +105,8 @@ export const sidebarNav = [
   },
   {
     category: "Networking & Growth",
-    description: "Connect with other agencies through matchmaking and mentorship",
+    description:
+      "Connect with other agencies through matchmaking and mentorship",
     items: [
       {
         href: "/matchmaking",
@@ -98,22 +117,6 @@ export const sidebarNav = [
         href: "/mentorship",
         icon: "mdi:account-supervisor",
         label: "Mentorship",
-      },
-    ],
-  },
-  {
-    category: "Business Services",
-    description: "Get legal compliance support and M&A advisory services",
-    items: [
-      {
-        href: "/legal-compliance",
-        icon: "mdi:gavel",
-        label: "Legal & Compliance",
-      },
-      {
-        href: "/mergers-acquisitions",
-        icon: "mdi:merge",
-        label: "Mergers & Acquisitions",
       },
     ],
   },

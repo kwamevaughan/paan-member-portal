@@ -24,6 +24,17 @@ const HrSidebar = ({
 
   // By default, all categories are collapsed (expandedCategories is empty)
 
+  // Expand all categories by default on mount or when filteredNav changes
+  useEffect(() => {
+    if (filteredNav && filteredNav.length > 0) {
+      const allExpanded = {};
+      filteredNav.forEach(({ category }) => {
+        if (category) allExpanded[category] = true;
+      });
+      setExpandedCategories(allExpanded);
+    }
+  }, [filteredNav]);
+
   // Auto-scroll to active item and expand active category when page loads
   useEffect(() => {
     // Find the active category and expand it (only for categorized items)

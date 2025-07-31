@@ -207,7 +207,7 @@ export default function HireFreelancer({ mode = "light", toggleMode }) {
                 />
               </div>
 
-              <div className="bg-paan-yellow/80 p-8 flex flex-col h-full relative">
+              <div className="bg-paan-yellow p-8 flex flex-col h-full relative">
                 <h3 className="text-2xl font-semibold text-gray-800 mt-4">
                   Experts that will fit into your team seamlessly
                 </h3>

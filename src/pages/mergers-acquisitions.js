@@ -141,11 +141,14 @@ export default function MergersAcquisitions({ mode = "light", toggleMode }) {
                   Discover vetted African agencies ready for acquisition — with
                   insights to help you choose the right fit.
                 </p>
-                <button 
-                  onClick={() => handleMaServicesClick('buy', 'Buy an Agency', 'Discover vetted African agencies ready for acquisition — with insights to help you choose the right fit.')}
+                <button
+                  onClick={() => {
+                    setIsMaServicesModalOpen(false);
+                    setIsContactModalOpen(true);
+                  }}
                   className="mt-6 px-10 py-2 bg-paan-yellow hover:bg-paan-yellow/80 text-paan-dark-blue rounded-full transition-all duration-300 flex items-center justify-center w-fit"
                 >
-                  Explore Agencies
+                  Buy an Agency
                 </button>
               </div>
               <div className="bg-gray-200 p-6 rounded-lg shadow-sm hover:translate-y-[-5px] transition-all duration-200 flex flex-col h-full">
@@ -162,8 +165,11 @@ export default function MergersAcquisitions({ mode = "light", toggleMode }) {
                   List your agency confidentially and connect with serious
                   buyers across the PAAN network.
                 </p>
-                <button 
-                  onClick={() => handleMaServicesClick('sell', 'Sell Your Agency', 'List your agency confidentially and connect with serious buyers across the PAAN network.')}
+                <button
+                  onClick={() => {
+                    setIsMaServicesModalOpen(false);
+                    setIsContactModalOpen(true);
+                  }}
                   className="mt-auto px-10 py-2 bg-paan-yellow hover:bg-paan-yellow/80 text-paan-dark-blue rounded-full transition-all duration-300 flex items-center justify-center w-fit"
                 >
                   List for Sale
@@ -183,8 +189,11 @@ export default function MergersAcquisitions({ mode = "light", toggleMode }) {
                   Join forces with aligned partners to scale, diversify, or
                   enter new markets.
                 </p>
-                <button 
-                  onClick={() => handleMaServicesClick('merge', 'Merge with Another Agency', 'Join forces with aligned partners to scale, diversify, or enter new markets.')}
+                <button
+                  onClick={() => {
+                    setIsMaServicesModalOpen(false);
+                    setIsContactModalOpen(true);
+                  }}
                   className="mt-auto px-10 py-2 bg-paan-yellow hover:bg-paan-yellow/80 text-paan-dark-blue rounded-full transition-all duration-300 flex items-center justify-center w-fit"
                 >
                   Explore Mergers
@@ -203,7 +212,7 @@ export default function MergersAcquisitions({ mode = "light", toggleMode }) {
                   build a plan that aligns with your agency’s goals.
                 </span>
               </span>
-              <button 
+              <button
                 onClick={handleContactClick}
                 className="px-6 py-2 bg-paan-red hover:bg-paan-red/80 text-white rounded-full w-full md:w-auto transition-all duration-300"
               >
@@ -257,60 +266,89 @@ export default function MergersAcquisitions({ mode = "light", toggleMode }) {
               Coming Soon!
             </h3>
             <p className="text-gray-600 dark:text-gray-300">
-              We're currently preparing our {maServicesData?.title?.toLowerCase()} service for launch. 
-              Our M&A team is working hard to make these services available to all PAAN members.
+              We're currently preparing our{" "}
+              {maServicesData?.title?.toLowerCase()} service for launch. Our M&A
+              team is working hard to make these services available to all PAAN
+              members.
             </p>
           </div>
-          
+
           <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
             <h4 className="font-medium text-gray-900 dark:text-white mb-2">
               What's included:
             </h4>
             <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
-              {maServicesData?.type === 'buy' && (
+              {maServicesData?.type === "buy" && (
                 <>
                   <li className="flex items-center">
-                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    <Icon
+                      icon="mdi:check-circle"
+                      className="w-4 h-4 text-green-500 mr-2"
+                    />
                     Vetted African agencies ready for acquisition
                   </li>
                   <li className="flex items-center">
-                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    <Icon
+                      icon="mdi:check-circle"
+                      className="w-4 h-4 text-green-500 mr-2"
+                    />
                     Detailed financial and operational insights
                   </li>
                   <li className="flex items-center">
-                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    <Icon
+                      icon="mdi:check-circle"
+                      className="w-4 h-4 text-green-500 mr-2"
+                    />
                     Expert guidance through the acquisition process
                   </li>
                 </>
               )}
-              {maServicesData?.type === 'sell' && (
+              {maServicesData?.type === "sell" && (
                 <>
                   <li className="flex items-center">
-                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    <Icon
+                      icon="mdi:check-circle"
+                      className="w-4 h-4 text-green-500 mr-2"
+                    />
                     Confidential agency listing platform
                   </li>
                   <li className="flex items-center">
-                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    <Icon
+                      icon="mdi:check-circle"
+                      className="w-4 h-4 text-green-500 mr-2"
+                    />
                     Access to serious buyers across PAAN network
                   </li>
                   <li className="flex items-center">
-                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    <Icon
+                      icon="mdi:check-circle"
+                      className="w-4 h-4 text-green-500 mr-2"
+                    />
                     Professional valuation and marketing support
                   </li>
                 </>
               )}
-              {maServicesData?.type === 'merge' && (
+              {maServicesData?.type === "merge" && (
                 <>
                   <li className="flex items-center">
-                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    <Icon
+                      icon="mdi:check-circle"
+                      className="w-4 h-4 text-green-500 mr-2"
+                    />
                     Strategic partnership matching
                   </li>
                   <li className="flex items-center">
-                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    <Icon
+                      icon="mdi:check-circle"
+                      className="w-4 h-4 text-green-500 mr-2"
+                    />
                     Merger structure and negotiation support
                   </li>
                   <li className="flex items-center">
-                    <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-500 mr-2" />
+                    <Icon
+                      icon="mdi:check-circle"
+                      className="w-4 h-4 text-green-500 mr-2"
+                    />
                     Post-merger integration guidance
                   </li>
                 </>

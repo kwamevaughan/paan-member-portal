@@ -155,10 +155,30 @@ export default function PaanSummit({ mode = "light", toggleMode }) {
                   shaping Africa’s creative future.
                 </p>
                 <div className="flex gap-4 mt-6">
-                  <button className="mt-auto px-6 py-3 bg-paan-dark-blue hover:bg-paan-dark-blue/80 text-white rounded-full transition-all duration-300 flex items-center justify-center w-fit">
+                  <button 
+                    onClick={() => {
+                      setModalData({
+                        title: "PAAN African Awards 2025 - Award Categories",
+                        type: "awardCategories",
+                        content: "Coming Soon! Award categories will be announced soon. Stay tuned for updates on the different categories and criteria for the PAAN African Awards 2025."
+                      });
+                      setIsUnifiedModalOpen(true);
+                    }}
+                    className="mt-auto px-6 py-3 bg-paan-dark-blue hover:bg-paan-dark-blue/80 text-white rounded-full transition-all duration-300 flex items-center justify-center w-fit"
+                  >
                     View Award Categories
                   </button>
-                  <button className="mt-6 px-6 py-3 bg-paan-yellow hover:bg-paan-yellow/80 text-white rounded-full transition-all duration-300 flex items-center justify-center w-fit">
+                  <button 
+                    onClick={() => {
+                      setModalData({
+                        title: "Nominate a Campaign - PAAN African Awards 2025",
+                        type: "nominateCampaign",
+                        content: "Coming Soon! The nomination portal for the PAAN African Awards 2025 will be available soon. You'll be able to submit your campaigns and nominations through our dedicated platform."
+                      });
+                      setIsUnifiedModalOpen(true);
+                    }}
+                    className="mt-6 px-6 py-3 bg-paan-yellow hover:bg-paan-yellow/80 text-white rounded-full transition-all duration-300 flex items-center justify-center w-fit"
+                  >
                     Nominate a Campaign
                   </button>
                 </div>

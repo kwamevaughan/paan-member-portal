@@ -1214,6 +1214,68 @@ const AccessHubModalContent = ({ modalData, mode, onClose, handleAccessHubRegist
   );
 };
 
+// Simple Modal Content for Coming Soon features
+const SimpleModalContent = ({ modalData, mode, onClose }) => {
+  return (
+    <div className="space-y-6">
+      <div className="text-center">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-paan-yellow/20 mb-4">
+          <Icon 
+            icon="mdi:clock-outline" 
+            className="w-8 h-8 text-paan-yellow" 
+          />
+        </div>
+        <h3 className={`text-2xl font-bold mb-4 ${
+          mode === "dark" ? "text-white" : "text-gray-900"
+        }`}>
+          Coming Soon!
+        </h3>
+        <p className={`text-lg leading-relaxed ${
+          mode === "dark" ? "text-gray-300" : "text-gray-600"
+        }`}>
+          {modalData.content}
+        </p>
+      </div>
+      
+      <div className="bg-gradient-to-r from-paan-blue/10 to-paan-dark-blue/10 rounded-2xl p-6 border border-paan-blue/20">
+        <div className="flex items-start gap-4">
+          <div className="flex-shrink-0">
+            <Icon 
+              icon="mdi:bell-ring-outline" 
+              className="w-6 h-6 text-paan-blue" 
+            />
+          </div>
+          <div>
+            <h4 className={`font-semibold mb-2 ${
+              mode === "dark" ? "text-white" : "text-gray-900"
+            }`}>
+              Stay Updated
+            </h4>
+            <p className={`text-sm ${
+              mode === "dark" ? "text-gray-300" : "text-gray-600"
+            }`}>
+              We'll notify you as soon as this feature becomes available. Keep an eye on your email and the PAAN platform for updates.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex justify-end pt-6 border-t border-gray-200 dark:border-gray-700">
+        <button
+          onClick={onClose}
+          className={`px-8 py-3 text-sm font-semibold rounded-xl border transition-all duration-200 ${
+            mode === "dark"
+              ? "border-gray-600 text-gray-200 bg-gray-800 hover:bg-gray-700 hover:border-gray-500"
+              : "border-gray-200 text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-300"
+          }`}
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  );
+};
+
 // Main Component
 const UnifiedModalContent = ({ 
   modalData, 
@@ -1232,7 +1294,9 @@ const UnifiedModalContent = ({
     event: EventModalContent,
     resource: ResourceModalContent,
     offer: OfferModalContent,
-    accessHub: AccessHubModalContent
+    accessHub: AccessHubModalContent,
+    awardCategories: SimpleModalContent,
+    nominateCampaign: SimpleModalContent
   };
 
   const ModalComponent = modalComponents[modalData.type];

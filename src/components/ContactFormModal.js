@@ -32,8 +32,22 @@ const ContactFormModal = ({
     servicesCombined: "",
     // Outsource specific fields
     outsourcingScope: "",
+    customOutsourcingScope: "",
     whiteLabelRequired: false,
     deliveryTimeline: "",
+    // Webinar speaker specific fields
+    speakingTopic: "",
+    customSpeakingTopic: "",
+    availability: "",
+    timezone: "",
+    // Mentor specific fields
+    mentorshipArea: "",
+    customMentorshipArea: "",
+    menteePreference: "",
+    commitmentLevel: "",
+    // Peer roundtable specific fields
+    agencySize: "",
+    roundtableTopics: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -80,6 +94,7 @@ const ContactFormModal = ({
               "Data Analysis",
               "Other"
             ]},
+            { name: "customOutsourcingScope", label: "Please specify what to outsource", type: "text", required: false, showWhen: "outsourcingScope", showWhenValue: "Other" },
             { name: "projectValue", label: "Project Budget *", type: "select", required: true, groupWith: "deliveryTimeline", options: [
               "$1,000 - $5,000",
               "$5,000 - $10,000",
@@ -97,6 +112,135 @@ const ContactFormModal = ({
             ]},
             { name: "whiteLabelRequired", label: "White-label Required?", type: "checkbox", required: false },
             { name: "message", label: "Project Requirements *", type: "textarea", required: true, placeholder: "Describe what you need outsourced and any specific requirements..." }
+          ]
+        };
+      case "webinar-speaker":
+        return {
+          title: "Speak at a Webinar",
+          description: "Share your insights as a guest speaker during upcoming PAAN webinars.",
+          fields: [
+            { name: "name", label: "Your Name *", type: "text", required: true },
+            { name: "email", label: "Email Address *", type: "email", required: true, groupWith: "companyName" },
+            { name: "companyName", label: "Your Agency Name *", type: "text", required: true, groupWith: "email" },
+            { name: "speakingTopic", label: "Preferred Speaking Topic *", type: "select", required: true, options: [
+              "Agency Growth & Scaling",
+              "Client Acquisition Strategies",
+              "Team Management & Leadership",
+              "Financial Management",
+              "Digital Transformation",
+              "Creative Process & Innovation",
+              "International Expansion",
+              "Other"
+            ]},
+            { name: "customSpeakingTopic", label: "Please specify your speaking topic", type: "text", required: false, showWhen: "speakingTopic", showWhenValue: "Other" },
+            { name: "experienceLevel", label: "Years of Experience *", type: "select", required: true, options: [
+              "1-3 years",
+              "3-5 years",
+              "5-10 years",
+              "10+ years"
+            ]},
+            { name: "availability", label: "Preferred Time Slots *", type: "select", required: true, groupWith: "timezone", options: [
+              "Weekday mornings (9AM-12PM)",
+              "Weekday afternoons (12PM-3PM)",
+              "Weekday evenings (3PM-6PM)",
+              "Weekend mornings",
+              "Flexible"
+            ]},
+            { name: "timezone", label: "Your Timezone *", type: "select", required: true, groupWith: "availability", options: [
+              "WAT (West Africa)",
+              "EAT (East Africa)",
+              "CAT (Central Africa)",
+              "SAST (Southern Africa)",
+              "GMT/UTC",
+              "Other"
+            ]},
+            { name: "message", label: "Why would you like to speak? *", type: "textarea", required: true, placeholder: "Tell us about your expertise and what value you can bring to the PAAN community..." }
+          ]
+        };
+      case "mentor":
+        return {
+          title: "Mentor Another Agency",
+          description: "Support the next wave of African creative leaders by mentoring a growing agency.",
+          fields: [
+            { name: "name", label: "Your Name *", type: "text", required: true },
+            { name: "email", label: "Email Address *", type: "email", required: true, groupWith: "companyName" },
+            { name: "companyName", label: "Your Agency Name *", type: "text", required: true, groupWith: "email" },
+            { name: "mentorshipArea", label: "Mentorship Focus Area *", type: "select", required: true, options: [
+              "Business Strategy",
+              "Operations & Processes",
+              "Client Management",
+              "Team Building",
+              "Financial Planning",
+              "Marketing & Branding",
+              "Technology & Digital",
+              "Other"
+            ]},
+            { name: "customMentorshipArea", label: "Please specify your mentorship focus", type: "text", required: false, showWhen: "mentorshipArea", showWhenValue: "Other" },
+            { name: "experienceLevel", label: "Years of Experience *", type: "select", required: true, groupWith: "menteePreference", options: [
+              "3-5 years",
+              "5-10 years",
+              "10+ years"
+            ]},
+            { name: "menteePreference", label: "Preferred Mentee Type *", type: "select", required: true, groupWith: "experienceLevel", options: [
+              "Startup agencies (0-2 years)",
+              "Growing agencies (2-5 years)",
+              "Established agencies (5+ years)",
+              "No preference"
+            ]},
+            { name: "commitmentLevel", label: "Time Commitment *", type: "select", required: true, options: [
+              "1 hour per month",
+              "2 hours per month",
+              "4 hours per month",
+              "Flexible based on need"
+            ]},
+            { name: "message", label: "Why would you like to mentor? *", type: "textarea", required: true, placeholder: "Tell us about your experience and how you can help other agencies grow..." }
+          ]
+        };
+      case "peer-roundtable":
+        return {
+          title: "Join a Peer Roundtable",
+          description: "Join private virtual roundtables with other agency heads.",
+          fields: [
+            { name: "name", label: "Your Name *", type: "text", required: true },
+            { name: "email", label: "Email Address *", type: "email", required: true, groupWith: "companyName" },
+            { name: "companyName", label: "Your Agency Name *", type: "text", required: true, groupWith: "email" },
+            { name: "agencySize", label: "Agency Size *", type: "select", required: true, groupWith: "experienceLevel", options: [
+              "1-5 employees",
+              "6-15 employees",
+              "16-50 employees",
+              "50+ employees"
+            ]},
+            { name: "experienceLevel", label: "Years in Business *", type: "select", required: true, groupWith: "agencySize", options: [
+              "1-3 years",
+              "3-5 years",
+              "5-10 years",
+              "10+ years"
+            ]},
+            { name: "roundtableTopics", label: "Topics of Interest *", type: "select", required: true, options: [
+              "Growth & Scaling",
+              "Client Acquisition",
+              "Team Management",
+              "Financial Management",
+              "Digital Transformation",
+              "International Expansion",
+              "All topics"
+            ]},
+            { name: "availability", label: "Preferred Meeting Time *", type: "select", required: true, groupWith: "timezone", options: [
+              "Weekday mornings",
+              "Weekday afternoons",
+              "Weekday evenings",
+              "Weekend mornings",
+              "Flexible"
+            ]},
+            { name: "timezone", label: "Your Timezone *", type: "select", required: true, groupWith: "availability", options: [
+              "WAT (West Africa)",
+              "EAT (East Africa)",
+              "CAT (Central Africa)",
+              "SAST (Southern Africa)",
+              "GMT/UTC",
+              "Other"
+            ]},
+            { name: "message", label: "What challenges are you facing? *", type: "textarea", required: true, placeholder: "Tell us about the challenges you're facing and what you hope to gain from peer collaboration..." }
           ]
         };
       default:
@@ -129,6 +273,17 @@ const ContactFormModal = ({
     // Get required fields from form config
     const requiredFields = formConfig.fields.filter(field => field.required).map(field => field.name);
     
+    // Add conditional required fields
+    if (formType === "outsource" && formData.outsourcingScope === "Other") {
+      requiredFields.push("customOutsourcingScope");
+    }
+    if (formType === "webinar-speaker" && formData.speakingTopic === "Other") {
+      requiredFields.push("customSpeakingTopic");
+    }
+    if (formType === "mentor" && formData.mentorshipArea === "Other") {
+      requiredFields.push("customMentorshipArea");
+    }
+    
     const missingFields = requiredFields.filter(field => {
       const value = formData[field];
       return !value || (typeof value === 'string' && !value.trim());
@@ -160,7 +315,13 @@ const ContactFormModal = ({
         body: JSON.stringify({
           ...formData,
           formType, // Include form type for backend processing
-          subject: formData.subject || `${formConfig.title} Request`
+          subject: formData.subject || `${formConfig.title} Request`,
+          // Use custom outsourcing scope if "Other" is selected
+          outsourcingScope: formData.outsourcingScope === "Other" ? formData.customOutsourcingScope : formData.outsourcingScope,
+          // Use custom speaking topic if "Other" is selected
+          speakingTopic: formData.speakingTopic === "Other" ? formData.customSpeakingTopic : formData.speakingTopic,
+          // Use custom mentorship area if "Other" is selected
+          mentorshipArea: formData.mentorshipArea === "Other" ? formData.customMentorshipArea : formData.mentorshipArea
         }),
       });
 
@@ -182,8 +343,19 @@ const ContactFormModal = ({
           projectValue: "",
           servicesCombined: "",
           outsourcingScope: "",
+          customOutsourcingScope: "",
           whiteLabelRequired: false,
           deliveryTimeline: "",
+          speakingTopic: "",
+          customSpeakingTopic: "",
+          availability: "",
+          timezone: "",
+          mentorshipArea: "",
+          customMentorshipArea: "",
+          menteePreference: "",
+          commitmentLevel: "",
+          agencySize: "",
+          roundtableTopics: "",
         });
         onClose();
       } else {
@@ -215,8 +387,19 @@ const ContactFormModal = ({
         projectValue: "",
         servicesCombined: "",
         outsourcingScope: "",
+        customOutsourcingScope: "",
         whiteLabelRequired: false,
         deliveryTimeline: "",
+        speakingTopic: "",
+        customSpeakingTopic: "",
+        availability: "",
+        timezone: "",
+        mentorshipArea: "",
+        customMentorshipArea: "",
+        menteePreference: "",
+        commitmentLevel: "",
+        agencySize: "",
+        roundtableTopics: "",
       });
       onClose();
     }
@@ -240,8 +423,19 @@ const ContactFormModal = ({
         projectValue: "",
         servicesCombined: "",
         outsourcingScope: "",
+        customOutsourcingScope: "",
         whiteLabelRequired: false,
         deliveryTimeline: "",
+        speakingTopic: "",
+        customSpeakingTopic: "",
+        availability: "",
+        timezone: "",
+        mentorshipArea: "",
+        customMentorshipArea: "",
+        menteePreference: "",
+        commitmentLevel: "",
+        agencySize: "",
+        roundtableTopics: "",
       });
     }
   }, [isOpen, user, initialSubject]);
@@ -380,6 +574,14 @@ const ContactFormModal = ({
               // Skip if this field was already rendered as part of a group
               if (i > 0 && formConfig.fields[i - 1] && formConfig.fields[i - 1].groupWith === field.name) {
                 continue;
+              }
+              
+              // Check if field should be shown based on conditions
+              if (field.showWhen && field.showWhenValue) {
+                const dependentFieldValue = formData[field.showWhen];
+                if (dependentFieldValue !== field.showWhenValue) {
+                  continue; // Skip this field if condition not met
+                }
               }
               
               // Handle checkbox and textarea fields separately

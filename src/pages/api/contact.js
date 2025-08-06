@@ -24,7 +24,15 @@ export default async function handler(req, res) {
       freelancerSkills,
       freelancerLocation,
       projectDuration,
-      budgetRange
+      budgetRange,
+      speakingTopic,
+      availability,
+      timezone,
+      mentorshipArea,
+      menteePreference,
+      commitmentLevel,
+      agencySize,
+      roundtableTopics
     } = req.body;
 
     // Validation
@@ -94,6 +102,46 @@ export default async function handler(req, res) {
                 <p style="margin: 0 0 10px 0;"><strong>Project Budget:</strong> ${projectValue || 'Not specified'}</p>
                 <p style="margin: 0 0 10px 0;"><strong>Delivery Timeline:</strong> ${deliveryTimeline || 'Not specified'}</p>
                 <p style="margin: 0 0 10px 0;"><strong>White-label Required:</strong> ${whiteLabelRequired ? 'Yes' : 'No'}</p>
+              </div>
+            </div>`;
+          break;
+          
+        case 'webinar-speaker':
+          specificContent = `
+            <div style="margin-bottom: 20px;">
+              <h2 style="color: #172840; margin: 0 0 10px 0; font-size: 18px;">Webinar Speaker Details</h2>
+              <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #172840;">
+                <p style="margin: 0 0 10px 0;"><strong>Speaking Topic:</strong> ${speakingTopic || 'Not specified'}</p>
+                <p style="margin: 0 0 10px 0;"><strong>Years of Experience:</strong> ${req.body.experienceLevel || 'Not specified'}</p>
+                <p style="margin: 0 0 10px 0;"><strong>Preferred Time Slots:</strong> ${availability || 'Not specified'}</p>
+                <p style="margin: 0 0 10px 0;"><strong>Timezone:</strong> ${timezone || 'Not specified'}</p>
+              </div>
+            </div>`;
+          break;
+          
+        case 'mentor':
+          specificContent = `
+            <div style="margin-bottom: 20px;">
+              <h2 style="color: #172840; margin: 0 0 10px 0; font-size: 18px;">Mentor Details</h2>
+              <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #172840;">
+                <p style="margin: 0 0 10px 0;"><strong>Mentorship Focus Area:</strong> ${mentorshipArea || 'Not specified'}</p>
+                <p style="margin: 0 0 10px 0;"><strong>Years of Experience:</strong> ${req.body.experienceLevel || 'Not specified'}</p>
+                <p style="margin: 0 0 10px 0;"><strong>Preferred Mentee Type:</strong> ${menteePreference || 'Not specified'}</p>
+                <p style="margin: 0 0 10px 0;"><strong>Time Commitment:</strong> ${commitmentLevel || 'Not specified'}</p>
+              </div>
+            </div>`;
+          break;
+          
+        case 'peer-roundtable':
+          specificContent = `
+            <div style="margin-bottom: 20px;">
+              <h2 style="color: #172840; margin: 0 0 10px 0; font-size: 18px;">Peer Roundtable Details</h2>
+              <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #172840;">
+                <p style="margin: 0 0 10px 0;"><strong>Agency Size:</strong> ${agencySize || 'Not specified'}</p>
+                <p style="margin: 0 0 10px 0;"><strong>Years in Business:</strong> ${req.body.experienceLevel || 'Not specified'}</p>
+                <p style="margin: 0 0 10px 0;"><strong>Topics of Interest:</strong> ${roundtableTopics || 'Not specified'}</p>
+                <p style="margin: 0 0 10px 0;"><strong>Preferred Meeting Time:</strong> ${availability || 'Not specified'}</p>
+                <p style="margin: 0 0 10px 0;"><strong>Timezone:</strong> ${timezone || 'Not specified'}</p>
               </div>
             </div>`;
           break;
@@ -171,6 +219,27 @@ export default async function handler(req, res) {
           specificMessage = `
             <p style="color: #495057; line-height: 1.6; margin: 0 0 20px 0;">
               We'll connect you with vetted PAAN agencies that can help deliver your project requirements efficiently and professionally.
+            </p>`;
+          break;
+          
+        case 'webinar-speaker':
+          specificMessage = `
+            <p style="color: #495057; line-height: 1.6; margin: 0 0 20px 0;">
+              We'll review your speaking proposal and connect you with our webinar team to discuss opportunities for you to share your expertise with the PAAN community.
+            </p>`;
+          break;
+          
+        case 'mentor':
+          specificMessage = `
+            <p style="color: #495057; line-height: 1.6; margin: 0 0 20px 0;">
+              We'll match you with agencies that can benefit from your mentorship and guide you through the mentoring process to help grow the next generation of African creative leaders.
+            </p>`;
+          break;
+          
+        case 'peer-roundtable':
+          specificMessage = `
+            <p style="color: #495057; line-height: 1.6; margin: 0 0 20px 0;">
+              We'll connect you with other agency leaders for collaborative roundtable discussions and help you build valuable peer relationships across the PAAN network.
             </p>`;
           break;
           

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useRouter } from "next/router";
 import { Icon } from "@iconify/react";
-import Image from "next/image";
 import { useUser } from "@/hooks/useUser";
 import useLogout from "@/hooks/useLogout";
 import HrHeader from "@/layouts/hrHeader";
@@ -39,10 +38,6 @@ export default function Matchmaking({ mode = "light", toggleMode }) {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [contactFormType, setContactFormType] = useState("general");
 
-  // M&A services modal state
-  const [isMaServicesModalOpen, setIsMaServicesModalOpen] = useState(false);
-  const [maServicesData, setMaServicesData] = useState(null);
-
   const title = "Matchmaking";
   const description =
     "PAAN’s matchmaking service connects agencies with aligned partners, helping them scale, diversify, or enter new markets. Our expert-led process ensures strategic, transparent growth aligned with Africa’s evolving creative landscape.";
@@ -55,11 +50,6 @@ export default function Matchmaking({ mode = "light", toggleMode }) {
   const handleContactClick = (formType = "general") => {
     setContactFormType(formType);
     setIsContactModalOpen(true);
-  };
-
-  const handleMaServicesClick = (type, title, description) => {
-    setMaServicesData({ type, title, description });
-    setIsMaServicesModalOpen(true);
   };
 
   if (userLoading) {
@@ -159,12 +149,14 @@ export default function Matchmaking({ mode = "light", toggleMode }) {
                     <span>Collaborate on PAAN-led tenders</span>
                   </p>
                 </div>
-                <button
-                  onClick={() => handleContactClick("co-bidding")}
-                  className="mt-6 px-10 py-2 bg-paan-yellow hover:bg-paan-yellow/80 text-paan-dark-blue rounded-full transition-all duration-300 flex items-center justify-center w-full"
-                >
-                  Start Co-Bid Matchmaking
-                </button>
+                <div className="mt-auto">
+                  <button
+                    onClick={() => handleContactClick("co-bidding")}
+                    className="w-full px-10 py-2 bg-paan-yellow hover:bg-paan-yellow/80 text-paan-dark-blue rounded-full transition-all duration-300 flex items-center justify-center"
+                  >
+                    Start Co-Bid Matchmaking
+                  </button>
+                </div>
               </div>
               <div className="flex flex-col bg-paan-dark-blue px-6 py-8 rounded-lg shadow-sm hover:translate-y-[-5px] transition-all duration-200 h-full">
                 <div className="bg-white text-md font-semibold text-paan-dark-blue rounded-full px-6 py-2 w-fit my-4">
@@ -200,12 +192,14 @@ export default function Matchmaking({ mode = "light", toggleMode }) {
                     <span>Scale output without compromising quality</span>
                   </p>
                 </div>
-                <button
-                  onClick={() => handleContactClick("outsource")}
-                  className="mt-6 px-10 py-2 bg-paan-yellow hover:bg-paan-yellow/80 text-paan-dark-blue rounded-full transition-all duration-300 flex items-center justify-center w-full"
-                >
-                  Outsource to Agency
-                </button>
+                <div className="mt-auto">
+                  <button
+                    onClick={() => handleContactClick("outsource")}
+                    className="w-full px-10 py-2 bg-paan-yellow hover:bg-paan-yellow/80 text-paan-dark-blue rounded-full transition-all duration-300 flex items-center justify-center"
+                  >
+                    Outsource to Agency
+                  </button>
+                </div>
               </div>
               <div className="flex flex-col bg-paan-dark-blue px-6 py-8 rounded-lg shadow-sm hover:translate-y-[-5px] transition-all duration-200 h-full">
                 <div className="bg-white text-md font-semibold text-paan-dark-blue rounded-full px-6 py-2 w-fit my-4">
@@ -237,13 +231,15 @@ export default function Matchmaking({ mode = "light", toggleMode }) {
                     <span>Managed through the PAAN platform</span>
                   </p>
                 </div>
-                <Link href="/hire-freelancer">
-                  <button
-                    className="mt-6 px-10 py-2 bg-paan-yellow hover:bg-paan-yellow/80 text-paan-dark-blue rounded-full transition-all duration-300 flex items-center justify-center w-full"
-                  >
-                    Find a Freelancer
-                  </button>
-                </Link>
+                <div className="mt-auto">
+                  <Link href="/hire-freelancer">
+                    <button
+                      className="w-full px-10 py-2 bg-paan-yellow hover:bg-paan-yellow/80 text-paan-dark-blue rounded-full transition-all duration-300 flex items-center justify-center"
+                    >
+                      Find a Freelancer
+                    </button>
+                  </Link>
+                </div>
               </div>
             </div>
 
@@ -254,7 +250,7 @@ export default function Matchmaking({ mode = "light", toggleMode }) {
                 Not sure where to start?
                 <br />
                 <span className="text-sm">
-                  Speak with a PAAN M&A advisor to explore your options and
+                  Speak with a PAAN advisor to explore your options and
                   build a plan that aligns with your agency’s goals.
                 </span>
               </span>
@@ -294,132 +290,7 @@ export default function Matchmaking({ mode = "light", toggleMode }) {
         user={user}
       />
 
-      {/* M&A Services Modal */}
-      <SimpleModal
-        isOpen={isMaServicesModalOpen}
-        onClose={() => setIsMaServicesModalOpen(false)}
-        title={maServicesData?.title || "M&A Services"}
-        mode={mode}
-        width="max-w-2xl"
-      >
-        <div className="space-y-6">
-          <div className="text-center">
-            <div className="mx-auto w-16 h-16 bg-paan-yellow/10 rounded-full flex items-center justify-center mb-4">
-              <Icon icon="mdi:briefcase" className="w-8 h-8 text-paan-yellow" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-              Coming Soon!
-            </h3>
-            <p className="text-gray-600 dark:text-gray-300">
-              We're currently preparing our{" "}
-              {maServicesData?.title?.toLowerCase()} service for launch. Our M&A
-              team is working hard to make these services available to all PAAN
-              members.
-            </p>
-          </div>
-
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-            <h4 className="font-medium text-gray-900 dark:text-white mb-2">
-              What's included:
-            </h4>
-            <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
-              {maServicesData?.type === "buy" && (
-                <>
-                  <li className="flex items-center">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="w-4 h-4 text-green-500 mr-2"
-                    />
-                    Vetted African agencies ready for acquisition
-                  </li>
-                  <li className="flex items-center">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="w-4 h-4 text-green-500 mr-2"
-                    />
-                    Detailed financial and operational insights
-                  </li>
-                  <li className="flex items-center">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="w-4 h-4 text-green-500 mr-2"
-                    />
-                    Expert guidance through the acquisition process
-                  </li>
-                </>
-              )}
-              {maServicesData?.type === "sell" && (
-                <>
-                  <li className="flex items-center">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="w-4 h-4 text-green-500 mr-2"
-                    />
-                    Confidential agency listing platform
-                  </li>
-                  <li className="flex items-center">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="w-4 h-4 text-green-500 mr-2"
-                    />
-                    Access to serious buyers across PAAN network
-                  </li>
-                  <li className="flex items-center">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="w-4 h-4 text-green-500 mr-2"
-                    />
-                    Professional valuation and marketing support
-                  </li>
-                </>
-              )}
-              {maServicesData?.type === "merge" && (
-                <>
-                  <li className="flex items-center">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="w-4 h-4 text-green-500 mr-2"
-                    />
-                    Strategic partnership matching
-                  </li>
-                  <li className="flex items-center">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="w-4 h-4 text-green-500 mr-2"
-                    />
-                    Merger structure and negotiation support
-                  </li>
-                  <li className="flex items-center">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="w-4 h-4 text-green-500 mr-2"
-                    />
-                    Post-merger integration guidance
-                  </li>
-                </>
-              )}
-            </ul>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-3">
-            <button
-              onClick={() => setIsMaServicesModalOpen(false)}
-              className="flex-1 px-6 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg font-medium transition-colors"
-            >
-              Got it
-            </button>
-            <button
-              onClick={() => {
-                setIsMaServicesModalOpen(false);
-                setIsContactModalOpen(true);
-              }}
-              className="flex-1 px-6 py-3 bg-paan-yellow hover:bg-paan-yellow/80 text-paan-dark-blue rounded-lg font-medium transition-colors"
-            >
-              Book a Strategy Call
-            </button>
-          </div>
-        </div>
-      </SimpleModal>
+      
     </div>
   );
 }

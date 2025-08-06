@@ -50,9 +50,21 @@ export default function HireFreelancer({ mode = "light", toggleMode }) {
   "Other",
 ];
 
+  const handleContactClick = () => {
+    setIsContactModalOpen(true);
+  };
+
   const handleFreelancerClick = (e) => {
     e.preventDefault();
-    const formData = new FormData(e.target);
+    
+    // Check if e.target is a form element
+    const form = e.target.closest('form') || e.target;
+    if (!form || form.tagName !== 'FORM') {
+      console.error('handleFreelancerClick called without a form element');
+      return;
+    }
+    
+    const formData = new FormData(form);
     const projectType = formData.get("projectType");
     const customProjectType = formData.get("customProjectType");
 
@@ -243,7 +255,7 @@ export default function HireFreelancer({ mode = "light", toggleMode }) {
                 Can't find who you're looking for?{" "}
                 <span
                   className="font-semibold cursor-pointer underline"
-                  onClick={handleFreelancerClick}
+                  onClick={handleContactClick}
                 >
                   Contact PAAN
                 </span>{" "}
@@ -257,6 +269,17 @@ export default function HireFreelancer({ mode = "light", toggleMode }) {
           </div>
         </div>
       </div>
+
+      {/* Contact Form Modal */}
+      <ContactFormModal
+        isOpen={isContactModalOpen}
+        onClose={() => setIsContactModalOpen(false)}
+        mode={mode}
+        title="Contact PAAN"
+        user={user}
+        description="Can't find the right freelancer? Let us know what you're looking for and we'll recommend top talent for your project."
+        showHireFields={true}
+      />
     </div>
   );
 }

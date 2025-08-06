@@ -15,6 +15,7 @@ import Link from "next/link";
 import SimpleModal from "@/components/SimpleModal";
 import UnifiedModalContent from "@/components/UnifiedModalContent";
 import ContactFormModal from "@/components/ContactFormModal";
+import JSZip from "jszip";
 
 export default function MemberResources({ mode = "light", toggleMode }) {
   const {
@@ -73,66 +74,135 @@ export default function MemberResources({ mode = "light", toggleMode }) {
     setIsOnboardingKitModalOpen(true);
   };
 
-  // Function to download all templates
+  // Function to download all templates as a zip file
   const downloadAllTemplates = async () => {
     const templates = [
       {
         url: "https://ik.imagekit.io/2crwrt8s6/MemberResources/Tshirt%20artwork%20front.pdf?updatedAt=1754467348448",
-        filename: "PAAN_Tshirt_Front_Design.pdf",
+        filename: "T-Shirt_Designs/PAAN_Tshirt_Front_Design.pdf",
       },
       {
         url: "https://ik.imagekit.io/2crwrt8s6/MemberResources/Tshirt%20artwork%20back.pdf?updatedAt=1754467348002",
-        filename: "PAAN_Tshirt_Back_Design.pdf",
+        filename: "T-Shirt_Designs/PAAN_Tshirt_Back_Design.pdf",
       },
       {
         url: "https://ik.imagekit.io/2crwrt8s6/MemberResources/T-Shirt%20Mockups.jpg?updatedAt=1754467348605",
-        filename: "PAAN_Tshirt_Mockups.jpg",
+        filename: "T-Shirt_Designs/PAAN_Tshirt_Mockups.jpg",
       },
       {
         url: "https://ik.imagekit.io/2crwrt8s6/MemberResources/Hoodie%20Mockup.jpg?updatedAt=1754467326806",
-        filename: "PAAN_Hoodie_Mockup.jpg",
+        filename: "Hoodie_Designs/PAAN_Hoodie_Mockup.jpg",
       },
       {
         url: "https://ik.imagekit.io/2crwrt8s6/MemberResources/Tote%20bag.pdf?updatedAt=1754467348779",
-        filename: "PAAN_Tote_Bag_Design.pdf",
+        filename: "Tote_Bag_Designs/PAAN_Tote_Bag_Design.pdf",
       },
       {
         url: "https://ik.imagekit.io/2crwrt8s6/MemberResources/tote-bag-mockup-01.jpg?updatedAt=1754467348418",
-        filename: "PAAN_Tote_Bag_Mockup.jpg",
+        filename: "Tote_Bag_Designs/PAAN_Tote_Bag_Mockup.jpg",
       },
     ];
 
-    toast.loading("Preparing downloads...", { id: "download-all" });
+    toast.loading("Creating zip file...", { id: "download-all" });
 
     try {
-      for (let i = 0; i < templates.length; i++) {
-        const template = templates[i];
+      const zip = new JSZip();
+      
+      // Add a README file with instructions
+      const readmeContent = `PAAN Merch Print Templates
+========================
 
-        // Create a temporary anchor element to trigger download
-        const link = document.createElement("a");
-        link.href = template.url;
-        link.download = template.filename;
-        link.target = "_blank";
+This package contains print-ready designs for PAAN merchandise.
 
-        // Append to body, click, and remove
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+Contents:
+- T-Shirt_Designs/: Front and back artwork files plus mockups
+- Hoodie_Designs/: Hoodie mockup designs
+- Tote_Bag_Designs/: Tote bag artwork and mockups
 
-        // Add a small delay between downloads to prevent browser blocking
-        if (i < templates.length - 1) {
-          await new Promise((resolve) => setTimeout(resolve, 500));
+Print Guidelines:
+- All files are optimized for 300 DPI printing
+- Use high-quality materials for best results
+- Contact PAAN support for custom sizing or format adjustments
+
+For questions or support, contact the PAAN team through the member portal.
+
+© ${new Date().getFullYear()} Pan African Advocacy Network (PAAN)
+`;
+      
+      zip.file("README.txt", readmeContent);
+
+      // Download and add each file to the zip
+      const downloadPromises = templates.map(async (template, index) => {
+        try {
+          toast.loading(`Downloading file ${index + 1} of ${templates.length}...`, { id: "download-all" });
+          
+          const response = await fetch(template.url);
+          if (!response.ok) {
+            throw new Error(`Failed to download ${template.filename}`);
+          }
+          
+          const blob = await response.blob();
+          zip.file(template.filename, blob);
+          
+          return { success: true, filename: template.filename };
+        } catch (error) {
+          console.error(`Error downloading ${template.filename}:`, error);
+          return { success: false, filename: template.filename, error };
         }
+      });
+
+      const results = await Promise.all(downloadPromises);
+      const successful = results.filter(r => r.success);
+      const failed = results.filter(r => !r.success);
+
+      if (failed.length > 0) {
+        console.warn("Some files failed to download:", failed);
       }
 
-      toast.success(`Started downloading ${templates.length} templates!`, {
-        id: "download-all",
+      if (successful.length === 0) {
+        throw new Error("No files could be downloaded");
+      }
+
+      toast.loading("Generating zip file...", { id: "download-all" });
+
+      // Generate the zip file
+      const zipBlob = await zip.generateAsync({ 
+        type: "blob",
+        compression: "DEFLATE",
+        compressionOptions: { level: 6 }
       });
+
+      // Create download link
+      const url = URL.createObjectURL(zipBlob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `PAAN_Merch_Templates_${new Date().toISOString().split('T')[0]}.zip`;
+      
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up
+      URL.revokeObjectURL(url);
+
+      if (failed.length > 0) {
+        toast.success(
+          `Downloaded ${successful.length} of ${templates.length} templates. Some files may have been skipped.`,
+          { id: "download-all", duration: 5000 }
+        );
+      } else {
+        toast.success(
+          `Successfully downloaded all ${templates.length} templates as a zip file!`,
+          { id: "download-all", duration: 4000 }
+        );
+      }
+
     } catch (error) {
-      console.error("Error downloading templates:", error);
+      console.error("Error creating zip file:", error);
       toast.error(
-        "Some downloads may have failed. Please try individual downloads.",
-        { id: "download-all" }
+        "Failed to create zip file. Please try downloading individual files.",
+        { id: "download-all", duration: 5000 }
       );
     }
   };

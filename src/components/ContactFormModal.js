@@ -2,9 +2,19 @@ import React, { useState } from "react";
 import { Icon } from "@iconify/react";
 import SimpleModal from "./SimpleModal";
 import toast from "react-hot-toast";
-import TooltipIconButton from "./TooltipIconButton";
 
-const ContactFormModal = ({ isOpen, onClose, mode, title = "Contact Us", user = null, showLegalSubjects = false, showHireFields = false, description = "Have a question or need assistance? Send us a message and we'll respond as soon as possible.", initialSubject = "" }) => {
+const ContactFormModal = ({ 
+  isOpen, 
+  onClose, 
+  mode, 
+  title = "Contact Us", 
+  user = null, 
+  showLegalSubjects = false, 
+  showHireFields = false, 
+  formType = "general", // New prop for form type
+  description = "Have a question or need assistance? Send us a message and we'll respond as soon as possible.", 
+  initialSubject = "" 
+}) => {
   const [formData, setFormData] = useState({
     name: user?.full_name || user?.name || "",
     email: user?.email || "",
@@ -15,35 +25,117 @@ const ContactFormModal = ({ isOpen, onClose, mode, title = "Contact Us", user = 
     timeline: "",
     skillsNeeded: "",
     companyName: user?.agencyName || "",
+    // Co-bidding specific fields
+    partnerAgencyName: "",
+    partnerAgencyContact: "",
+    projectValue: "",
+    servicesCombined: "",
+    // Outsource specific fields
+    outsourcingScope: "",
+    whiteLabelRequired: false,
+    deliveryTimeline: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Get form configuration based on type
+  const getFormConfig = () => {
+    switch (formType) {
+      case "co-bidding":
+        return {
+          title: "Co-Bidding Matchmaking",
+          description: "Tell us about your co-bidding partnership needs. We'll help you find the perfect agency partner.",
+          fields: [
+            { name: "name", label: "Your Name *", type: "text", required: true },
+            { name: "email", label: "Email Address *", type: "email", required: true, groupWith: "companyName" },
+            { name: "companyName", label: "Your Agency Name *", type: "text", required: true, groupWith: "email" },
+            { name: "partnerAgencyName", label: "Partner Agency Name", type: "text", required: false, groupWith: "partnerAgencyContact" },
+            { name: "partnerAgencyContact", label: "Partner Agency Contact", type: "text", required: false, groupWith: "partnerAgencyName" },
+            { name: "projectValue", label: "Project Value Range *", type: "select", required: true, options: [
+              "$10,000 - $25,000",
+              "$25,000 - $50,000", 
+              "$50,000 - $100,000",
+              "$100,000 - $250,000",
+              "$250,000+",
+              "To be discussed"
+            ]},
+            { name: "servicesCombined", label: "Services to Combine *", type: "textarea", required: true, placeholder: "e.g., Your agency handles design, partner handles development" },
+            { name: "message", label: "Project Details *", type: "textarea", required: true, placeholder: "Describe the project and why you need a co-bidding partner..." }
+          ]
+        };
+      case "outsource":
+        return {
+          title: "Outsource to Agency",
+          description: "Find vetted PAAN agencies to help deliver part of your brief.",
+          fields: [
+            { name: "name", label: "Your Name *", type: "text", required: true },
+            { name: "email", label: "Email Address *", type: "email", required: true, groupWith: "companyName" },
+            { name: "companyName", label: "Your Agency Name *", type: "text", required: true, groupWith: "email" },
+            { name: "outsourcingScope", label: "What to Outsource *", type: "select", required: true, options: [
+              "Design Services",
+              "Development Services", 
+              "Content Creation",
+              "Digital Marketing",
+              "Video Production",
+              "Translation Services",
+              "Data Analysis",
+              "Other"
+            ]},
+            { name: "projectValue", label: "Project Budget *", type: "select", required: true, groupWith: "deliveryTimeline", options: [
+              "$1,000 - $5,000",
+              "$5,000 - $10,000",
+              "$10,000 - $25,000", 
+              "$25,000 - $50,000",
+              "$50,000+",
+              "To be discussed"
+            ]},
+            { name: "deliveryTimeline", label: "Delivery Timeline *", type: "select", required: true, groupWith: "projectValue", options: [
+              "1-2 weeks",
+              "2-4 weeks",
+              "1-2 months",
+              "2-3 months",
+              "Flexible"
+            ]},
+            { name: "whiteLabelRequired", label: "White-label Required?", type: "checkbox", required: false },
+            { name: "message", label: "Project Requirements *", type: "textarea", required: true, placeholder: "Describe what you need outsourced and any specific requirements..." }
+          ]
+        };
+      default:
+        return {
+          title: title,
+          description: description,
+          fields: [
+            { name: "name", label: "Full Name *", type: "text", required: true },
+            { name: "email", label: "Email Address *", type: "email", required: true },
+            { name: "subject", label: "Subject *", type: "text", required: true },
+            { name: "message", label: "Message *", type: "textarea", required: true }
+          ]
+        };
+    }
+  };
+
+  const formConfig = getFormConfig();
+
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: type === "checkbox" ? checked : value
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Basic validation
-    const requiredFields = ['name', 'email', 'subject', 'message'];
-    if (showHireFields) {
-      requiredFields.push('projectType', 'budgetRange', 'timeline');
-    }
+    // Get required fields from form config
+    const requiredFields = formConfig.fields.filter(field => field.required).map(field => field.name);
     
-    const missingFields = requiredFields.filter(field => !formData[field]);
+    const missingFields = requiredFields.filter(field => {
+      const value = formData[field];
+      return !value || (typeof value === 'string' && !value.trim());
+    });
+    
     if (missingFields.length > 0) {
       toast.error("Please fill in all required fields");
-      return;
-    }
-
-    // Validate custom subject if "Other" is selected (only for legal subjects)
-    if (showLegalSubjects && formData.subject === "Other" && !formData.customSubject) {
-      toast.error("Please specify your subject");
       return;
     }
 
@@ -57,38 +149,49 @@ const ContactFormModal = ({ isOpen, onClose, mode, title = "Contact Us", user = 
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/contact', {
+      // Determine which API endpoint to use based on form type
+      const endpoint = formType === "freelancer" ? '/api/hiring' : '/api/contact';
+      
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           ...formData,
-          subject: formData.subject === "Other" ? formData.customSubject : formData.subject
+          formType, // Include form type for backend processing
+          subject: formData.subject || `${formConfig.title} Request`
         }),
       });
 
       if (response.ok) {
-        toast.success("Message sent successfully! We'll get back to you soon.");
+        toast.success("Request submitted successfully! We'll get back to you soon.");
+        // Reset form
         setFormData({
           name: user?.full_name || user?.name || "",
           email: user?.email || "",
           subject: "",
-          customSubject: "",
           message: "",
           projectType: "",
           budgetRange: "",
           timeline: "",
           skillsNeeded: "",
           companyName: user?.agencyName || "",
+          partnerAgencyName: "",
+          partnerAgencyContact: "",
+          projectValue: "",
+          servicesCombined: "",
+          outsourcingScope: "",
+          whiteLabelRequired: false,
+          deliveryTimeline: "",
         });
         onClose();
       } else {
         const errorData = await response.json();
-        toast.error(errorData.message || "Failed to send message. Please try again.");
+        toast.error(errorData.message || "Failed to send request. Please try again.");
       }
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error('Error sending request:', error);
       toast.error("Network error. Please check your connection and try again.");
     } finally {
       setIsSubmitting(false);
@@ -101,13 +204,19 @@ const ContactFormModal = ({ isOpen, onClose, mode, title = "Contact Us", user = 
         name: user?.full_name || user?.name || "",
         email: user?.email || "",
         subject: "",
-        customSubject: "",
         message: "",
         projectType: "",
         budgetRange: "",
         timeline: "",
         skillsNeeded: "",
         companyName: user?.agencyName || "",
+        partnerAgencyName: "",
+        partnerAgencyContact: "",
+        projectValue: "",
+        servicesCombined: "",
+        outsourcingScope: "",
+        whiteLabelRequired: false,
+        deliveryTimeline: "",
       });
       onClose();
     }
@@ -120,22 +229,131 @@ const ContactFormModal = ({ isOpen, onClose, mode, title = "Contact Us", user = 
         name: user?.full_name || user?.name || "",
         email: user?.email || "",
         subject: initialSubject || "",
-        customSubject: "",
         message: "",
         projectType: "",
         budgetRange: "",
         timeline: "",
         skillsNeeded: "",
         companyName: user?.agencyName || "",
+        partnerAgencyName: "",
+        partnerAgencyContact: "",
+        projectValue: "",
+        servicesCombined: "",
+        outsourcingScope: "",
+        whiteLabelRequired: false,
+        deliveryTimeline: "",
       });
     }
   }, [isOpen, user, initialSubject]);
+
+  const renderField = (field) => {
+    const { name, label, type, required, options, placeholder } = field;
+    
+    switch (type) {
+      case "email":
+        return (
+          <div key={name} className="relative">
+            <label htmlFor={name} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              {label}
+            </label>
+            <input
+              type="email"
+              id={name}
+              name={name}
+              value={formData[name] || ""}
+              onChange={handleInputChange}
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-paan-blue focus:border-transparent dark:bg-gray-800 dark:text-white transition-colors bg-gray-50 dark:bg-gray-700"
+              placeholder={placeholder || "Enter your email address"}
+              required={required}
+              readOnly={!!user?.email}
+            />
+          </div>
+        );
+      
+      case "select":
+        return (
+          <div key={name}>
+            <label htmlFor={name} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              {label}
+            </label>
+            <select
+              id={name}
+              name={name}
+              value={formData[name] || ""}
+              onChange={handleInputChange}
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-paan-blue focus:border-transparent dark:bg-gray-800 dark:text-white transition-colors"
+              required={required}
+            >
+              <option value="">Select an option</option>
+              {options?.map((option, index) => (
+                <option key={index} value={option}>{option}</option>
+              ))}
+            </select>
+          </div>
+        );
+      
+      case "textarea":
+        return (
+          <div key={name}>
+            <label htmlFor={name} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              {label}
+            </label>
+            <textarea
+              id={name}
+              name={name}
+              value={formData[name] || ""}
+              onChange={handleInputChange}
+              rows={4}
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-paan-blue focus:border-transparent dark:bg-gray-800 dark:text-white transition-colors resize-none"
+              placeholder={placeholder || "Enter details..."}
+              required={required}
+            />
+          </div>
+        );
+      
+      case "checkbox":
+        return (
+          <div key={name} className="flex items-center">
+            <input
+              type="checkbox"
+              id={name}
+              name={name}
+              checked={formData[name] || false}
+              onChange={handleInputChange}
+              className="h-4 w-4 text-paan-blue focus:ring-paan-blue border-gray-300 rounded"
+            />
+            <label htmlFor={name} className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+              {label}
+            </label>
+          </div>
+        );
+      
+      default:
+        return (
+          <div key={name}>
+            <label htmlFor={name} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              {label}
+            </label>
+            <input
+              type="text"
+              id={name}
+              name={name}
+              value={formData[name] || ""}
+              onChange={handleInputChange}
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-paan-blue focus:border-transparent dark:bg-gray-800 dark:text-white transition-colors"
+              placeholder={placeholder || `Enter ${label.toLowerCase().replace(' *', '')}`}
+              required={required}
+            />
+          </div>
+        );
+    }
+  };
 
   return (
     <SimpleModal
       isOpen={isOpen}
       onClose={handleClose}
-      title={title}
+      title={formConfig.title}
       mode={mode}
       width="max-w-2xl"
     >
@@ -145,229 +363,48 @@ const ContactFormModal = ({ isOpen, onClose, mode, title = "Contact Us", user = 
             <Icon icon="mdi:email-outline" className="w-8 h-8 text-paan-blue" />
           </div>
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-            Get in Touch
+            {formConfig.title}
           </h3>
           <p className="text-gray-600 dark:text-gray-300">
-            {description}
+            {formConfig.description}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Full Name *
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-paan-blue focus:border-transparent dark:bg-gray-800 dark:text-white transition-colors"
-                placeholder="Enter your full name"
-                required
-              />
-            </div>
-            <div className="relative">
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Email Address *
-              </label>
-              {user?.email && (
-                <div className="absolute top-[-10px] right-0">
-                  <TooltipIconButton
-                    icon="mdi:information-outline"
-                    label="Email pre-filled from your account"
-                    mode={mode}
-                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                  />
-                </div>
-              )}
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-paan-blue focus:border-transparent dark:bg-gray-800 dark:text-white transition-colors bg-gray-50 dark:bg-gray-700"
-                placeholder="Enter your email address"
-                required
-                readOnly={!!user?.email}
-              />
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="subject" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Subject *
-            </label>
-            {showLegalSubjects ? (
-              <>
-                <select
-                  id="subject"
-                  name="subject"
-                  value={formData.subject}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-paan-blue focus:border-transparent dark:bg-gray-800 dark:text-white transition-colors"
-                  required
-                >
-                  <option value="">Select a subject</option>
-                  <option value="Legal">Legal</option>
-                  <option value="IP Protection">IP Protection</option>
-                  <option value="Data & Privacy">Data & Privacy</option>
-                  <option value="Tax Compliance">Tax Compliance</option>
-                  <option value="Other">Other - Specify</option>
-                </select>
-                {formData.subject === "Other" && (
-                  <input
-                    type="text"
-                    name="customSubject"
-                    placeholder="Please specify your subject"
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-paan-blue focus:border-transparent dark:bg-gray-800 dark:text-white transition-colors mt-2"
-                    onChange={(e) => setFormData(prev => ({ ...prev, customSubject: e.target.value }))}
-                    value={formData.customSubject || ""}
-                    required
-                  />
-                )}
-              </>
-            ) : (
-              <input
-                type="text"
-                id="subject"
-                name="subject"
-                value={formData.subject}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-paan-blue focus:border-transparent dark:bg-gray-800 dark:text-white transition-colors"
-                placeholder="What is this regarding?"
-                required
-              />
-            )}
-          </div>
-
-          {/* Hire-specific fields */}
-          {showHireFields && (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="companyName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Company Name
-                  </label>
-                  <input
-                    type="text"
-                    id="companyName"
-                    name="companyName"
-                    value={formData.companyName}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-paan-blue focus:border-transparent dark:bg-gray-800 dark:text-white transition-colors"
-                    placeholder="Your company name"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="projectType" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Project Type *
-                  </label>
-                  <select
-                    id="projectType"
-                    name="projectType"
-                    value={formData.projectType}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-paan-blue focus:border-transparent dark:bg-gray-800 dark:text-white transition-colors"
-                    required
-                  >
-                    <option value="">Select project type</option>
-                    <option value="Web Development">Web Development</option>
-                    <option value="Mobile App Development">Mobile App Development</option>
-                    <option value="UI/UX Design">UI/UX Design</option>
-                    <option value="Graphic Design">Graphic Design</option>
-                    <option value="Content Writing">Content Writing</option>
-                    <option value="Digital Marketing">Digital Marketing</option>
-                    <option value="Data Analysis">Data Analysis</option>
-                    <option value="Video Production">Video Production</option>
-                    <option value="Translation">Translation</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="budgetRange" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Budget Range *
-                  </label>
-                  <select
-                    id="budgetRange"
-                    name="budgetRange"
-                    value={formData.budgetRange}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-paan-blue focus:border-transparent dark:bg-gray-800 dark:text-white transition-colors"
-                    required
-                  >
-                    <option value="">Select budget range</option>
-                    <option value="$500 - $1,000">$500 - $1,000</option>
-                    <option value="$1,000 - $2,500">$1,000 - $2,500</option>
-                    <option value="$2,500 - $5,000">$2,500 - $5,000</option>
-                    <option value="$5,000 - $10,000">$5,000 - $10,000</option>
-                    <option value="$10,000 - $25,000">$10,000 - $25,000</option>
-                    <option value="$25,000+">$25,000+</option>
-                    <option value="To be discussed">To be discussed</option>
-                  </select>
-                </div>
-                <div>
-                  <label htmlFor="timeline" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Timeline *
-                  </label>
-                  <select
-                    id="timeline"
-                    name="timeline"
-                    value={formData.timeline}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-paan-blue focus:border-transparent dark:bg-gray-800 dark:text-white transition-colors"
-                    required
-                  >
-                    <option value="">Select timeline</option>
-                    <option value="1-2 weeks">1-2 weeks</option>
-                    <option value="2-4 weeks">2-4 weeks</option>
-                    <option value="1-2 months">1-2 months</option>
-                    <option value="2-3 months">2-3 months</option>
-                    <option value="3+ months">3+ months</option>
-                    <option value="Ongoing">Ongoing</option>
-                    <option value="Flexible">Flexible</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="skillsNeeded" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Specific Skills Needed
-                </label>
-                <textarea
-                  id="skillsNeeded"
-                  name="skillsNeeded"
-                  value={formData.skillsNeeded}
-                  onChange={handleInputChange}
-                  rows={3}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-paan-blue focus:border-transparent dark:bg-gray-800 dark:text-white transition-colors resize-none"
-                  placeholder="e.g., React, Figma, SEO, Content Writing, etc."
-                />
-              </div>
-            </>
-          )}
-
-          <div>
-            <label htmlFor="message" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Message *
-            </label>
-            <textarea
-              id="message"
-              name="message"
-              value={formData.message}
-              onChange={handleInputChange}
-              rows={5}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-paan-blue focus:border-transparent dark:bg-gray-800 dark:text-white transition-colors resize-none"
-              placeholder="Tell us more about your inquiry..."
-              required
-            />
-          </div>
+          {/* Render fields based on form configuration */}
+          {(() => {
+            const renderedFields = [];
+            for (let i = 0; i < formConfig.fields.length; i++) {
+              const field = formConfig.fields[i];
+              
+              // Skip if this field was already rendered as part of a group
+              if (i > 0 && formConfig.fields[i - 1] && formConfig.fields[i - 1].groupWith === field.name) {
+                continue;
+              }
+              
+              // Handle checkbox and textarea fields separately
+              if (field.type === "checkbox" || field.type === "textarea") {
+                renderedFields.push(renderField(field));
+              }
+              // Group fields that should be on the same row
+              else if (field.groupWith) {
+                const groupedField = formConfig.fields.find(f => f.name === field.groupWith);
+                if (groupedField) {
+                  renderedFields.push(
+                    <div key={field.name} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {renderField(field)}
+                      {renderField(groupedField)}
+                    </div>
+                  );
+                } else {
+                  renderedFields.push(renderField(field));
+                }
+              } else {
+                renderedFields.push(renderField(field));
+              }
+            }
+            return renderedFields;
+          })()}
 
           <div className="flex flex-col sm:flex-row gap-3 pt-4">
             <button
@@ -391,7 +428,7 @@ const ContactFormModal = ({ isOpen, onClose, mode, title = "Contact Us", user = 
               ) : (
                 <>
                   <Icon icon="mdi:send" className="w-4 h-4 mr-2" />
-                  Send Message
+                  Send Request
                 </>
               )}
             </button>

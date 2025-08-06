@@ -391,7 +391,7 @@ export default function SupportPage({ mode = "light", toggleMode }) {
                           </li>
                         ))}
                       </ul>
-                      <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
+                      <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
                         <span
                           className={`text-sm font-medium ${
                             mode === "dark" ? "text-gray-300" : "text-gray-600"
@@ -401,7 +401,7 @@ export default function SupportPage({ mode = "light", toggleMode }) {
                         </span>
                         <Icon
                           icon="mdi:arrow-right"
-                          className="w-4 h-4 text-paan-blue group-hover:translate-x-1 transition-transform"
+                          className="w-5 h-5 text-paan-blue group-hover:translate-x-1 transition-transform"
                         />
                       </div>
                     </motion.div>

@@ -3,6 +3,7 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import { Icon } from "@iconify/react";
 import { sidebarNav, getFilteredNav } from "@/data/nav";
+import Link from "next/link";
 
 const HrSidebar = ({
   mode,
@@ -213,22 +214,31 @@ const HrSidebar = ({
               if (navItem.category) {
                 return (
                   <div key={navItem.category} className="w-full mb-4 mt-4">
-                                    {/* Section heading, clickable for collapse/expand */}
-                <div 
-                  className="text-sm tracking-wide font-normal text-gray-300 px-2 py-2 cursor-pointer hover:text-white transition-colors flex items-center justify-between border-t border-b border-gray-600/30"
-                  onClick={() => toggleCategory(navItem.category)}
-                >
+                    {/* Section heading, clickable for collapse/expand */}
+                    <div
+                      className="text-sm tracking-wide font-normal text-gray-300 px-2 py-2 cursor-pointer hover:text-white transition-colors flex items-center justify-between border-t border-b border-gray-600/30"
+                      onClick={() => toggleCategory(navItem.category)}
+                    >
                       <span>{navItem.category}</span>
-                      <Icon 
-                        icon={expandedCategories[navItem.category] ? "mdi:chevron-up" : "mdi:chevron-down"} 
+                      <Icon
+                        icon={
+                          expandedCategories[navItem.category]
+                            ? "mdi:chevron-up"
+                            : "mdi:chevron-down"
+                        }
                         className="w-4 h-4 transition-transform"
                       />
                     </div>
-                    <div className={`transition-all duration-300 overflow-hidden ${
-                      expandedCategories[navItem.category] ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-                    }`}>
+                    <div
+                      className={`transition-all duration-300 overflow-hidden ${
+                        expandedCategories[navItem.category]
+                          ? "max-h-96 opacity-100"
+                          : "max-h-0 opacity-0"
+                      }`}
+                    >
                       <ul className="ml-4 mt-2">
-                        {Array.isArray(navItem.items) && navItem.items.length > 0 ? (
+                        {Array.isArray(navItem.items) &&
+                        navItem.items.length > 0 ? (
                           navItem.items.map(({ href, icon, label }) => {
                             const isActiveItem = isActive(href);
                             return (
@@ -318,18 +328,18 @@ const HrSidebar = ({
             </div>
             <div
               className={`transition-all duration-200 overflow-hidden ${
-                showLogout
-                  ? "max-h-60 opacity-100"
-                  : "max-h-0 opacity-0"
+                showLogout ? "max-h-60 opacity-100" : "max-h-0 opacity-0"
               }`}
             >
               <div className="flex flex-col gap-2 text-white text-sm pt-2">
                 <div className="flex items-center gap-2 hover:bg-paan-dark-blue rounded-2xl p-2">
-                  <Icon
-                    icon="mdi:briefcase-outline"
-                    className="h-5 w-5"
-                  />
-                  <span>Member Assets</span>
+                  <Link
+                    href="/member-resources"
+                    className="flex items-center gap-2 hover:opacity-80 transition-colors duration-300"
+                  >
+                    <Icon icon="mdi:briefcase-outline" className="h-5 w-5" />
+                    <span>Member Assets</span>
+                  </Link>
                 </div>
                 <div className="py-2 hover:bg-paan-dark-blue rounded-2xl p-2">
                   <button
@@ -346,9 +356,7 @@ const HrSidebar = ({
                         mode === "dark" ? "text-paan-blue" : "text-paan-yellow"
                       }`}
                     />
-                    <span>
-                      {mode === "dark" ? "Dark Mode" : "Light Mode"}
-                    </span>
+                    <span>{mode === "dark" ? "Dark Mode" : "Light Mode"}</span>
                   </button>
                 </div>
                 <hr className="border-t border-gray-600" />

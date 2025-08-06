@@ -43,7 +43,8 @@ export default function MemberResources({ mode = "light", toggleMode }) {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
 
   // Onboarding kit modal state
-  const [isOnboardingKitModalOpen, setIsOnboardingKitModalOpen] = useState(false);
+  const [isOnboardingKitModalOpen, setIsOnboardingKitModalOpen] =
+    useState(false);
 
   const title = "Member Resources";
   const description =
@@ -70,6 +71,70 @@ export default function MemberResources({ mode = "light", toggleMode }) {
 
   const handleOnboardingKitClick = () => {
     setIsOnboardingKitModalOpen(true);
+  };
+
+  // Function to download all templates
+  const downloadAllTemplates = async () => {
+    const templates = [
+      {
+        url: "https://ik.imagekit.io/2crwrt8s6/MemberResources/Tshirt%20artwork%20front.pdf?updatedAt=1754467348448",
+        filename: "PAAN_Tshirt_Front_Design.pdf",
+      },
+      {
+        url: "https://ik.imagekit.io/2crwrt8s6/MemberResources/Tshirt%20artwork%20back.pdf?updatedAt=1754467348002",
+        filename: "PAAN_Tshirt_Back_Design.pdf",
+      },
+      {
+        url: "https://ik.imagekit.io/2crwrt8s6/MemberResources/T-Shirt%20Mockups.jpg?updatedAt=1754467348605",
+        filename: "PAAN_Tshirt_Mockups.jpg",
+      },
+      {
+        url: "https://ik.imagekit.io/2crwrt8s6/MemberResources/Hoodie%20Mockup.jpg?updatedAt=1754467326806",
+        filename: "PAAN_Hoodie_Mockup.jpg",
+      },
+      {
+        url: "https://ik.imagekit.io/2crwrt8s6/MemberResources/Tote%20bag.pdf?updatedAt=1754467348779",
+        filename: "PAAN_Tote_Bag_Design.pdf",
+      },
+      {
+        url: "https://ik.imagekit.io/2crwrt8s6/MemberResources/tote-bag-mockup-01.jpg?updatedAt=1754467348418",
+        filename: "PAAN_Tote_Bag_Mockup.jpg",
+      },
+    ];
+
+    toast.loading("Preparing downloads...", { id: "download-all" });
+
+    try {
+      for (let i = 0; i < templates.length; i++) {
+        const template = templates[i];
+
+        // Create a temporary anchor element to trigger download
+        const link = document.createElement("a");
+        link.href = template.url;
+        link.download = template.filename;
+        link.target = "_blank";
+
+        // Append to body, click, and remove
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Add a small delay between downloads to prevent browser blocking
+        if (i < templates.length - 1) {
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        }
+      }
+
+      toast.success(`Started downloading ${templates.length} templates!`, {
+        id: "download-all",
+      });
+    } catch (error) {
+      console.error("Error downloading templates:", error);
+      toast.error(
+        "Some downloads may have failed. Please try individual downloads.",
+        { id: "download-all" }
+      );
+    }
   };
 
   if (userLoading) {
@@ -161,7 +226,7 @@ export default function MemberResources({ mode = "light", toggleMode }) {
                   View Onboarding Kit
                 </button>
               </div>
-              
+
               <div className="bg-white px-8 py-20 rounded-lg shadow-sm hover:translate-y-[-5px] transition-all duration-200 flex flex-col h-full relative">
                 <div className="absolute top-4 right-4">
                   <span className="inline-flex items-center px-6 py-1 rounded-full text-sm font-normal bg-paan-blue">
@@ -304,152 +369,323 @@ export default function MemberResources({ mode = "light", toggleMode }) {
         onClose={handleCloseDownloadModal}
         title={downloadModalData?.title || "Download Assets"}
         mode={mode}
-        width="max-w-2xl"
+        width="max-w-4xl"
       >
         <div className="space-y-6">
-          <div className="text-center">
-            <div className="mx-auto w-16 h-16 bg-paan-blue/10 rounded-full flex items-center justify-center mb-4">
-              <Icon icon="mdi:download" className="w-8 h-8 text-paan-blue" />
+          {downloadModalData?.type === "templates" ? (
+            // Merch Print Templates - Available for download
+            <div className="space-y-6">
+              <div className="text-center">
+                <div className="mx-auto w-16 h-16 bg-paan-blue/10 rounded-full flex items-center justify-center mb-4">
+                  <Icon
+                    icon="mdi:tshirt-crew"
+                    className="w-8 h-8 text-paan-blue"
+                  />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                  Merch Print Templates
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300">
+                  Download print-ready designs for shirts, hoodies, and tote
+                  bags. Perfect for team swag or events.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* T-Shirt Templates */}
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                  <div className="flex items-center mb-3">
+                    <Icon
+                      icon="mdi:tshirt-crew"
+                      className="w-5 h-5 text-paan-blue mr-2"
+                    />
+                    <h4 className="font-medium text-gray-900 dark:text-white">
+                      T-Shirt Designs
+                    </h4>
+                  </div>
+                  <div className="space-y-2">
+                    <a
+                      href="https://ik.imagekit.io/2crwrt8s6/MemberResources/Tshirt%20artwork%20front.pdf?updatedAt=1754467348448"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-2 bg-white dark:bg-gray-700 rounded hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                    >
+                      <span className="text-sm text-gray-700 dark:text-gray-300">
+                        T-Shirt Front Design (PDF)
+                      </span>
+                      <Icon
+                        icon="mdi:download"
+                        className="w-4 h-4 text-paan-blue"
+                      />
+                    </a>
+                    <a
+                      href="https://ik.imagekit.io/2crwrt8s6/MemberResources/Tshirt%20artwork%20back.pdf?updatedAt=1754467348002"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-2 bg-white dark:bg-gray-700 rounded hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                    >
+                      <span className="text-sm text-gray-700 dark:text-gray-300">
+                        T-Shirt Back Design (PDF)
+                      </span>
+                      <Icon
+                        icon="mdi:download"
+                        className="w-4 h-4 text-paan-blue"
+                      />
+                    </a>
+                    <a
+                      href="https://ik.imagekit.io/2crwrt8s6/MemberResources/T-Shirt%20Mockups.jpg?updatedAt=1754467348605"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-2 bg-white dark:bg-gray-700 rounded hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                    >
+                      <span className="text-sm text-gray-700 dark:text-gray-300">
+                        T-Shirt Mockups (JPG)
+                      </span>
+                      <Icon
+                        icon="mdi:download"
+                        className="w-4 h-4 text-paan-blue"
+                      />
+                    </a>
+                  </div>
+                </div>
+
+                {/* Hoodie Templates */}
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                  <div className="flex items-center mb-3">
+                    <Icon
+                      icon="mdi:hoodie"
+                      className="w-5 h-5 text-paan-blue mr-2"
+                    />
+                    <h4 className="font-medium text-gray-900 dark:text-white">
+                      Hoodie Designs
+                    </h4>
+                  </div>
+                  <div className="space-y-2">
+                    <a
+                      href="https://ik.imagekit.io/2crwrt8s6/MemberResources/Hoodie%20Mockup.jpg?updatedAt=1754467326806"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-2 bg-white dark:bg-gray-700 rounded hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                    >
+                      <span className="text-sm text-gray-700 dark:text-gray-300">
+                        Hoodie Mockup (JPG)
+                      </span>
+                      <Icon
+                        icon="mdi:download"
+                        className="w-4 h-4 text-paan-blue"
+                      />
+                    </a>
+                  </div>
+                </div>
+
+                {/* Tote Bag Templates */}
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 md:col-span-2">
+                  <div className="flex items-center mb-3">
+                    <Icon
+                      icon="mdi:bag-personal"
+                      className="w-5 h-5 text-paan-blue mr-2"
+                    />
+                    <h4 className="font-medium text-gray-900 dark:text-white">
+                      Tote Bag Designs
+                    </h4>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <a
+                      href="https://ik.imagekit.io/2crwrt8s6/MemberResources/Tote%20bag.pdf?updatedAt=1754467348779"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-2 bg-white dark:bg-gray-700 rounded hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                    >
+                      <span className="text-sm text-gray-700 dark:text-gray-300">
+                        Tote Bag Design (PDF)
+                      </span>
+                      <Icon
+                        icon="mdi:download"
+                        className="w-4 h-4 text-paan-blue"
+                      />
+                    </a>
+                    <a
+                      href="https://ik.imagekit.io/2crwrt8s6/MemberResources/tote-bag-mockup-01.jpg?updatedAt=1754467348418"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-2 bg-white dark:bg-gray-700 rounded hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                    >
+                      <span className="text-sm text-gray-700 dark:text-gray-300">
+                        Tote Bag Mockup (JPG)
+                      </span>
+                      <Icon
+                        icon="mdi:download"
+                        className="w-4 h-4 text-paan-blue"
+                      />
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                <div className="flex items-start">
+                  <Icon
+                    icon="mdi:information"
+                    className="w-5 h-5 text-blue-600 dark:text-blue-400 mr-2 mt-0.5"
+                  />
+                  <div>
+                    <h5 className="font-medium text-blue-900 dark:text-blue-100 mb-1">
+                      Print Guidelines
+                    </h5>
+                    <p className="text-sm text-blue-700 dark:text-blue-200">
+                      These templates are print-ready at 300 DPI. For best
+                      results, use high-quality materials and professional
+                      printing services. Contact us if you need specific sizing
+                      or format adjustments.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={handleCloseDownloadModal}
+                  className="flex-1 px-6 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg font-medium transition-colors"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={downloadAllTemplates}
+                  className="flex-1 px-6 py-3 bg-paan-red hover:bg-paan-red/80 text-white rounded-lg font-medium transition-colors"
+                >
+                  <Icon
+                    icon="mdi:download-multiple"
+                    className="w-4 h-4 inline mr-2"
+                  />
+                  Download All Templates
+                </button>
+              </div>
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-              Coming Soon!
-            </h3>
-            <p className="text-gray-600 dark:text-gray-300">
-              We're currently preparing the{" "}
-              <span className="capitalize">
-                {downloadModalData?.title?.toLowerCase()}
-              </span>{" "}
-              for download. Our team is working hard to make these assets
-              available to all PAAN members.
-            </p>
-          </div>
+          ) : (
+            // Other asset types - Coming Soon
+            <div className="space-y-6">
+              <div className="text-center">
+                <div className="mx-auto w-16 h-16 bg-paan-blue/10 rounded-full flex items-center justify-center mb-4">
+                  <Icon
+                    icon="mdi:download"
+                    className="w-8 h-8 text-paan-blue"
+                  />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                  Coming Soon!
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300">
+                  We're currently preparing the{" "}
+                  <span className="capitalize">
+                    {downloadModalData?.title?.toLowerCase()}
+                  </span>{" "}
+                  for download. Our team is working hard to make these assets
+                  available to all PAAN members.
+                </p>
+              </div>
 
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-            <h4 className="font-medium text-gray-900 dark:text-white mb-2">
-              What's included:
-            </h4>
-            <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
-              {downloadModalData?.type === "brand-pack" && (
-                <>
-                  <li className="flex items-center">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="w-4 h-4 text-green-500 mr-2"
-                    />
-                    High-resolution PAAN logos (PNG, SVG, PDF)
-                  </li>
-                  <li className="flex items-center">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="w-4 h-4 text-green-500 mr-2"
-                    />
-                    Brand guidelines and color palettes
-                  </li>
-                  <li className="flex items-center">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="w-4 h-4 text-green-500 mr-2"
-                    />
-                    Typography and spacing guidelines
-                  </li>
-                </>
-              )}
-              {downloadModalData?.type === "badges" && (
-                <>
-                  <li className="flex items-center">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="w-4 h-4 text-green-500 mr-2"
-                    />
-                    Verified member badge graphics
-                  </li>
-                  <li className="flex items-center">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="w-4 h-4 text-green-500 mr-2"
-                    />
-                    Digital certificates and credentials
-                  </li>
-                  <li className="flex items-center">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="w-4 h-4 text-green-500 mr-2"
-                    />
-                    Social media profile badges
-                  </li>
-                </>
-              )}
-              {downloadModalData?.type === "templates" && (
-                <>
-                  <li className="flex items-center">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="w-4 h-4 text-green-500 mr-2"
-                    />
-                    Print-ready shirt designs
-                  </li>
-                  <li className="flex items-center">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="w-4 h-4 text-green-500 mr-2"
-                    />
-                    Cap and tote bag templates
-                  </li>
-                  <li className="flex items-center">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="w-4 h-4 text-green-500 mr-2"
-                    />
-                    Event merchandise layouts
-                  </li>
-                </>
-              )}
-              {downloadModalData?.type === "social-media" && (
-                <>
-                  <li className="flex items-center">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="w-4 h-4 text-green-500 mr-2"
-                    />
-                    Editable social post templates
-                  </li>
-                  <li className="flex items-center">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="w-4 h-4 text-green-500 mr-2"
-                    />
-                    Project launch announcements
-                  </li>
-                  <li className="flex items-center">
-                    <Icon
-                      icon="mdi:check-circle"
-                      className="w-4 h-4 text-green-500 mr-2"
-                    />
-                    Team introduction graphics
-                  </li>
-                </>
-              )}
-            </ul>
-          </div>
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                <h4 className="font-medium text-gray-900 dark:text-white mb-2">
+                  What's included:
+                </h4>
+                <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                  {downloadModalData?.type === "brand-pack" && (
+                    <>
+                      <li className="flex items-center">
+                        <Icon
+                          icon="mdi:check-circle"
+                          className="w-4 h-4 text-green-500 mr-2"
+                        />
+                        High-resolution PAAN logos (PNG, SVG, PDF)
+                      </li>
+                      <li className="flex items-center">
+                        <Icon
+                          icon="mdi:check-circle"
+                          className="w-4 h-4 text-green-500 mr-2"
+                        />
+                        Brand guidelines and color palettes
+                      </li>
+                      <li className="flex items-center">
+                        <Icon
+                          icon="mdi:check-circle"
+                          className="w-4 h-4 text-green-500 mr-2"
+                        />
+                        Typography and spacing guidelines
+                      </li>
+                    </>
+                  )}
+                  {downloadModalData?.type === "badges" && (
+                    <>
+                      <li className="flex items-center">
+                        <Icon
+                          icon="mdi:check-circle"
+                          className="w-4 h-4 text-green-500 mr-2"
+                        />
+                        Verified member badge graphics
+                      </li>
+                      <li className="flex items-center">
+                        <Icon
+                          icon="mdi:check-circle"
+                          className="w-4 h-4 text-green-500 mr-2"
+                        />
+                        Digital certificates and credentials
+                      </li>
+                      <li className="flex items-center">
+                        <Icon
+                          icon="mdi:check-circle"
+                          className="w-4 h-4 text-green-500 mr-2"
+                        />
+                        Social media profile badges
+                      </li>
+                    </>
+                  )}
+                  {downloadModalData?.type === "social-media" && (
+                    <>
+                      <li className="flex items-center">
+                        <Icon
+                          icon="mdi:check-circle"
+                          className="w-4 h-4 text-green-500 mr-2"
+                        />
+                        Editable social post templates
+                      </li>
+                      <li className="flex items-center">
+                        <Icon
+                          icon="mdi:check-circle"
+                          className="w-4 h-4 text-green-500 mr-2"
+                        />
+                        Project launch announcements
+                      </li>
+                      <li className="flex items-center">
+                        <Icon
+                          icon="mdi:check-circle"
+                          className="w-4 h-4 text-green-500 mr-2"
+                        />
+                        Team introduction graphics
+                      </li>
+                    </>
+                  )}
+                </ul>
+              </div>
 
-          <div className="flex flex-col sm:flex-row gap-3">
-            <button
-              onClick={handleCloseDownloadModal}
-              className="flex-1 px-6 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg font-medium transition-colors"
-            >
-              Got it
-            </button>
-            <button
-              onClick={() => {
-                handleCloseDownloadModal();
-                // You can add navigation to contact page here
-                toast.success("We'll notify you when assets are ready!");
-              }}
-              className="flex-1 px-6 py-3 bg-paan-red hover:bg-paan-red/80 text-white rounded-lg font-medium transition-colors"
-            >
-              Notify me when ready
-            </button>
-          </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={handleCloseDownloadModal}
+                  className="flex-1 px-6 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg font-medium transition-colors"
+                >
+                  Got it
+                </button>
+                <button
+                  onClick={() => {
+                    handleCloseDownloadModal();
+                    toast.success("We'll notify you when assets are ready!");
+                  }}
+                  className="flex-1 px-6 py-3 bg-paan-red hover:bg-paan-red/80 text-white rounded-lg font-medium transition-colors"
+                >
+                  Notify me when ready
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </SimpleModal>
 

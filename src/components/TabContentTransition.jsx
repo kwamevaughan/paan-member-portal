@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import DashboardTabs from "./DashboardTabs";
+import { getOrderedSections } from "@/utils/accessControl";
 
 const TabContentTransition = ({
   children,
@@ -16,8 +17,8 @@ const TabContentTransition = ({
     setIsClient(true);
   }, []);
 
-  // Define tabs dynamically based on user.job_type
-  const tabs =
+  // Define all available tabs
+  const allTabs =
     user?.job_type?.toLowerCase() === "freelancer"
       ? [
           {
@@ -42,6 +43,10 @@ const TabContentTransition = ({
           { id: "offers", label: "Offers", icon: "mdi:bullseye" },
           { id: "updates", label: "Updates", icon: "mdi:bell" },
         ];
+
+  // Get ordered tabs based on user access (accessible first, then restricted)
+  const { accessible, restricted } = getOrderedSections(allTabs, user?.selected_tier);
+  const tabs = [...accessible, ...restricted];
 
   // Don't render tabs on server side
   if (!isClient) {

@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback, Suspense } from "react";
 import { useRouter } from "next/router";
 import { useUser } from "../hooks/useUser";
 import useLogout from "../hooks/useLogout";
+import { getOrderedSections, hasAccessToSection } from "../utils/accessControl";
 import { useBusinessOpportunities } from "../hooks/useBusinessOpportunities";
 import useEvents from "../hooks/useEvents";
 import useResources from "../hooks/useResources";
@@ -58,39 +59,99 @@ export default function Dashboard({ mode = "light", toggleMode }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const isFreelancer = user?.job_type?.toLowerCase() === "freelancer";
-  
+
   // Memoize user data to prevent unnecessary re-renders
-  const memoizedUser = useMemo(() => user, [user?.id, user?.selected_tier, user?.job_type]);
-  
+  const memoizedUser = useMemo(
+    () => user,
+    [user?.id, user?.selected_tier, user?.job_type]
+  );
+
+  // Ensure the active tab is accessible to the user
+  useEffect(() => {
+    if (memoizedUser?.selected_tier) {
+      // Define all available tabs
+      const allTabs = isFreelancer
+        ? [{ id: "opportunities", label: "Gigs", icon: "mdi:briefcase" }]
+        : [
+            {
+              id: "opportunities",
+              label: "Business Opportunities",
+              icon: "mdi:briefcase",
+            },
+            { id: "events", label: "Events & Workshops", icon: "mdi:calendar" },
+            { id: "resources", label: "Resources", icon: "mdi:book-open" },
+            {
+              id: "marketIntel",
+              label: "Market Intelligence",
+              icon: "mdi:chart-bar",
+            },
+            { id: "offers", label: "Offers", icon: "mdi:bullseye" },
+            { id: "updates", label: "Updates", icon: "mdi:bell" },
+          ];
+
+      // Get accessible tabs
+      const { accessible } = getOrderedSections(
+        allTabs,
+        memoizedUser.selected_tier
+      );
+
+      // If current active tab is not accessible, switch to first accessible tab
+      if (
+        !hasAccessToSection(memoizedUser.selected_tier, activeTab) &&
+        accessible.length > 0
+      ) {
+        setActiveTab(accessible[0].id);
+      }
+    }
+  }, [memoizedUser?.selected_tier, activeTab, isFreelancer]);
+
   // Memoize filter handlers to prevent recreation on every render
-  const handleOpportunityFilterChange = useCallback((key, value) => {
-    handleFilterChange("opportunities", key, value);
-  }, [handleFilterChange]);
+  const handleOpportunityFilterChange = useCallback(
+    (key, value) => {
+      handleFilterChange("opportunities", key, value);
+    },
+    [handleFilterChange]
+  );
 
-  const handleEventFilterChange = useCallback((key, value) => {
-    handleFilterChange("events", key, value);
-  }, [handleFilterChange]);
+  const handleEventFilterChange = useCallback(
+    (key, value) => {
+      handleFilterChange("events", key, value);
+    },
+    [handleFilterChange]
+  );
 
-  const handleResourceFilterChange = useCallback((key, value) => {
-    handleFilterChange("resources", key, value);
-  }, [handleFilterChange]);
+  const handleResourceFilterChange = useCallback(
+    (key, value) => {
+      handleFilterChange("resources", key, value);
+    },
+    [handleFilterChange]
+  );
 
-  const handleMarketIntelFilterChange = useCallback((key, value) => {
-    handleFilterChange("marketIntel", key, value);
-  }, [handleFilterChange]);
+  const handleMarketIntelFilterChange = useCallback(
+    (key, value) => {
+      handleFilterChange("marketIntel", key, value);
+    },
+    [handleFilterChange]
+  );
 
-  const handleOfferFilter = useCallback((key, value) => {
-    handleFilterChange("offers", key, value);
-  }, [handleFilterChange]);
+  const handleOfferFilter = useCallback(
+    (key, value) => {
+      handleFilterChange("offers", key, value);
+    },
+    [handleFilterChange]
+  );
 
-  const handleUpdateFilterChange = useCallback((key, value) => {
-    handleFilterChange("updates", key, value);
-  }, [handleFilterChange]);
+  const handleUpdateFilterChange = useCallback(
+    (key, value) => {
+      handleFilterChange("updates", key, value);
+    },
+    [handleFilterChange]
+  );
 
   const handleResetOpportunityFilters = useCallback(() => {
     handleResetFilters("opportunities");
   }, [handleResetFilters]);
-  
+
   const {
     opportunities = [],
     filterOptions: opportunityFilterOptions = {},
@@ -100,8 +161,8 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     filters.opportunities,
     memoizedUser || { selected_tier: "Free Member", job_type: "" },
     "all"
-    );
-  
+  );
+
   useEffect(() => {
     handleResetOpportunityFilters();
     if (isFreelancer) {
@@ -196,13 +257,13 @@ export default function Dashboard({ mode = "light", toggleMode }) {
   }, [router]);
 
   const handleViewIntelligence = (item) => {
-    console.log('Dashboard handleViewIntelligence called with:', item);
-    handleOpenModal(item, 'intelligence');
+    console.log("Dashboard handleViewIntelligence called with:", item);
+    handleOpenModal(item, "intelligence");
   };
 
   const handleEventClick = (event) => {
-    console.log('Dashboard handleEventClick called with:', event);
-    handleOpenModal(event, 'event');
+    console.log("Dashboard handleEventClick called with:", event);
+    handleOpenModal(event, "event");
   };
 
   // Unified modal handlers
@@ -217,199 +278,206 @@ export default function Dashboard({ mode = "light", toggleMode }) {
   };
 
   // Memoize the main dashboard content to prevent unnecessary re-renders
-  const dashboardContent = useMemo(() => (
-    <div className="max-w-7xl mx-auto space-y-8 pb-10">
-      <WelcomeCard
-        mode={mode}
-        user={memoizedUser}
-        Icon={Icon}
-        Link={Link}
-        TierBadge={TierBadge}
-        JobTypeBadge={JobTypeBadge}
-        useLatestUpdate={useLatestUpdate}
-      />
-      <TabContentTransition
-        key={`tabs-${memoizedUser?.id}-${memoizedUser?.job_type}`}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        mode={mode}
-        Icon={Icon}
-        user={memoizedUser}
-      >
-        {activeTab === "opportunities" && (
-          <OpportunitiesSection
-            opportunities={opportunities}
-            opportunitiesLoading={opportunitiesLoading}
-            opportunitiesError={opportunitiesError}
-            opportunityFilters={filters.opportunities}
-            handleOpportunityFilterChange={handleOpportunityFilterChange}
-            opportunityFilterOptions={opportunityFilterOptions}
-            handleResetFilters={handleResetOpportunityFilters}
-            user={memoizedUser}
-            handleRestrictedClick={handleRestrictedClick}
-            mode={mode}
-            Icon={Icon}
-            toast={toast}
-          />
-        )}
-        {activeTab === "events" && (
-          <EventsSection
-            events={events}
-            registeredEvents={registeredEvents}
-            eventsLoading={eventsLoading}
-            eventsError={eventsError}
-            eventFilters={filters.events}
-            handleEventFilterChange={handleEventFilterChange}
-            eventFilterOptions={eventFilterOptions}
-            user={memoizedUser}
-            handleEventRegistration={handleEventRegistration}
-            handleRestrictedClick={handleRestrictedClick}
-            mode={mode}
-            Icon={Icon}
-            onClick={handleEventClick}
-          />
-        )}
-        {activeTab === "resources" && (
-          <ResourcesSection
-            resources={resources}
-            resourcesLoading={resourcesLoading}
-            resourcesError={resourcesError}
-            resourceFilters={filters.resources}
-            handleResourceFilterChange={handleResourceFilterChange}
-            resourceFilterOptions={resourceFilterOptions}
-            user={memoizedUser}
-            handleRestrictedClick={handleRestrictedClick}
-            mode={mode}
-            Icon={Icon}
-            onClick={(resource) => handleOpenModal(resource, 'resource')}
-          />
-        )}
-        {activeTab === "marketIntel" && (
-          <MarketIntelSection
-            marketIntel={marketIntel}
-            marketIntelLoading={marketIntelLoading}
-            marketIntelError={marketIntelError}
-            marketIntelFilters={filters.marketIntel}
-            handleMarketIntelFilterChange={handleMarketIntelFilterChange}
-            marketIntelFilterOptions={marketIntelFilterOptions}
-            user={memoizedUser}
-            handleRestrictedClick={handleRestrictedClick}
-            mode={mode}
-            Icon={Icon}
-            toast={toast}
-            onClick={handleViewIntelligence}
-          />
-        )}
-        {activeTab === "offers" && (
-          <OffersSection
-            offers={offers}
-            offersLoading={offersLoading}
-            offersError={offersError}
-            offerFilters={filters.offers}
-            handleOfferFilter={handleOfferFilter}
-            offersFilterOptions={offerFilterOptions}
-            user={memoizedUser}
-            handleRestrictedClick={handleRestrictedClick}
-            mode={mode}
-            Icon={Icon}
-            toast={toast}
-            onClick={(offer) => handleOpenModal(offer, 'offer')}
-          />
-        )}
-        {activeTab === "updates" && (
-          <UpdatesSection
-            updates={updates}
-            updatesLoading={updatesLoading}
-            updatesError={updatesError}
-            updateFilters={filters.updates}
-            handleUpdateFilterChange={handleUpdateFilterChange}
-            updateFilterOptions={updateFilterOptions}
-            user={memoizedUser}
-            handleRestrictedClick={handleRestrictedClick}
-            mode={mode}
-            Icon={Icon}
-            onClick={(update) => handleOpenModal(update, 'update')}
-          />
-        )}
-      </TabContentTransition>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
-        <Suspense fallback={
-          <div className="p-6 rounded-2xl bg-white border border-gray-200 shadow-lg w-full min-h-[400px] flex items-center justify-center">
-            <div className="text-gray-500">Loading chart...</div>
-          </div>
-        }>
-          <StatsChart
-            key={`stats-${memoizedUser?.id}-${mode}-${activeTab}`}
-            opportunities={opportunities}
-            events={events}
-            resources={resources}
-            offers={offers}
-            marketIntel={marketIntel}
-            updates={updates}
-            user={memoizedUser}
-            jobType={memoizedUser?.job_type || ""}
-            mode={mode}
-            getLastUpdatedForSection={getLastUpdatedForSection}
-            useRouter={useRouter}
-          />
-        </Suspense>
-        <Suspense fallback={
-          <div className="p-6 rounded-2xl border shadow-lg bg-white border-gray-200 flex items-center justify-center">
-            <div className="text-gray-500">Loading video...</div>
-          </div>
-        }>
-          <YouTubeVideo key={`youtube-${mode}`} mode={mode} />
-        </Suspense>
+  const dashboardContent = useMemo(
+    () => (
+      <div className="max-w-7xl mx-auto space-y-8 pb-10">
+        <WelcomeCard
+          mode={mode}
+          user={memoizedUser}
+          Icon={Icon}
+          Link={Link}
+          TierBadge={TierBadge}
+          JobTypeBadge={JobTypeBadge}
+          useLatestUpdate={useLatestUpdate}
+        />
+        <TabContentTransition
+          key={`tabs-${memoizedUser?.id}-${memoizedUser?.job_type}`}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          mode={mode}
+          Icon={Icon}
+          user={memoizedUser}
+        >
+          {activeTab === "opportunities" && (
+            <OpportunitiesSection
+              opportunities={opportunities}
+              opportunitiesLoading={opportunitiesLoading}
+              opportunitiesError={opportunitiesError}
+              opportunityFilters={filters.opportunities}
+              handleOpportunityFilterChange={handleOpportunityFilterChange}
+              opportunityFilterOptions={opportunityFilterOptions}
+              handleResetFilters={handleResetOpportunityFilters}
+              user={memoizedUser}
+              handleRestrictedClick={handleRestrictedClick}
+              mode={mode}
+              Icon={Icon}
+              toast={toast}
+            />
+          )}
+          {activeTab === "events" && (
+            <EventsSection
+              events={events}
+              registeredEvents={registeredEvents}
+              eventsLoading={eventsLoading}
+              eventsError={eventsError}
+              eventFilters={filters.events}
+              handleEventFilterChange={handleEventFilterChange}
+              eventFilterOptions={eventFilterOptions}
+              user={memoizedUser}
+              handleEventRegistration={handleEventRegistration}
+              handleRestrictedClick={handleRestrictedClick}
+              mode={mode}
+              Icon={Icon}
+              onClick={handleEventClick}
+            />
+          )}
+          {activeTab === "resources" && (
+            <ResourcesSection
+              resources={resources}
+              resourcesLoading={resourcesLoading}
+              resourcesError={resourcesError}
+              resourceFilters={filters.resources}
+              handleResourceFilterChange={handleResourceFilterChange}
+              resourceFilterOptions={resourceFilterOptions}
+              user={memoizedUser}
+              handleRestrictedClick={handleRestrictedClick}
+              mode={mode}
+              Icon={Icon}
+              onClick={(resource) => handleOpenModal(resource, "resource")}
+            />
+          )}
+          {activeTab === "marketIntel" && (
+            <MarketIntelSection
+              marketIntel={marketIntel}
+              marketIntelLoading={marketIntelLoading}
+              marketIntelError={marketIntelError}
+              marketIntelFilters={filters.marketIntel}
+              handleMarketIntelFilterChange={handleMarketIntelFilterChange}
+              marketIntelFilterOptions={marketIntelFilterOptions}
+              user={memoizedUser}
+              handleRestrictedClick={handleRestrictedClick}
+              mode={mode}
+              Icon={Icon}
+              toast={toast}
+              onClick={handleViewIntelligence}
+            />
+          )}
+          {activeTab === "offers" && (
+            <OffersSection
+              offers={offers}
+              offersLoading={offersLoading}
+              offersError={offersError}
+              offerFilters={filters.offers}
+              handleOfferFilter={handleOfferFilter}
+              offersFilterOptions={offerFilterOptions}
+              user={memoizedUser}
+              handleRestrictedClick={handleRestrictedClick}
+              mode={mode}
+              Icon={Icon}
+              toast={toast}
+              onClick={(offer) => handleOpenModal(offer, "offer")}
+            />
+          )}
+          {activeTab === "updates" && (
+            <UpdatesSection
+              updates={updates}
+              updatesLoading={updatesLoading}
+              updatesError={updatesError}
+              updateFilters={filters.updates}
+              handleUpdateFilterChange={handleUpdateFilterChange}
+              updateFilterOptions={updateFilterOptions}
+              user={memoizedUser}
+              handleRestrictedClick={handleRestrictedClick}
+              mode={mode}
+              Icon={Icon}
+              onClick={(update) => handleOpenModal(update, "update")}
+            />
+          )}
+        </TabContentTransition>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+          <Suspense
+            fallback={
+              <div className="p-6 rounded-2xl bg-white border border-gray-200 shadow-lg w-full min-h-[400px] flex items-center justify-center">
+                <div className="text-gray-500">Loading chart...</div>
+              </div>
+            }
+          >
+            <StatsChart
+              key={`stats-${memoizedUser?.id}-${mode}-${activeTab}`}
+              opportunities={opportunities}
+              events={events}
+              resources={resources}
+              offers={offers}
+              marketIntel={marketIntel}
+              updates={updates}
+              user={memoizedUser}
+              jobType={memoizedUser?.job_type || ""}
+              mode={mode}
+              getLastUpdatedForSection={getLastUpdatedForSection}
+              useRouter={useRouter}
+            />
+          </Suspense>
+          <Suspense
+            fallback={
+              <div className="p-6 rounded-2xl border shadow-lg bg-white border-gray-200 flex items-center justify-center">
+                <div className="text-gray-500">Loading video...</div>
+              </div>
+            }
+          >
+            <YouTubeVideo key={`youtube-${mode}`} mode={mode} />
+          </Suspense>
+        </div>
       </div>
-    </div>
-  ), [
-    mode,
-    memoizedUser,
-    activeTab,
-    opportunities,
-    events,
-    registeredEvents,
-    resources,
-    offers,
-    marketIntel,
-    updates,
-    opportunitiesLoading,
-    opportunitiesError,
-    eventsLoading,
-    eventsError,
-    resourcesLoading,
-    resourcesError,
-    offersLoading,
-    offersError,
-    marketIntelLoading,
-    marketIntelError,
-    updatesLoading,
-    updatesError,
-    filters,
-    opportunityFilterOptions,
-    eventFilterOptions,
-    resourceFilterOptions,
-    offerFilterOptions,
-    marketIntelFilterOptions,
-    updateFilterOptions,
-    handleOpportunityFilterChange,
-    handleEventFilterChange,
-    handleResourceFilterChange,
-    handleMarketIntelFilterChange,
-    handleOfferFilter,
-    handleUpdateFilterChange,
-    handleResetOpportunityFilters,
-    handleEventRegistration,
-    handleRestrictedClick,
-    getLastUpdatedForSection,
-    useRouter,
-    Icon,
-    Link,
-    TierBadge,
-    JobTypeBadge,
-    useLatestUpdate,
-    toast
-  ]);
+    ),
+    [
+      mode,
+      memoizedUser,
+      activeTab,
+      opportunities,
+      events,
+      registeredEvents,
+      resources,
+      offers,
+      marketIntel,
+      updates,
+      opportunitiesLoading,
+      opportunitiesError,
+      eventsLoading,
+      eventsError,
+      resourcesLoading,
+      resourcesError,
+      offersLoading,
+      offersError,
+      marketIntelLoading,
+      marketIntelError,
+      updatesLoading,
+      updatesError,
+      filters,
+      opportunityFilterOptions,
+      eventFilterOptions,
+      resourceFilterOptions,
+      offerFilterOptions,
+      marketIntelFilterOptions,
+      updateFilterOptions,
+      handleOpportunityFilterChange,
+      handleEventFilterChange,
+      handleResourceFilterChange,
+      handleMarketIntelFilterChange,
+      handleOfferFilter,
+      handleUpdateFilterChange,
+      handleResetOpportunityFilters,
+      handleEventRegistration,
+      handleRestrictedClick,
+      getLastUpdatedForSection,
+      useRouter,
+      Icon,
+      Link,
+      TierBadge,
+      JobTypeBadge,
+      useLatestUpdate,
+      toast,
+    ]
+  );
 
   if (userLoading && LoadingComponent) return LoadingComponent;
   if (!user || windowWidth === null) {

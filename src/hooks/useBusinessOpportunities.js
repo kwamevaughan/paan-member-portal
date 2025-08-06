@@ -311,38 +311,51 @@ export const useBusinessOpportunities = (
             };
           });
 
+          // Define sorting function that prioritizes accessible content
+          const sortByAccessibilityAndDate = (a, b) => {
+            const aTier = normalizeTier(a.tier_restriction);
+            const bTier = normalizeTier(b.tier_restriction);
+            const aIndex = tierHierarchy.indexOf(aTier);
+            const bIndex = tierHierarchy.indexOf(bTier);
+            const userIndex = tierHierarchy.indexOf(userTierNormalized);
+
+            // First priority: accessible vs non-accessible
+            if (a.isAccessible !== b.isAccessible) {
+              return a.isAccessible ? -1 : 1;
+            }
+
+            // Second priority: if both accessible, prioritize exact tier match
+            if (a.isAccessible && b.isAccessible) {
+              const aIsExact = aIndex === userIndex;
+              const bIsExact = bIndex === userIndex;
+              if (aIsExact !== bIsExact) {
+                return aIsExact ? -1 : 1;
+              }
+            }
+
+            // Third priority: sort by creation date (newest first)
+            return new Date(b.created_at) - new Date(a.created_at);
+          };
+
           let sortedData;
           if (fetchMode === "all") {
             const todayStr = new Date().toISOString().split("T")[0];
             const active = transformedData.filter(opp => opp.deadline >= todayStr);
             const expired = transformedData.filter(opp => opp.deadline < todayStr);
-            // Sort each group by created_at descending
-            active.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-            expired.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-            sortedData = [...active, ...expired];
+            
+            // Sort each group by accessibility first, then by date
+            active.sort(sortByAccessibilityAndDate);
+            expired.sort(sortByAccessibilityAndDate);
+            
+            // Combine: accessible active first, then non-accessible active, then accessible expired, then non-accessible expired
+            const accessibleActive = active.filter(opp => opp.isAccessible);
+            const restrictedActive = active.filter(opp => !opp.isAccessible);
+            const accessibleExpired = expired.filter(opp => opp.isAccessible);
+            const restrictedExpired = expired.filter(opp => !opp.isAccessible);
+            
+            sortedData = [...accessibleActive, ...restrictedActive, ...accessibleExpired, ...restrictedExpired];
           } else {
-            sortedData = transformedData.sort((a, b) => {
-              const aTier = normalizeTier(a.tier_restriction);
-              const bTier = normalizeTier(b.tier_restriction);
-              const aIndex = tierHierarchy.indexOf(aTier);
-              const bIndex = tierHierarchy.indexOf(bTier);
-              const userIndex = tierHierarchy.indexOf(userTierNormalized);
-
-              if (a.isAccessible && b.isAccessible) {
-                const aIsExact = aIndex === userIndex;
-                const bIsExact = bIndex === userIndex;
-                if (aIsExact !== bIsExact) {
-                  return aIsExact ? -1 : 1;
-                }
-                return new Date(b.created_at) - new Date(a.created_at);
-              }
-
-              if (a.isAccessible !== b.isAccessible) {
-                return a.isAccessible ? -1 : 1;
-              }
-
-              return new Date(b.created_at) - new Date(a.created_at);
-            });
+            sortedData = transformedData.sort(sortByAccessibilityAndDate);
           }
 
           setOpportunities(sortedData);

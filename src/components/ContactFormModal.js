@@ -4,7 +4,7 @@ import SimpleModal from "./SimpleModal";
 import toast from "react-hot-toast";
 import TooltipIconButton from "./TooltipIconButton";
 
-const ContactFormModal = ({ isOpen, onClose, mode, title = "Contact Us", user = null, showLegalSubjects = false, showHireFields = false, description = "Have a question or need assistance? Send us a message and we'll respond as soon as possible." }) => {
+const ContactFormModal = ({ isOpen, onClose, mode, title = "Contact Us", user = null, showLegalSubjects = false, showHireFields = false, description = "Have a question or need assistance? Send us a message and we'll respond as soon as possible.", initialSubject = "" }) => {
   const [formData, setFormData] = useState({
     name: user?.full_name || user?.name || "",
     email: user?.email || "",
@@ -119,7 +119,7 @@ const ContactFormModal = ({ isOpen, onClose, mode, title = "Contact Us", user = 
       setFormData({
         name: user?.full_name || user?.name || "",
         email: user?.email || "",
-        subject: "",
+        subject: initialSubject || "",
         customSubject: "",
         message: "",
         projectType: "",
@@ -129,7 +129,7 @@ const ContactFormModal = ({ isOpen, onClose, mode, title = "Contact Us", user = 
         companyName: user?.agencyName || "",
       });
     }
-  }, [isOpen, user]);
+  }, [isOpen, user, initialSubject]);
 
   return (
     <SimpleModal

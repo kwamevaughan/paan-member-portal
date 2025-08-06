@@ -22,6 +22,7 @@ const UpdatesSection = ({
   const [statsFilter, setStatsFilter] = useState("total");
   const [selectedUpdate, setSelectedUpdate] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [itemsToShow, setItemsToShow] = useState(9);
 
   const statsConfig = createStatsConfig({
     items: updates,
@@ -278,7 +279,7 @@ const UpdatesSection = ({
 
         {/* Updates grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 auto-rows-fr">
-          {sortedUpdates.map((update, index) => (
+          {sortedUpdates.slice(0, itemsToShow).map((update, index) => (
             <div
               key={update.id}
               className="animate-fade-in-up"
@@ -289,19 +290,26 @@ const UpdatesSection = ({
             >
               <UpdateCard
                 update={update}
+                user={user}
                 mode={mode}
-                Icon={Icon}
-                isRestricted={!hasTierAccess(update.tier_restriction, user)}
-                onRestrictedClick={() =>
-                  handleRestrictedClick(
-                    `Access restricted: ${update.tier_restriction} tier required for "${update.title}"`
-                  )
-                }
                 onClick={onClick}
+                handleRestrictedClick={handleRestrictedClick}
+                toast={toast}
+                Icon={Icon}
               />
             </div>
           ))}
         </div>
+        {itemsToShow < sortedUpdates.length && (
+          <div className="flex justify-center mt-6">
+            <button
+              className="px-6 py-2 rounded-lg bg-paan-blue text-white hover:bg-paan-dark-blue transition"
+              onClick={() => setItemsToShow((prev) => prev + 9)}
+            >
+              Load More
+            </button>
+          </div>
+        )}
       </div>
     );
   };

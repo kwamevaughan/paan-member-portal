@@ -23,6 +23,7 @@ const MarketIntelSection = ({
   console.log('MarketIntelSection - onClick prop received:', !!onClick);
   const [statsFilter, setStatsFilter] = useState("total");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [itemsToShow, setItemsToShow] = useState(9);
 
   const statsConfig = createStatsConfig({
     items: marketIntel,
@@ -251,8 +252,8 @@ const MarketIntelSection = ({
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sortedIntel.map((intel, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
+          {sortedIntel.slice(0, itemsToShow).map((intel, index) => (
             <div
               key={intel.id}
               className="animate-fade-in-up"
@@ -277,6 +278,16 @@ const MarketIntelSection = ({
             </div>
           ))}
         </div>
+        {itemsToShow < sortedIntel.length && (
+          <div className="flex justify-center mt-6">
+            <button
+              className="px-6 py-2 rounded-lg bg-paan-blue text-white hover:bg-paan-dark-blue transition"
+              onClick={() => setItemsToShow((prev) => prev + 9)}
+            >
+              Load More
+            </button>
+          </div>
+        )}
       </div>
     );
   };

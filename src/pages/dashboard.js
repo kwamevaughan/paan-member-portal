@@ -98,7 +98,8 @@ export default function Dashboard({ mode = "light", toggleMode }) {
     error: opportunitiesError,
   } = useBusinessOpportunities(
     filters.opportunities,
-    memoizedUser || { selected_tier: "Free Member", job_type: "" }
+    memoizedUser || { selected_tier: "Free Member", job_type: "" },
+    "all"
     );
   
   useEffect(() => {

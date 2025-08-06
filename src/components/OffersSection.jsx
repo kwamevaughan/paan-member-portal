@@ -27,6 +27,7 @@ const OffersSection = ({
 }) => {
   const [statsFilter, setStatsFilter] = useState("total");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [itemsToShow, setItemsToShow] = useState(9);
 
   const statsConfig = createStatsConfig({
     items: offers,
@@ -292,7 +293,7 @@ const OffersSection = ({
 
         {/* Offers grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 auto-rows-fr">
-          {sortedOffers.map((offer, index) => (
+          {sortedOffers.slice(0, itemsToShow).map((offer, index) => (
             <div
               key={offer.id}
               className="animate-fade-in-up"
@@ -303,22 +304,26 @@ const OffersSection = ({
             >
               <OfferCard
                 offer={offer}
+                user={user}
                 mode={mode}
-                isRestricted={!hasTierAccess(offer.tier_restriction, user)}
-                onRestrictedClick={() => {
-                  toast.error(
-                    `This offer is available to ${normalizeTier(
-                      offer.tier_restriction
-                    )} only. Consider upgrading your membership to access this offer.`,
-                    { duration: 5000 }
-                  );
-                }}
                 onClick={onClick}
+                handleRestrictedClick={handleRestrictedClick}
+                toast={toast}
                 Icon={Icon}
               />
             </div>
           ))}
         </div>
+        {itemsToShow < sortedOffers.length && (
+          <div className="flex justify-center mt-6">
+            <button
+              className="px-6 py-2 rounded-lg bg-paan-blue text-white hover:bg-paan-dark-blue transition"
+              onClick={() => setItemsToShow((prev) => prev + 9)}
+            >
+              Load More
+            </button>
+          </div>
+        )}
       </div>
     );
   };

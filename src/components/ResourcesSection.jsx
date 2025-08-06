@@ -23,6 +23,7 @@ const ResourcesSection = ({
   const [selectedResource, setSelectedResource] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [itemsToShow, setItemsToShow] = useState(9);
 
   const statsConfig = createStatsConfig({
     items: resources,
@@ -284,7 +285,7 @@ const ResourcesSection = ({
 
         {/* Resources grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 auto-rows-fr">
-          {sortedResources.map((resource, index) => (
+          {sortedResources.slice(0, itemsToShow).map((resource, index) => (
             <div
               key={resource.id}
               className="animate-fade-in-up"
@@ -295,21 +296,25 @@ const ResourcesSection = ({
             >
               <ResourceCard
                 resource={resource}
+                user={user}
                 mode={mode}
-                Icon={Icon}
-                isRestricted={
-                  !hasTierAccess(resource.tier_restriction, user)
-                }
-                onRestrictedClick={() =>
-                  handleRestrictedClick(
-                    `Access restricted: ${resource.tier_restriction} tier required for "${resource.title}"`
-                  )
-                }
                 onClick={onClick}
+                handleRestrictedClick={handleRestrictedClick}
+                Icon={Icon}
               />
             </div>
           ))}
         </div>
+        {itemsToShow < sortedResources.length && (
+          <div className="flex justify-center mt-6">
+            <button
+              className="px-6 py-2 rounded-lg bg-paan-blue text-white hover:bg-paan-dark-blue transition"
+              onClick={() => setItemsToShow((prev) => prev + 9)}
+            >
+              Load More
+            </button>
+          </div>
+        )}
       </div>
     );
   };

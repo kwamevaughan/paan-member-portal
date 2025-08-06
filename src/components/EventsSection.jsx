@@ -24,6 +24,7 @@ const EventsSection = ({
   const [statsFilter, setStatsFilter] = useState("total");
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [itemsToShow, setItemsToShow] = useState(9);
 
   const statsConfig = createStatsConfig({
     items: events,
@@ -123,15 +124,23 @@ const EventsSection = ({
       );
     }
 
-    // Sort events: accessible ones first, then by date
+    // Sort events: active (upcoming) first, then past, both by date
+    const now = new Date();
     const sortedEvents = filteredEvents.sort((a, b) => {
-      const aAccess = hasTierAccess(a.tier_restriction, user);
-      const bAccess = hasTierAccess(b.tier_restriction, user);
+      const aDate = new Date(a.date);
+      const bDate = new Date(b.date);
+      const aIsUpcoming = aDate > now;
+      const bIsUpcoming = bDate > now;
 
-      if (aAccess === bAccess) {
-        return new Date(a.date) - new Date(b.date);
+      if (aIsUpcoming && !bIsUpcoming) return -1;
+      if (!aIsUpcoming && bIsUpcoming) return 1;
+
+      // Within each group, sort by date (upcoming: soonest first, past: most recent first)
+      if (aIsUpcoming && bIsUpcoming) {
+        return aDate - bDate; // Upcoming: earliest first
+      } else {
+        return bDate - aDate; // Past: latest first
       }
-      return aAccess ? -1 : 1;
     });
 
     return (
@@ -190,7 +199,7 @@ const EventsSection = ({
 
         {/* Events grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 auto-rows-fr">
-          {sortedEvents.map((event, index) => (
+          {sortedEvents.slice(0, itemsToShow).map((event, index) => (
             <div
               key={event.id}
               className="animate-fade-in-up"
@@ -201,23 +210,27 @@ const EventsSection = ({
             >
               <EventCard
                 event={event}
+                user={user}
                 mode={mode}
-                Icon={Icon}
-                onRegister={handleEventRegistration}
-                isRegistered={registeredEvents.some(
-                  (reg) => reg.id === event.id
-                )}
-                isRestricted={!hasTierAccess(event.tier_restriction, user)}
-                onRestrictedClick={() =>
-                  handleRestrictedClick(
-                    `Access restricted: ${event.tier_restriction} tier required for "${event.title}"`
-                  )
-                }
                 onClick={onClick}
+                handleEventRegistration={handleEventRegistration}
+                handleRestrictedClick={handleRestrictedClick}
+                registeredEvents={registeredEvents}
+                Icon={Icon}
               />
             </div>
           ))}
         </div>
+        {itemsToShow < sortedEvents.length && (
+          <div className="flex justify-center mt-6">
+            <button
+              className="px-6 py-2 rounded-lg bg-paan-blue text-white hover:bg-paan-dark-blue transition"
+              onClick={() => setItemsToShow((prev) => prev + 9)}
+            >
+              Load More
+            </button>
+          </div>
+        )}
       </div>
     );
   };

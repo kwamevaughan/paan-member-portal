@@ -83,6 +83,7 @@ const OpportunitiesSection = ({
   const [inputValue, setInputValue] = useState("");
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [selectedOpportunity, setSelectedOpportunity] = useState(null);
+  const [itemsToShow, setItemsToShow] = useState(9);
 
   const isFreelancer = user?.job_type?.toLowerCase() === "freelancer";
   const itemLabel = isFreelancer ? "Gigs" : "Opportunities";
@@ -471,36 +472,48 @@ const OpportunitiesSection = ({
         )}
 
         {sortedOpportunities.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {sortedOpportunities.map((opportunity, index) => {
-              return (
-                <div
-                  key={`${opportunity.id}-${index}`}
-                  className="animate-fade-in-up h-full"
-                  style={{
-                    animationDelay: `${index * 50}ms`,
-                    animationFillMode: "both",
-                  }}
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {sortedOpportunities.slice(0, itemsToShow).map((opportunity, index) => {
+                return (
+                  <div
+                    key={`${opportunity.id}-${index}`}
+                    className="animate-fade-in-up h-full"
+                    style={{
+                      animationDelay: `${index * 50}ms`,
+                      animationFillMode: "both",
+                    }}
+                  >
+                    <OpportunityCard
+                      opportunity={opportunity}
+                      mode={mode}
+                      TierBadge={TierBadge}
+                      toast={toast}
+                      isRestricted={
+                        !hasTierAccess(
+                          opportunity.tier_restriction,
+                          user || { selected_tier: "Free Member" }
+                        )
+                      }
+                      onRestrictedClick={handleViewMoreInfo}
+                      isFreelancer={isFreelancer}
+                      showExpressInterestButton={false}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+            {itemsToShow < sortedOpportunities.length && (
+              <div className="flex justify-center mt-6">
+                <button
+                  className="px-6 py-2 rounded-lg bg-paan-blue text-white hover:bg-paan-dark-blue transition"
+                  onClick={() => setItemsToShow((prev) => prev + 9)}
                 >
-                  <OpportunityCard
-                    opportunity={opportunity}
-                    mode={mode}
-                    TierBadge={TierBadge}
-                    toast={toast}
-                    isRestricted={
-                      !hasTierAccess(
-                        opportunity.tier_restriction,
-                        user || { selected_tier: "Free Member" }
-                      )
-                    }
-                    onRestrictedClick={handleViewMoreInfo}
-                    isFreelancer={isFreelancer}
-                    showExpressInterestButton={false}
-                  />
-                </div>
-              );
-            })}
-          </div>
+                  Load More
+                </button>
+              </div>
+            )}
+          </>
         ) : (
           renderEmptyState()
         )}

@@ -15,6 +15,7 @@ import ContactFormModal from "@/components/ContactFormModal";
 import ResourceCard from "@/components/ResourceCard";
 import OnboardingKitModal from "@/components/resources/OnboardingKitModal";
 import MerchTemplatesModal from "@/components/resources/MerchTemplatesModal";
+import BrandAssetsModal from "@/components/resources/BrandAssetsModal";
 import ComingSoonModal from "@/components/resources/ComingSoonModal";
 
 export default function MemberResources({ mode = "light", toggleMode }) {
@@ -34,6 +35,7 @@ export default function MemberResources({ mode = "light", toggleMode }) {
     useState(false);
   const [isMerchTemplatesModalOpen, setIsMerchTemplatesModalOpen] =
     useState(false);
+  const [isBrandAssetsModalOpen, setIsBrandAssetsModalOpen] = useState(false);
   const [isComingSoonModalOpen, setIsComingSoonModalOpen] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [comingSoonData, setComingSoonData] = useState({ title: "", type: "" });
@@ -49,6 +51,10 @@ export default function MemberResources({ mode = "light", toggleMode }) {
 
   const handleMerchTemplatesClick = () => {
     setIsMerchTemplatesModalOpen(true);
+  };
+
+  const handleBrandAssetsClick = () => {
+    setIsBrandAssetsModalOpen(true);
   };
 
   const handleComingSoonClick = (title, type) => {
@@ -76,8 +82,7 @@ export default function MemberResources({ mode = "light", toggleMode }) {
       description:
         "Download official PAAN logos and brand guidelines in multiple formats.",
       buttonText: "Download Brand Pack",
-      onClick: () =>
-        handleComingSoonClick("PAAN Logos & Brand Assets", "brand-pack"),
+      onClick: handleBrandAssetsClick,
       badgeText: "Assets",
       badgeColor: "bg-paan-blue",
     },
@@ -211,6 +216,12 @@ export default function MemberResources({ mode = "light", toggleMode }) {
       <MerchTemplatesModal
         isOpen={isMerchTemplatesModalOpen}
         onClose={() => setIsMerchTemplatesModalOpen(false)}
+        mode={mode}
+      />
+
+      <BrandAssetsModal
+        isOpen={isBrandAssetsModalOpen}
+        onClose={() => setIsBrandAssetsModalOpen(false)}
         mode={mode}
       />
 

@@ -17,6 +17,7 @@ import OnboardingKitModal from "@/components/resources/OnboardingKitModal";
 import MerchTemplatesModal from "@/components/resources/MerchTemplatesModal";
 import BrandAssetsModal from "@/components/resources/BrandAssetsModal";
 import VerifiedMemberBadgesModal from "@/components/resources/VerifiedMemberBadgesModal";
+import EmbedBadgeModal from "@/components/resources/EmbedBadgeModal";
 import ComingSoonModal from "@/components/resources/ComingSoonModal";
 
 export default function MemberResources({ mode = "light", toggleMode }) {
@@ -39,6 +40,7 @@ export default function MemberResources({ mode = "light", toggleMode }) {
   const [isBrandAssetsModalOpen, setIsBrandAssetsModalOpen] = useState(false);
   const [isVerifiedBadgesModalOpen, setIsVerifiedBadgesModalOpen] =
     useState(false);
+  const [isEmbedBadgeModalOpen, setIsEmbedBadgeModalOpen] = useState(false);
   const [isComingSoonModalOpen, setIsComingSoonModalOpen] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [comingSoonData, setComingSoonData] = useState({ title: "", type: "" });
@@ -62,6 +64,10 @@ export default function MemberResources({ mode = "light", toggleMode }) {
 
   const handleVerifiedBadgesClick = () => {
     setIsVerifiedBadgesModalOpen(true);
+  };
+
+  const handleEmbedBadgeClick = () => {
+    setIsEmbedBadgeModalOpen(true);
   };
 
   const handleComingSoonClick = (title, type) => {
@@ -122,6 +128,15 @@ export default function MemberResources({ mode = "light", toggleMode }) {
       buttonText: "View Templates",
       onClick: handleMerchTemplatesClick,
       badgeText: "Assets",
+      badgeColor: "bg-paan-blue",
+    },
+    {
+      title: "Embed Badge Code",
+      description:
+        "Generate code in multiple formats (HTML, Markdown, React, Vue, BBCode) to embed your verified PAAN member badge anywhere.",
+      buttonText: "Get Embed Code",
+      onClick: handleEmbedBadgeClick,
+      badgeText: "Code",
       badgeColor: "bg-paan-blue",
     },
     {
@@ -248,6 +263,13 @@ export default function MemberResources({ mode = "light", toggleMode }) {
       <VerifiedMemberBadgesModal
         isOpen={isVerifiedBadgesModalOpen}
         onClose={() => setIsVerifiedBadgesModalOpen(false)}
+        mode={mode}
+        user={user}
+      />
+
+      <EmbedBadgeModal
+        isOpen={isEmbedBadgeModalOpen}
+        onClose={() => setIsEmbedBadgeModalOpen(false)}
         mode={mode}
         user={user}
       />

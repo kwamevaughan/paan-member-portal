@@ -341,6 +341,15 @@ const HrSidebar = ({
                     <span>Member Assets</span>
                   </Link>
                 </div>
+                <div className="flex items-center gap-2 hover:bg-paan-dark-blue rounded-2xl p-2">
+                  <Link
+                    href="/support"
+                    className="flex items-center gap-2 hover:opacity-80 transition-colors duration-300"
+                  >
+                    <Icon icon="mdi:headset" className="h-5 w-5" />
+                    <span>Support</span>
+                  </Link>
+                </div>
                 <div className="py-2 hover:bg-paan-dark-blue rounded-2xl p-2">
                   <button
                     onClick={toggleMode}

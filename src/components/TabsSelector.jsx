@@ -53,8 +53,8 @@ export default function TabsSelector({
               className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
                 selectedTab === tabId
                   ? mode === "dark"
-                    ? "bg-blue-600 text-white shadow-lg"
-                    : "bg-blue-500 text-white shadow-lg"
+                    ? "bg-paan-dark-blue text-white shadow-lg"
+                    : "bg-paan-dark-blue text-white shadow-lg"
                   : mode === "dark"
                   ? "bg-gray-700/50 text-gray-300 hover:bg-gray-600/50"
                   : "bg-gray-100/80 text-gray-600 hover:bg-gray-200/80"

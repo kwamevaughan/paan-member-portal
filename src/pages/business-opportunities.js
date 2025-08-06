@@ -108,7 +108,10 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
         : activeTab === "expired"
         ? opportunities.filter((opp) => {
             if (!opp.deadline) return false;
-            return new Date(opp.deadline) < new Date();
+            // Compare only the date part (YYYY-MM-DD)
+            const deadlineDate = new Date(opp.deadline).toISOString().split('T')[0];
+            const todayDate = new Date().toISOString().split('T')[0];
+            return deadlineDate < todayDate;
           })
         : opportunities.filter((opp) => {
             if (activeTab === "accessible")
@@ -263,7 +266,7 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
                   mode === "dark"
                     ? "bg-gray-800 hover:bg-gray-700"
                     : "bg-white hover:bg-gray-100"
-                } ${showFilterPanel ? "ring-2 ring-blue-500" : ""} shadow-sm`}
+                } ${showFilterPanel ? "ring-2 ring-paan-blue" : ""} shadow-sm`}
               >
                 <Icon icon="mdi:filter-variant" />
                 <span>Filters</span>
@@ -536,6 +539,7 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
               handleResetFilters={handleResetFilters}
               toast={toast}
               router={router}
+              activeTab={activeTab}
             />
           </div>
           <SimpleFooter mode={mode} isSidebarOpen={isSidebarOpen} />

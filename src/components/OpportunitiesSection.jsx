@@ -75,6 +75,7 @@ const OpportunitiesSection = ({
   handleResetFilters,
   toast,
   router,
+  activeTab, // <-- add this prop
 }) => {
   const [viewMode] = useState("grid");
   const [statsFilter, setStatsFilter] = useState("total");
@@ -84,6 +85,12 @@ const OpportunitiesSection = ({
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [selectedOpportunity, setSelectedOpportunity] = useState(null);
   const [itemsToShow, setItemsToShow] = useState(9);
+
+  useEffect(() => {
+    if (activeTab === "expired") setStatsFilter("expired");
+    else if (activeTab === "accessible") setStatsFilter("available");
+    else setStatsFilter("total");
+  }, [activeTab]);
 
   const isFreelancer = user?.job_type?.toLowerCase() === "freelancer";
   const itemLabel = isFreelancer ? "Gigs" : "Opportunities";

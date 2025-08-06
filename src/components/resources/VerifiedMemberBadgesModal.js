@@ -188,7 +188,7 @@ Member Badge issued to: ${user?.name}
             />
           </div>
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-            {user?.name}'s {userTier} Badge
+            {user?.name}'s {userTier === "Admin" ? "Gold" : userTier} Badge
           </h3>
           <p className="text-gray-600 dark:text-gray-300">
             Download your verified PAAN membership badge to showcase your membership status on social media, websites, and professional profiles.
@@ -212,7 +212,7 @@ Member Badge issued to: ${user?.name}
               />
             </div>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-              {userTier} Badge
+              {userTier === "Admin" ? "Gold" : userTier} Badge
             </p>
           </div>
         </div>
@@ -237,7 +237,7 @@ Member Badge issued to: ${user?.name}
                 className="flex items-center justify-between p-2 bg-white dark:bg-gray-700 rounded hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
               >
                 <span className="text-sm text-gray-700 dark:text-gray-300">
-                  {userTier} Badge (WebP)
+                  {userTier === "Admin" ? "Gold" : userTier} Badge (WebP)
                 </span>
                 <Icon
                   icon="mdi:download"
@@ -265,7 +265,7 @@ Member Badge issued to: ${user?.name}
                 className="flex items-center justify-between p-2 bg-white dark:bg-gray-700 rounded hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
               >
                 <span className="text-sm text-gray-700 dark:text-gray-300">
-                  {userTier} Badge (PNG)
+                  {userTier === "Admin" ? "Gold" : userTier} Badge (PNG)
                 </span>
                 <Icon
                   icon="mdi:download"
@@ -293,7 +293,7 @@ Member Badge issued to: ${user?.name}
                 className="flex items-center justify-between p-2 bg-white dark:bg-gray-700 rounded hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
               >
                 <span className="text-sm text-gray-700 dark:text-gray-300">
-                  {userTier} Badge (JPG)
+                  {userTier === "Admin" ? "Gold" : userTier} Badge (JPG)
                 </span>
                 <Icon
                   icon="mdi:download"

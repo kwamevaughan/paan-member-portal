@@ -258,7 +258,7 @@ export default function SupportPage({ mode = "light", toggleMode }) {
           : "bg-gradient-to-br from-gray-50 to-gray-100 text-gray-900"
       }`}
     >
-      <Toaster position="top-right" />
+      {/* <Toaster position="top-right" /> */}
       <HrHeader
         toggleSidebar={toggleSidebar}
         isSidebarOpen={isSidebarOpen}

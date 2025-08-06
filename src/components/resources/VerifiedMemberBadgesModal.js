@@ -43,18 +43,23 @@ const VerifiedMemberBadgesModal = ({ isOpen, onClose, mode, user }) => {
       const zip = new JSZip();
       
       // Add a personalized README file
-      const readmeContent = `${user?.name}'s PAAN Member Badge Package
-${'='.repeat(50)}
+      const readmeContent = `${user.agencyName}'s PAAN Member Badge Package
+${"=".repeat(50)}
 
-Congratulations ${user?.name}!
+Congratulations ${user.agencyName}!
 
 This package contains your verified ${userTier} badge in multiple formats.
 
 Your Membership Details:
 - Name: ${user?.name}
+- Agency: ${user.agencyName}
 - Email: ${user?.email}
 - Tier: ${userTier}
-- Member Since: ${user?.created_at ? new Date(user?.created_at).toLocaleDateString() : 'N/A'}
+- Member Since: ${
+        user?.created_at
+          ? new Date(user?.created_at).toLocaleDateString()
+          : "N/A"
+      }
 
 Badge Formats Included:
 - WebP Format: Optimized for web use and social media
@@ -70,7 +75,7 @@ Usage Guidelines:
 For questions about badge usage or membership benefits, contact the PAAN team through the member portal.
 
 © ${new Date().getFullYear()} Pan African Advocacy Network (PAAN)
-Member Badge issued to: ${user?.name}
+Member Badge issued to: ${user.agencyName}
 `;
       
       zip.file("README.txt", readmeContent);
@@ -120,7 +125,12 @@ Member Badge issued to: ${user?.name}
       const url = URL.createObjectURL(zipBlob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `${user?.name?.replace(/\s+/g, '_')}_PAAN_${userTier.replace(' ', '_')}_Badge_${new Date().toISOString().split('T')[0]}.zip`;
+      link.download = `${user.agencyName?.replace(
+        /\s+/g,
+        "_"
+      )}_PAAN_${userTier.replace(" ", "_")}_Badge_${
+        new Date().toISOString().split("T")[0]
+      }.zip`;
       
       // Trigger download
       document.body.appendChild(link);
@@ -188,7 +198,7 @@ Member Badge issued to: ${user?.name}
             />
           </div>
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-            {user?.name}'s {userTier === "Admin" ? "Gold" : userTier} Badge
+            {user.agencyName}'s {userTier === "Admin" ? "Gold" : userTier} Badge
           </h3>
           <p className="text-gray-600 dark:text-gray-300">
             Download your verified PAAN membership badge to showcase your membership status on social media, websites, and professional profiles.

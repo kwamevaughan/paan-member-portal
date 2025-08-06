@@ -112,7 +112,7 @@ const EmbedBadgeModal = ({ isOpen, onClose, mode, user }) => {
     const size = sizeOptions[selectedSize];
     const style = styleOptions[selectedStyle];
     const displayTier = userTier === "Admin" ? "Gold" : userTier;
-    const altText = `${user?.name} - PAAN ${displayTier} Member`;
+    const altText = `${user.agencyName} - PAAN ${displayTier} Member`;
     const titleText = `Verified PAAN ${displayTier} Member`;
 
     switch (selectedFormat) {
@@ -249,7 +249,7 @@ export default {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${user?.name} - PAAN Member Badge</title>
+    <title>${user.agencyName} - PAAN Member Badge</title>
 </head>
 <body>
     ${code}
@@ -268,7 +268,7 @@ export default {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `${user?.name?.replace(/\s+/g, "_")}_PAAN_Badge.${
+    link.download = `${user.agencyName?.replace(/\s+/g, "_")}_PAAN_Badge.${
       format.extension
     }`;
     document.body.appendChild(link);

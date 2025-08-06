@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { Icon } from "@iconify/react";
 import { useUser } from "@/hooks/useUser";
@@ -72,6 +72,19 @@ export default function MemberResources({ mode = "light", toggleMode }) {
   const handleContactClick = () => {
     setIsContactModalOpen(true);
   };
+
+  // Check for query parameters to auto-open modals
+  useEffect(() => {
+    if (router.isReady && user) {
+      const { openBadges } = router.query;
+      
+      if (openBadges === 'true') {
+        setIsVerifiedBadgesModalOpen(true);
+        // Clean up the URL by removing the query parameter
+        router.replace('/member-resources', undefined, { shallow: true });
+      }
+    }
+  }, [router.isReady, router.query, user]);
 
   // Resource cards data
   const resourceCards = [

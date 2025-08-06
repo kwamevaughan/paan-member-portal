@@ -42,8 +42,7 @@ export default function WelcomeCard({
   }, []);
 
   // Debug user object to verify job_type
-  useEffect(() => {
-  }, [user]);
+  useEffect(() => {}, [user]);
 
   // Find the most recent item across all sections
   const latestItem = Object.entries(latestItems).reduce(
@@ -228,14 +227,39 @@ export default function WelcomeCard({
           </div>
         </div>
 
-        <div className="">
-          <Image
-            src="/assets/images/paan-member-badge.png"
-            alt="Paan Member Badge"
-            width={100}
-            height={100}
-            draggable={false}
-          />
+        <div className="flex-shrink-0">
+          {(() => {
+            // Get user's normalized tier
+            const userTier =
+              normalizeTier(user?.selected_tier) || "Free Member";
+
+            // Map tiers to badge file names (including Admin -> Gold Member)
+            const tierToBadgeMap = {
+              "Free Member": "Free-Member",
+              "Associate Member": "Associate-Member",
+              "Full Member": "Full-Member",
+              "Gold Member": "Gold-Member",
+              Admin: "Gold-Member", // Admin users get Gold Member badge
+            };
+
+            const badgeFileName = tierToBadgeMap[userTier] || "Free-Member";
+            const badgeUrl = `https://ik.imagekit.io/2crwrt8s6/MemberResources/PAAN%20Badge%20${badgeFileName}.webp`;
+
+            return (
+              <img
+                src={badgeUrl}
+                alt={`${userTier} Badge`}
+                width={100}
+                height={100}
+                className="object-contain"
+                draggable={false}
+                onError={(e) => {
+                  // Fallback to PNG if WebP fails
+                  e.target.src = `https://ik.imagekit.io/2crwrt8s6/MemberResources/PAAN%20Badge%20${badgeFileName}.png`;
+                }}
+              />
+            );
+          })()}
         </div>
 
         {/* Enhanced Action Card (Membership Info) */}
@@ -271,7 +295,10 @@ export default function WelcomeCard({
                     </div>
                   ) : !isFreelancer ? (
                     <div className="[&>span]:!bg-amber-100 [&>span]:!text-gray-900 [&>span]:!border-amber-200 [&>span>svg]:!text-[#F25849] dark:[&>span]:!bg-amber-500/30 dark:[&>span]:!text-amber-100 dark:[&>span]:!border-amber-400">
-                      <TierBadge tier={normalizeTier(user?.selected_tier)} mode={mode} />
+                      <TierBadge
+                        tier={normalizeTier(user?.selected_tier)}
+                        mode={mode}
+                      />
                     </div>
                   ) : (
                     <div className="[&>span]:!bg-amber-100 [&>span]:!text-gray-900 [&>span]:!border-amber-200 [&>span>svg]:!text-[#F25849] dark:[&>span]:!bg-amber-500/30 dark:[&>span]:!text-amber-100 dark:[&>span]:!border-amber-400">

@@ -154,7 +154,9 @@ const TitleCard = ({
               {!hideLastUpdated && (
                 <div
                   className={`w-full sm:w-fit rounded-xl text-xs sm:text-sm ${
-                    mode === "dark" ? "bg-blue-500/20 border border-blue-400/30" : ""
+                    mode === "dark"
+                      ? "bg-blue-500/20 border border-blue-400/30"
+                      : ""
                   } sm:mt-2`}
                 >
                   <div
@@ -173,7 +175,9 @@ const TitleCard = ({
                     </span>
                     <div className="px-2">
                       <span
-                        className={mode === "dark" ? "text-white" : "text-gray-900"}
+                        className={
+                          mode === "dark" ? "text-white" : "text-gray-900"
+                        }
                       >
                         {formatDate(lastUpdated)}
                       </span>
@@ -189,13 +193,38 @@ const TitleCard = ({
         </div>
 
         <div className="flex-shrink-0">
-          <Image
-            src="/assets/images/paan-member-badge.png"
-            alt="Paan Member Badge"
-            width={100}
-            height={100}
-            draggable={false}
-          />
+          {(() => {
+            // Get user's normalized tier
+            const userTier =
+              normalizeTier(user?.selected_tier) || "Free Member";
+
+            // Map tiers to badge file names (including Admin -> Gold Member)
+            const tierToBadgeMap = {
+              "Free Member": "Free-Member",
+              "Associate Member": "Associate-Member",
+              "Full Member": "Full-Member",
+              "Gold Member": "Gold-Member",
+              Admin: "Gold-Member", // Admin users get Gold Member badge
+            };
+
+            const badgeFileName = tierToBadgeMap[userTier] || "Free-Member";
+            const badgeUrl = `https://ik.imagekit.io/2crwrt8s6/MemberResources/PAAN%20Badge%20${badgeFileName}.webp`;
+
+            return (
+              <img
+                src={badgeUrl}
+                alt={`${userTier} Badge`}
+                width={100}
+                height={100}
+                className="object-contain"
+                draggable={false}
+                onError={(e) => {
+                  // Fallback to PNG if WebP fails
+                  e.target.src = `https://ik.imagekit.io/2crwrt8s6/MemberResources/PAAN%20Badge%20${badgeFileName}.png`;
+                }}
+              />
+            );
+          })()}
         </div>
 
         {/* Enhanced Action Card (Membership Info) */}
@@ -231,7 +260,10 @@ const TitleCard = ({
                     </div>
                   ) : !isFreelancer ? (
                     <div className="[&>span]:!bg-amber-100 [&>span]:!text-gray-900 [&>span]:!border-amber-200 [&>span>svg]:!text-[#F25849] dark:[&>span]:!bg-amber-500/30 dark:[&>span]:!text-amber-100 dark:[&>span]:!border-amber-400">
-                      <TierBadge tier={normalizeTier(user?.selected_tier)} mode={mode} />
+                      <TierBadge
+                        tier={normalizeTier(user?.selected_tier)}
+                        mode={mode}
+                      />
                     </div>
                   ) : (
                     <div className="[&>span]:!bg-amber-100 [&>span]:!text-gray-900 [&>span]:!border-amber-200 [&>span>svg]:!text-[#F25849] dark:[&>span]:!bg-amber-500/30 dark:[&>span]:!text-amber-100 dark:[&>span]:!border-amber-400">

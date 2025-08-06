@@ -16,6 +16,7 @@ import ResourceCard from "@/components/ResourceCard";
 import OnboardingKitModal from "@/components/resources/OnboardingKitModal";
 import MerchTemplatesModal from "@/components/resources/MerchTemplatesModal";
 import BrandAssetsModal from "@/components/resources/BrandAssetsModal";
+import VerifiedMemberBadgesModal from "@/components/resources/VerifiedMemberBadgesModal";
 import ComingSoonModal from "@/components/resources/ComingSoonModal";
 
 export default function MemberResources({ mode = "light", toggleMode }) {
@@ -36,6 +37,8 @@ export default function MemberResources({ mode = "light", toggleMode }) {
   const [isMerchTemplatesModalOpen, setIsMerchTemplatesModalOpen] =
     useState(false);
   const [isBrandAssetsModalOpen, setIsBrandAssetsModalOpen] = useState(false);
+  const [isVerifiedBadgesModalOpen, setIsVerifiedBadgesModalOpen] =
+    useState(false);
   const [isComingSoonModalOpen, setIsComingSoonModalOpen] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [comingSoonData, setComingSoonData] = useState({ title: "", type: "" });
@@ -55,6 +58,10 @@ export default function MemberResources({ mode = "light", toggleMode }) {
 
   const handleBrandAssetsClick = () => {
     setIsBrandAssetsModalOpen(true);
+  };
+
+  const handleVerifiedBadgesClick = () => {
+    setIsVerifiedBadgesModalOpen(true);
   };
 
   const handleComingSoonClick = (title, type) => {
@@ -90,8 +97,8 @@ export default function MemberResources({ mode = "light", toggleMode }) {
       title: "Verified Member Badges",
       description:
         "Display your verified PAAN status with downloadable badge graphics and certificates.",
-      buttonText: "Download Badges",
-      onClick: () => handleComingSoonClick("Verified Member Badges", "badges"),
+      buttonText: "Download My Badge",
+      onClick: handleVerifiedBadgesClick,
       badgeText: "Badges",
       badgeColor: "bg-paan-blue",
     },
@@ -223,6 +230,13 @@ export default function MemberResources({ mode = "light", toggleMode }) {
         isOpen={isBrandAssetsModalOpen}
         onClose={() => setIsBrandAssetsModalOpen(false)}
         mode={mode}
+      />
+
+      <VerifiedMemberBadgesModal
+        isOpen={isVerifiedBadgesModalOpen}
+        onClose={() => setIsVerifiedBadgesModalOpen(false)}
+        mode={mode}
+        user={user}
       />
 
       <ComingSoonModal

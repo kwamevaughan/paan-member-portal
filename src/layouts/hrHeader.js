@@ -47,9 +47,7 @@ const HrHeader = ({
       ref={headerRef}
       className={`fixed top-0 z-10 transition-all duration-300 ${
         !isMobile ? "left-60 right-0" : "left-0 right-0"
-      } ${
-        mode === "dark" ? "bg-[#101827]" : "bg-transparent"
-      }`}
+      } ${mode === "dark" ? "bg-[#101827]" : "bg-transparent"}`}
     >
       <div
         className={`
@@ -179,13 +177,10 @@ const HrHeader = ({
                           <span className="text-xs">{user.agencyName}</span>
                         </div>
                       </div>
-                      <Link href="/member-resources?openBadges=true">
+                      <Link href="/profile">
                         <button className="flex items-center w-full gap-2 font-thin text-sm text-gray-500 hover:text-gray-600 transition-colors hover:bg-gray-100 rounded-lg p-2 mt-4">
-                          <Icon
-                            icon="hugeicons:image-download"
-                            className="h-5 w-5"
-                          />
-                          <span>Download Member Badge</span>
+                          <Icon icon="solar:user-broken" className="h-5 w-5" />
+                          <span>Profile</span>
                         </button>
                       </Link>
                       <Link href="/support">

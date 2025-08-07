@@ -1,5 +1,6 @@
 import { Icon } from "@iconify/react";
 import { useState } from "react";
+import { formatDateWithOrdinal } from "../utils/dateUtils";
 
 const OpportunityCard = ({
   opportunity,
@@ -43,8 +44,7 @@ const OpportunityCard = ({
     
     // Add deadline information
     if (opp.deadline) {
-      const deadline = new Date(opp.deadline);
-      sentenceParts.push(`The deadline is ${deadline.toLocaleDateString()}`);
+      sentenceParts.push(`The deadline is ${formatDateWithOrdinal(opp.deadline)}`);
     }
     
     // Combine sentence parts

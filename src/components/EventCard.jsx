@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { TierBadge } from "./Badge";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
+import { formatDateWithOrdinal } from "../utils/dateUtils";
 
 const EventCard = ({
   event,
@@ -229,13 +230,7 @@ const EventCard = ({
               }`}
             />
             <span>
-              {new Date(event.date).toLocaleDateString("en-US", {
-                weekday: "short",
-                month: "short",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+              {formatDateWithOrdinal(event.date)}
             </span>
           </div>
 

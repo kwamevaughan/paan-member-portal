@@ -21,8 +21,6 @@ const HrSidebar = ({
 
   const filteredNav = getFilteredNav(user?.job_type);
 
-
-
   // By default, all categories are collapsed (expandedCategories is empty)
 
   // Expand all categories by default on mount or when filteredNav changes
@@ -41,24 +39,31 @@ const HrSidebar = ({
     // Find the active category and expand it (only for categorized items)
     const activeCategory = filteredNav.find((navItem) => {
       if (!navItem.category) return false; // Skip non-categorized items
-      
+
       return navItem.items.some(({ href }) => {
-        const pathname = href.split('?')[0];
+        const pathname = href.split("?")[0];
         if (pathname === "/business-opportunities") {
           if (href.includes("opportunityType=tender")) {
             return router.asPath.includes("opportunityType=tender");
           } else {
-            return router.pathname === "/business-opportunities" && !router.asPath.includes("opportunityType=tender");
+            return (
+              router.pathname === "/business-opportunities" &&
+              !router.asPath.includes("opportunityType=tender")
+            );
           }
         }
         return router.pathname === pathname;
       });
     });
-    
-    if (activeCategory && activeCategory.category && !expandedCategories[activeCategory.category]) {
-      setExpandedCategories(prev => ({
+
+    if (
+      activeCategory &&
+      activeCategory.category &&
+      !expandedCategories[activeCategory.category]
+    ) {
+      setExpandedCategories((prev) => ({
         ...prev,
-        [activeCategory.category]: true
+        [activeCategory.category]: true,
       }));
     }
   }, [router.asPath, router.pathname, filteredNav, expandedCategories]);
@@ -76,36 +81,41 @@ const HrSidebar = ({
     });
   };
 
-  const setActiveItemRef = useCallback((element) => {
-    if (element) {
-      // Check if this element is the active one
-      const href = element.getAttribute('data-href');
-      if (href) {
-        const pathname = href.split('?')[0];
-        let isActive = false;
-        
-        if (pathname === "/business-opportunities") {
-          if (href.includes("opportunityType=tender")) {
-            isActive = router.asPath.includes("opportunityType=tender");
+  const setActiveItemRef = useCallback(
+    (element) => {
+      if (element) {
+        // Check if this element is the active one
+        const href = element.getAttribute("data-href");
+        if (href) {
+          const pathname = href.split("?")[0];
+          let isActive = false;
+
+          if (pathname === "/business-opportunities") {
+            if (href.includes("opportunityType=tender")) {
+              isActive = router.asPath.includes("opportunityType=tender");
+            } else {
+              isActive =
+                router.pathname === "/business-opportunities" &&
+                !router.asPath.includes("opportunityType=tender");
+            }
           } else {
-            isActive = router.pathname === "/business-opportunities" && !router.asPath.includes("opportunityType=tender");
+            isActive = router.pathname === pathname;
           }
-        } else {
-          isActive = router.pathname === pathname;
-        }
-        
-        if (isActive) {
-          setTimeout(() => {
-            element.scrollIntoView({
-              behavior: 'smooth',
-              block: 'center',
-              inline: 'nearest'
-            });
-          }, 200);
+
+          if (isActive) {
+            setTimeout(() => {
+              element.scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+                inline: "nearest",
+              });
+            }, 200);
+          }
         }
       }
-    }
-  }, [router.asPath, router.pathname]);
+    },
+    [router.asPath, router.pathname]
+  );
 
   const handleResize = useCallback(() => {
     setWindowWidth(window.innerWidth);
@@ -119,9 +129,9 @@ const HrSidebar = ({
 
   const isActive = (href) => {
     // Extract pathname from href (remove query parameters)
-    const pathname = href.split('?')[0];
+    const pathname = href.split("?")[0];
     const pathMatches = router.pathname === pathname;
-    
+
     // Special handling for business opportunities with tender filter
     if (pathname === "/business-opportunities") {
       if (href.includes("opportunityType=tender")) {
@@ -135,7 +145,8 @@ const HrSidebar = ({
           : "text-[#231812] hover:bg-[#0B1215]";
       } else {
         // If this nav item is for regular opportunities, check if we're viewing all opportunities
-        return router.pathname === "/business-opportunities" && !router.asPath.includes("opportunityType=tender")
+        return router.pathname === "/business-opportunities" &&
+          !router.asPath.includes("opportunityType=tender")
           ? mode === "dark"
             ? "bg-[#19191e] text-white shadow-md"
             : "bg-[#0a1215] text-[#E7EEF8] shadow-md"
@@ -144,7 +155,7 @@ const HrSidebar = ({
           : "text-[#231812] hover:bg-[#0B1215]";
       }
     }
-    
+
     // Default behavior for other pages
     return pathMatches
       ? mode === "dark"
@@ -334,13 +345,17 @@ const HrSidebar = ({
               <div className="flex flex-col gap-2 text-white text-sm pt-2">
                 <div className="flex items-center gap-2 hover:bg-paan-dark-blue rounded-2xl p-2">
                   <Link
-                    href="/member-resources"
+                    href="/profile"
                     className="flex items-center gap-2 hover:opacity-80 transition-colors duration-300"
                   >
-                    <Icon icon="mdi:briefcase-outline" className="h-5 w-5" />
-                    <span>Member Assets</span>
+                    <Icon
+                      icon="mdi:account-circle-outline"
+                      className="h-5 w-5"
+                    />
+                    <span>Profile</span>
                   </Link>
                 </div>
+
                 <div className="flex items-center gap-2 hover:bg-paan-dark-blue rounded-2xl p-2">
                   <Link
                     href="/support"

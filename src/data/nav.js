@@ -5,7 +5,7 @@ export const sidebarNav = [
         href: "/dashboard",
         icon: "material-symbols:home-outline",
         label: "Dashboard",
-      },
+      }
     ],
   },
   {

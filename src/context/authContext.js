@@ -162,8 +162,9 @@ export const AuthProvider = ({ children }) => {
           localStorage.removeItem("paan_user_data");
           localStorage.removeItem("paan_member_session");
           localStorage.removeItem("user_email");
-          localStorage.removeItem("paan_remembered_email");
-          localStorage.removeItem("paan_session_expiry");
+          // Don't remove remembered email and session expiry on sign out
+          // localStorage.removeItem("paan_remembered_email");
+          // localStorage.removeItem("paan_session_expiry");
           if (router.pathname !== "/auth/callback") {
             router.push("/");
           }
@@ -396,8 +397,9 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem("paan_user_data");
       localStorage.removeItem("paan_member_session");
       localStorage.removeItem("user_email");
-      localStorage.removeItem("paan_remembered_email");
-      localStorage.removeItem("paan_session_expiry");
+      // Don't remove remembered email and session expiry on logout
+      // localStorage.removeItem("paan_remembered_email");
+      // localStorage.removeItem("paan_session_expiry");
       await router.push("/");
     } catch (err) {
       console.error("AuthContext: Logout error:", err);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { TierBadge, JobTypeBadge, normalizeTier } from "@/components/Badge";
 import Image from "next/image";
+import { formatDateWithOrdinal } from "@/utils/dateUtils";
 
 const TitleCard = ({
   title,
@@ -26,59 +27,7 @@ const TitleCard = ({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const formatDate = (timestamp) => {
-    if (!timestamp) return "No recent updates";
-    if (typeof timestamp === "string" && !timestamp.includes("T")) {
-      const match = timestamp.match(/^(\w+)\s(\d+),\s(\d+)$/);
-      if (match) {
-        const [, month, day, year] = match;
-        const ordinal = (d) => {
-          const n = parseInt(d, 10);
-          if (n > 3 && n < 21) return "th";
-          switch (n % 10) {
-            case 1:
-              return "st";
-            case 2:
-              return "nd";
-            case 3:
-              return "rd";
-            default:
-              return "th";
-          }
-        };
-        return `${day}${ordinal(day)} ${month}, ${year}`;
-      }
-    }
-    const date = new Date(timestamp);
-    if (isNaN(date.getTime())) return "Invalid date";
-    const day = date.getDate();
-    const month = date.toLocaleString("en-US", { month: "long" });
-    const year = date.getFullYear();
-    const ordinal = (d) => {
-      if (d > 3 && d < 21) return "th";
-      switch (d % 10) {
-        case 1:
-          return "st";
-        case 2:
-          return "nd";
-        case 3:
-          return "rd";
-        default:
-          return "th";
-      }
-    };
-    return `${day}${ordinal(day)} ${month}, ${year}`;
-  };
-
-  // Format created_at to a readable date
-  const formatJoinDate = (createdAt) => {
-    if (!createdAt) return "N/A";
-    return new Date(createdAt).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
+  // Using the centralized date utility function
 
   const descriptionParts = description.split("<br />");
   const isFreelancer = user?.job_type?.toLowerCase() === "freelancer";
@@ -179,7 +128,7 @@ const TitleCard = ({
                           mode === "dark" ? "text-white" : "text-gray-900"
                         }
                       >
-                        {formatDate(lastUpdated)}
+                        {formatDateWithOrdinal(lastUpdated)}
                       </span>
                     </div>
                   </div>
@@ -288,7 +237,7 @@ const TitleCard = ({
                           : "bg-[#172840] text-white"
                       }`}
                     >
-                      {formatJoinDate(user?.created_at)}
+                      {formatDateWithOrdinal(user?.created_at)}
                     </span>
                   </div>
                 )}

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import { normalizeTier } from "@/components/Badge";
+import { formatDateWithOrdinal } from "@/utils/dateUtils";
 
 // Function to get day-based greeting
 const getDayGreeting = () => {
@@ -74,15 +75,7 @@ export default function WelcomeCard({
     return routes[section] || "dashboard"; // fallback if section is missing
   };
 
-  // Format created_at to a readable date
-  const formatJoinDate = (createdAt) => {
-    if (!createdAt) return "N/A";
-    return new Date(createdAt).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
+  // Format created_at to a readable date - now using the utility function
 
   if (windowWidth === null) return null;
 
@@ -323,7 +316,7 @@ export default function WelcomeCard({
                           : "bg-[#172840] text-white"
                       }`}
                     >
-                      {formatJoinDate(user?.created_at)}
+                      {formatDateWithOrdinal(user?.created_at)}
                     </span>
                   </div>
                 )}

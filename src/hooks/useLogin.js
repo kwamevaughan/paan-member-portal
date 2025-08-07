@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import toast from "react-hot-toast";
 
@@ -9,6 +9,38 @@ const useLogin = () => {
     password: "",
     rememberMe: false,
   });
+
+  // Check for remembered email on component mount
+  useEffect(() => {
+    const rememberedEmail = localStorage.getItem("paan_remembered_email");
+    const sessionExpiry = localStorage.getItem("paan_session_expiry");
+    
+    console.log("useLogin: Checking remembered email:", { rememberedEmail, sessionExpiry });
+    
+    if (rememberedEmail && sessionExpiry) {
+      const expiryTime = parseInt(sessionExpiry, 10);
+      const currentTime = Date.now();
+      
+      console.log("useLogin: Expiry check:", { expiryTime, currentTime, isValid: currentTime < expiryTime });
+      
+      // Check if the session hasn't expired (30 days)
+      if (currentTime < expiryTime) {
+        console.log("useLogin: Setting remembered email:", rememberedEmail);
+        setLoginData(prev => ({
+          ...prev,
+          email: rememberedEmail,
+          rememberMe: true
+        }));
+      } else {
+        // Session expired, clean up
+        console.log("useLogin: Session expired, cleaning up");
+        localStorage.removeItem("paan_remembered_email");
+        localStorage.removeItem("paan_session_expiry");
+      }
+    } else {
+      console.log("useLogin: No remembered email found");
+    }
+  }, []);
   const [showPassword, setShowPassword] = useState(false);
   const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
 

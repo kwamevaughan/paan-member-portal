@@ -256,10 +256,13 @@ Member Badge issued to: ${user.agencyName}
               />
             </div>
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-              {user.agencyName}'s {userTier === "Admin" ? "Gold" : userTier} Badge
+              {user.agencyName}'s {userTier === "Admin" ? "Gold" : userTier}{" "}
+              Badge
             </h3>
             <p className="text-gray-600 dark:text-gray-300">
-              Download your verified PAAN membership badge to showcase your membership status on social media, websites, and professional profiles.
+              Download your verified PAAN membership badge to showcase your
+              membership status on social media, websites, and professional
+              profiles.
             </p>
           </div>
 
@@ -288,7 +291,10 @@ Member Badge issued to: ${user.agencyName}
           {/* Available Formats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {badgeFormats.map((format, index) => (
-              <div key={index} className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+              <div
+                key={index}
+                className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4"
+              >
                 <div className="flex items-center mb-3">
                   <Icon
                     icon={format.icon}
@@ -302,13 +308,14 @@ Member Badge issued to: ${user.agencyName}
                   <div className="bg-white dark:bg-gray-700 rounded p-3">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        {userTier === "Admin" ? "Gold" : userTier} Badge ({format.type})
+                        {userTier === "Admin" ? "Gold" : userTier} Badge (
+                        {format.type})
                       </span>
                       <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded">
                         {format.type}
                       </span>
                     </div>
-                    
+
                     {/* Preview Image */}
                     <div className="mb-3">
                       <img
@@ -318,7 +325,7 @@ Member Badge issued to: ${user.agencyName}
                         onClick={() => handlePreviewClick(format)}
                       />
                     </div>
-                    
+
                     <div className="flex gap-2">
                       <button
                         onClick={() => handlePreviewClick(format)}
@@ -352,7 +359,11 @@ Member Badge issued to: ${user.agencyName}
                   Badge Usage Guidelines
                 </h5>
                 <p className="text-sm text-blue-700 dark:text-blue-200">
-                  Use your verified member badge to showcase your PAAN membership on professional profiles, email signatures, and websites. Please maintain the badge's original proportions and don't modify the design. This badge verifies your active {userTier.toLowerCase()} status.
+                  Use your verified member badge to showcase your PAAN
+                  membership on professional profiles, email signatures, and
+                  websites. Please maintain the badge's original proportions and
+                  don't modify the design. This badge verifies your active{" "}
+                  {userTier.toLowerCase()} status.
                 </p>
               </div>
             </div>
@@ -382,20 +393,24 @@ Member Badge issued to: ${user.agencyName}
       {/* Preview Modal */}
       {selectedPreview && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-          <div 
+          <div
             className="fixed inset-0 bg-black/50 backdrop-blur-sm"
             onClick={closePreview}
           />
           <div className="relative bg-white dark:bg-gray-800 rounded-lg max-w-4xl max-h-[90vh] overflow-hidden">
             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                {selectedPreview.name} - {userTier === "Admin" ? "Gold" : userTier} Badge
+                {selectedPreview.name} -{" "}
+                {userTier === "Admin" ? "Gold" : userTier} Badge
               </h3>
               <button
                 onClick={closePreview}
                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
-                <Icon icon="mdi:close" className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                <Icon
+                  icon="mdi:close"
+                  className="w-5 h-5 text-gray-500 dark:text-gray-400"
+                />
               </button>
             </div>
             <div className="p-4">
@@ -405,18 +420,18 @@ Member Badge issued to: ${user.agencyName}
                 className="w-full h-auto max-h-[70vh] object-contain rounded"
               />
             </div>
-                         <div className="flex items-center justify-between p-4 border-t border-gray-200 dark:border-gray-700">
-               <span className="text-sm text-gray-500 dark:text-gray-400">
-                 {selectedPreview.type} • {selectedPreview.description}
-               </span>
-               <button
-                 onClick={() => downloadBadge(selectedPreview)}
-                 className="px-4 py-2 bg-paan-red hover:bg-paan-red/80 text-white rounded-lg font-medium transition-colors flex items-center"
-               >
-                 <Icon icon="mdi:download" className="w-4 h-4 mr-2" />
-                 Download {selectedPreview.name}
-               </button>
-             </div>
+            <div className="flex items-center justify-between p-4 border-t border-gray-200 dark:border-gray-700">
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {selectedPreview.type} • {selectedPreview.description}
+              </span>
+              <button
+                onClick={() => downloadBadge(selectedPreview)}
+                className="px-4 py-2 bg-paan-red hover:bg-paan-red/80 text-white rounded-lg font-medium transition-colors flex items-center"
+              >
+                <Icon icon="mdi:download" className="w-4 h-4 mr-2" />
+                Download {selectedPreview.name}
+              </button>
+            </div>
           </div>
         </div>
       )}

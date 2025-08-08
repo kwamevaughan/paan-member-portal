@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useUser } from "@/hooks/useUser";
 import useAccessHubs from "@/hooks/useAccessHubs";
+import useBookings from "@/hooks/useBookings";
 import useLogout from "@/hooks/useLogout";
 import HrHeader from "@/layouts/hrHeader";
 import HrSidebar from "@/layouts/hrSidebar";
@@ -88,6 +89,12 @@ export default function AccessHubs({ mode = "light", toggleMode }) {
     accessHubsLoading: registrationLoading,
     handleAccessHubRegistration,
   } = useAccessHubs(filters, user);
+
+  const {
+    bookings,
+    loading: bookingsLoading,
+    cancelBooking
+  } = useBookings(user);
 
   // Get latest access hub date
   const latestAccessHubsDate =
@@ -251,7 +258,7 @@ export default function AccessHubs({ mode = "light", toggleMode }) {
     { id: "all", label: "All Access Hubs", icon: "mdi:view-grid" },
     {
       id: "registrations",
-      label: "My Registrations",
+      label: "My Activity",
       icon: "mdi:calendar-check",
     },
   ];
@@ -485,52 +492,131 @@ export default function AccessHubs({ mode = "light", toggleMode }) {
             <SimpleModal
               isOpen={showRegistrationsModal}
               onClose={() => setShowRegistrationsModal(false)}
-              title="My Registered Access Hubs"
+              title="My Access Hub Activity"
               mode={mode}
-              width="max-w-2xl"
+              width="max-w-4xl"
             >
-              {registeredAccessHubs && registeredAccessHubs.length > 0 ? (
-                <div className="space-y-4">
-                  {registeredAccessHubs.map((accessHub) => (
-                    <div
-                      key={accessHub.registration_id}
-                      className={`p-4 rounded-lg border ${
-                        mode === "dark" ? "bg-gray-700/50" : "bg-gray-50"
-                      } animate-fade-in`}
-                    >
-                      <div className="flex justify-between items-start">
-                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                          {accessHub.title}
-                        </h3>
-                        <TierBadge
-                          tier={accessHub.tier_restriction}
-                          mode={mode}
-                        />
-                      </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                        {accessHub.city && accessHub.country
-                          ? `${accessHub.city}, ${accessHub.country}`
-                          : ""}
-                      </p>
-                      <div className="flex items-center gap-2 mt-2">
-                        <span className="text-xs font-medium px-2 py-1 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                          {accessHub.status}
-                        </span>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          Registered on{" "}
-                          {accessHub.registered_at
-                            ? formatDate(accessHub.registered_at)
-                            : "N/A"}
-                        </p>
-                      </div>
+              <div className="space-y-6">
+                {/* Registrations Section */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-4 flex items-center">
+                    <Icon icon="mdi:account-check" className="mr-2" />
+                    Registrations ({registeredAccessHubs?.length || 0})
+                  </h3>
+                  {registeredAccessHubs && registeredAccessHubs.length > 0 ? (
+                    <div className="space-y-3">
+                      {registeredAccessHubs.map((accessHub) => (
+                        <div
+                          key={accessHub.registration_id}
+                          className={`p-4 rounded-lg border ${
+                            mode === "dark" ? "bg-gray-700/50 border-gray-600" : "bg-gray-50 border-gray-200"
+                          }`}
+                        >
+                          <div className="flex justify-between items-start">
+                            <h4 className="font-medium text-gray-900 dark:text-white">
+                              {accessHub.title}
+                            </h4>
+                            <TierBadge
+                              tier={accessHub.tier_restriction}
+                              mode={mode}
+                            />
+                          </div>
+                          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                            {accessHub.city && accessHub.country
+                              ? `${accessHub.city}, ${accessHub.country}`
+                              : ""}
+                          </p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <span className="text-xs font-medium px-2 py-1 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                              {accessHub.status}
+                            </span>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              Registered on{" "}
+                              {accessHub.registered_at
+                                ? formatDate(accessHub.registered_at)
+                                : "N/A"}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  ) : (
+                    <p className="text-gray-600 dark:text-gray-300 text-center py-4">
+                      You haven't registered for any access hubs yet.
+                    </p>
+                  )}
                 </div>
-              ) : (
-                <p className="text-gray-600 dark:text-gray-300 text-center">
-                  You haven't registered for any access hubs yet.
-                </p>
-              )}
+
+                {/* Bookings Section */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-4 flex items-center">
+                    <Icon icon="mdi:calendar-check" className="mr-2" />
+                    Space Bookings ({bookings?.length || 0})
+                  </h3>
+                  {bookingsLoading ? (
+                    <div className="text-center py-4">
+                      <Icon icon="mdi:loading" className="w-6 h-6 animate-spin mx-auto" />
+                      <p className="text-sm text-gray-500 mt-2">Loading bookings...</p>
+                    </div>
+                  ) : bookings && bookings.length > 0 ? (
+                    <div className="space-y-3">
+                      {bookings.map((booking) => (
+                        <div
+                          key={booking.id}
+                          className={`p-4 rounded-lg border ${
+                            mode === "dark" ? "bg-gray-700/50 border-gray-600" : "bg-gray-50 border-gray-200"
+                          }`}
+                        >
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h4 className="font-medium text-gray-900 dark:text-white">
+                                {booking.access_hub_title}
+                              </h4>
+                              <p className="text-sm text-gray-600 dark:text-gray-300">
+                                {booking.space_type} • {booking.attendees} attendees
+                              </p>
+                              <p className="text-sm text-gray-600 dark:text-gray-300">
+                                {formatDate(booking.booking_date)} • {booking.start_time} - {booking.end_time}
+                              </p>
+                              {booking.purpose && (
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                  Purpose: {booking.purpose}
+                                </p>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+                                booking.status === 'confirmed' 
+                                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                  : booking.status === 'cancelled'
+                                  ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                  : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                              }`}>
+                                {booking.status}
+                              </span>
+                              {booking.status === 'pending' && (
+                                <button
+                                  onClick={() => cancelBooking(booking.id)}
+                                  className="text-xs px-2 py-1 rounded text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 transition"
+                                >
+                                  Cancel
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                            Booked on {formatDate(booking.created_at)}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-600 dark:text-gray-300 text-center py-4">
+                      You haven't made any space bookings yet.
+                    </p>
+                  )}
+                </div>
+              </div>
               <style jsx>{`
                 @keyframes fadeIn {
                   from {

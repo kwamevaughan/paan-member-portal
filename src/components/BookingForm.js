@@ -242,7 +242,7 @@ ${formData.requirements || "None specified"}
 ${accessHub ? `\n🏢 Access Hub: ${accessHub.title}` : ""}
       `.trim();
 
-      const response = await fetch("/api/contact", {
+      const response = await fetch("/api/bookings", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -252,8 +252,10 @@ ${accessHub ? `\n🏢 Access Hub: ${accessHub.title}` : ""}
           message: bookingMessage,
           email: formData.email,
           name: formData.name,
-          type: "space-booking",
-          bookingData: formData,
+          bookingData: {
+            ...formData,
+            accessHub: accessHub
+          },
         }),
       });
 

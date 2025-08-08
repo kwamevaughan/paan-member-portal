@@ -244,14 +244,16 @@ ${accessHub ? `\n🏢 Access Hub: ${accessHub.title}` : ""}
       `.trim();
 
       // Get auth token for database operations
-      const { data: { session } } = await supabase.auth.getSession();
-      
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
       const response = await fetch("/api/bookings", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(session?.access_token && { 
-            "Authorization": `Bearer ${session.access_token}` 
+          ...(session?.access_token && {
+            Authorization: `Bearer ${session.access_token}`,
           }),
         },
         body: JSON.stringify({
@@ -262,7 +264,7 @@ ${accessHub ? `\n🏢 Access Hub: ${accessHub.title}` : ""}
           userId: user?.id, // Pass user ID directly
           bookingData: {
             ...formData,
-            accessHub: accessHub
+            accessHub: accessHub,
           },
         }),
       });
@@ -365,11 +367,13 @@ ${accessHub ? `\n🏢 Access Hub: ${accessHub.title}` : ""}
                 id="company"
                 name="company"
                 value={formData.company}
-                onChange={handleChange}
-                className={`w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-paan-blue focus:border-transparent ${
-                  mode === "dark" ? "bg-gray-700 text-white" : "bg-white"
+                readOnly
+                className={`w-full px-4 py-2 rounded-lg border transition-colors cursor-not-allowed ${
+                  mode === "dark"
+                    ? "bg-gray-800 border-gray-600 text-gray-300"
+                    : "bg-gray-100 border-gray-300 text-gray-600"
                 }`}
-                placeholder="Your company name"
+                placeholder="Your agency name"
               />
             </div>
 

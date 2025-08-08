@@ -1237,8 +1237,13 @@ const AccessHubModalContent = ({
 
   if (showBookingForm) {
     return (
-      <div className="p-4">
-        {/* <h3 className="text-xl font-semibold mb-4">Book {modalData?.title}</h3> */}
+      <div className="">
+        <h3 className="text-lg font-normal mb-4">
+          Please fill the form below to book {" "}
+          <span className="font-semibold">{modalData?.title}</span>.
+          You will receive an email confirmation of your booking.
+        </h3>
+
         <BookingForm
           user={user}
           onClose={handleBookingClose}
@@ -1352,34 +1357,7 @@ const AccessHubModalContent = ({
         </div>
       )}
 
-      {/* Additional Details */}
-      {modalData.updated_at && (
-        <div
-          className={`p-4 rounded-xl ${
-            mode === "dark" ? "bg-gray-800/30" : "bg-gray-50"
-          }`}
-        >
-          <div className="flex items-center space-x-3">
-            <Icon icon="mdi:calendar-clock" className="text-lg text-paan-red" />
-            <div>
-              <p
-                className={`text-sm font-medium ${
-                  mode === "dark" ? "text-gray-400" : "text-gray-600"
-                }`}
-              >
-                Last Updated
-              </p>
-              <p
-                className={`font-semibold ${
-                  mode === "dark" ? "text-white" : "text-gray-900"
-                }`}
-              >
-                {formatDate(modalData.updated_at)}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+      
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200 dark:border-gray-700">

@@ -88,76 +88,100 @@ export default function PaanAcademy({ mode = "light", toggleMode }) {
           }`}
         >
           <div className="max-w-7xl mx-auto space-y-10">
-            
-
             {/* New Layout Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-20">
-              <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-sm hover:translate-y-[-5px] transition-all duration-200 flex flex-col h-full">
-                <h3 className="text-3xl font-semibold text-gray-800 my-4">
-                  Upcoming Summit
+            <div className="bg-paan-dark-blue pt-6 rounded-lg grid grid-cols-1 md:grid-cols-[60%_40%] lg:grid-cols-[65%_35%] mt-20">
+              <div className="p-6 rounded-lg flex flex-col h-full">
+                <Image
+                  src="assets/images/paan-academy-logo.svg"
+                  alt="PAAN Academy Logo"
+                  width={200}
+                  height={200}
+                  className="mb-6"
+                />
+                <h3 className="text-3xl font-semibold text-white my-2">
+                  Share What You Know
                 </h3>
-                <p className="text-gray-600 mt-6">
-                  <span className="font-bold">EVENT:</span> PAAN Summit Nairobi
-                  2025
+                <h4 className="text-2xl font-normal text-white">
+                  Create a Course for PAAN Academy
+                </h4>
+                <p className="text-white mt-2">
+                  You're already leading great work — now it's time to teach it.
+                  PAAN Academy is inviting agency leaders to design short,
+                  practical courses that help grow Africa’s creative industry.
                 </p>
-                <p className="text-gray-600 mt-2">
-                  <span className="font-bold">THEME:</span> “Ideas Without
-                  Borders”
-                </p>
-                <p className="flex items-center gap-2 text-gray-600 mt-6">
-                  <Icon icon="fe:calendar" className="w-12 h-12" />
-                  <span className="font-semibold text-2xl">
-                    Oct 17–19, 2025
-                  </span>
+                <div className="flex flex-col gap-2 mb-4 mt-6">
+                  <p className="flex text-white mt-2 gap-2 items-center text-md">
+                    <Icon
+                      icon="mdi:check-circle"
+                      className="w-6 h-6 text-paan-yellow mr-2"
+                    />{" "}
+                    <span>
+                      Design short, practical courses based on your strengths
+                    </span>
+                  </p>
+                  <p className="flex text-white mt-2 gap-2 items-center text-md">
+                    <Icon
+                      icon="mdi:check-circle"
+                      className="w-6 h-6 text-paan-yellow mr-2"
+                    />{" "}
+                    <span>Train creatives and teams across Africa</span>
+                  </p>
+                  <p className="flex text-white mt-2 gap-2 items-center text-md">
+                    <Icon
+                      icon="mdi:check-circle"
+                      className="w-6 h-6 text-paan-yellow mr-2"
+                    />{" "}
+                    <span>
+                      Get featured as an expert and build your thought
+                      leadership
+                    </span>
+                  </p>
+                  <p className="flex text-white mt-2 gap-2 items-center text-md">
+                    <Icon
+                      icon="mdi:check-circle"
+                      className="w-6 h-6 text-paan-yellow mr-2"
+                    />{" "}
+                    <span>
+                      Create recurring revenue for your agency from courses sold
+                      on PAAN academy
+                    </span>
+                  </p>
+                </div>
+                <h4 className="text-2xl font-normal text-white mt-4">
+                  Have a training idea or course to teach?
+                </h4>
+                <p className="text-white mt-2">
+                  Let’s help you bring it to life — from structure to delivery.
                 </p>
 
-                <Link href="https://paan.africa/summit#tickets" target="_blank">
-                  <button className="mt-6 px-10 py-3 bg-paan-red hover:bg-paan-red/80 text-white rounded-full transition-all duration-300 flex items-center justify-center w-fit">
-                    Register Now
+                <div className="flex gap-4 mt-6">
+                  <Link
+                    href="https://paan.africa/academy#formats"
+                    target="_blank"
+                  >
+                    <button className="mt-6 px-10 py-3 bg-paan-red hover:bg-paan-red/80 text-white rounded-full transition-all duration-300 flex items-center justify-center w-fit">
+                    Submit Your Course Idea
                   </button>
                 </Link>
-              </div>
-              <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-sm hover:translate-y-[-5px] transition-all duration-200 flex flex-col h-full">
-                <Icon
-                  icon="material-symbols:trophy"
-                  className="w-12 h-12 text-paan-yellow"
-                />
-                <h3 className="text-3xl font-semibold text-gray-800 my-4">
-                  PAAN African Awards 2025
-                </h3>
-
-                <p className="text-gray-600 mt-6">
-                  Celebrating the best agencies, freelancers, and campaigns
-                  shaping Africa’s creative future.
-                </p>
-                <div className="flex gap-4 mt-6">
-                  <button 
-                    onClick={() => {
-                      setModalData({
-                        title: "PAAN African Awards 2025 - Award Categories",
-                        type: "awardCategories",
-                        content: "Coming Soon! Award categories will be announced soon. Stay tuned for updates on the different categories and criteria for the PAAN African Awards 2025."
-                      });
-                      setIsUnifiedModalOpen(true);
-                    }}
-                    className="mt-auto px-6 py-3 bg-paan-dark-blue hover:bg-paan-dark-blue/80 text-white rounded-full transition-all duration-300 flex items-center justify-center w-fit"
-                  >
-                    View Award Categories
+                <Link href="https://paan.africa/academy" target="_blank">
+                  <button className="mt-6 px-10 py-3 bg-paan-yellow hover:bg-paan-yellow/80 text-black rounded-full transition-all duration-300 flex items-center justify-center w-fit">
+                    Learn more about PAAN Academy
                   </button>
-                  <button 
-                    onClick={() => {
-                      setModalData({
-                        title: "Nominate a Campaign - PAAN African Awards 2025",
-                        type: "nominateCampaign",
-                        content: "Coming Soon! The nomination portal for the PAAN African Awards 2025 will be available soon. You'll be able to submit your campaigns and nominations through our dedicated platform."
-                      });
-                      setIsUnifiedModalOpen(true);
-                    }}
-                    className="mt-6 px-6 py-3 bg-paan-yellow hover:bg-paan-yellow/80 text-white rounded-full transition-all duration-300 flex items-center justify-center w-fit"
-                  >
-                    Nominate a Campaign
-                  </button>
+                  </Link>
                 </div>
+              </div>
+              <div className="rounded-lg flex flex-col h-full">
+                <Image
+                  src="/assets/images/paan-man.png"
+                  alt="PAAN Academy Logo"
+                  width={200}
+                  height={200}
+                  className="w-full h-full object-contain"
+                />
+
+
+                
+                
               </div>
             </div>
 

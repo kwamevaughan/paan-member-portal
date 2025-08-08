@@ -62,6 +62,11 @@ export const sidebarNav = [
         icon: "mdi:trophy",
         label: "PAAN Summit",
       },
+      {
+        href: "/paan-academy",
+        icon: "mdi:school",
+        label: "PAAN Academy",
+      },
     ],
   },
 

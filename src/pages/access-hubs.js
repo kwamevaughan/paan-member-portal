@@ -492,18 +492,22 @@ export default function AccessHubs({ mode = "light", toggleMode }) {
             <SimpleModal
               isOpen={showRegistrationsModal}
               onClose={() => setShowRegistrationsModal(false)}
-              title="My Access Hub Activity"
+              title={
+                registeredAccessHubs && registeredAccessHubs.length > 0 
+                  ? "My Access Hub Activity" 
+                  : "My Space Bookings"
+              }
               mode={mode}
               width="max-w-4xl"
             >
               <div className="space-y-6">
-                {/* Registrations Section */}
-                <div>
-                  <h3 className="text-lg font-semibold mb-4 flex items-center">
-                    <Icon icon="mdi:account-check" className="mr-2" />
-                    Registrations ({registeredAccessHubs?.length || 0})
-                  </h3>
-                  {registeredAccessHubs && registeredAccessHubs.length > 0 ? (
+                {/* Registrations Section - Only show if there are registrations */}
+                {registeredAccessHubs && registeredAccessHubs.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4 flex items-center">
+                      <Icon icon="mdi:account-check" className="mr-2" />
+                      Registrations ({registeredAccessHubs.length})
+                    </h3>
                     <div className="space-y-3">
                       {registeredAccessHubs.map((accessHub) => (
                         <div
@@ -540,12 +544,8 @@ export default function AccessHubs({ mode = "light", toggleMode }) {
                         </div>
                       ))}
                     </div>
-                  ) : (
-                    <p className="text-gray-600 dark:text-gray-300 text-center py-4">
-                      You haven't registered for any access hubs yet.
-                    </p>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 {/* Bookings Section */}
                 <div>

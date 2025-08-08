@@ -3,24 +3,35 @@ import { supabase } from "@/lib/supabase";
 import toast from "react-hot-toast";
 
 // Helper function to find user in either candidates or hr_users table
-const findUserInTables = async (authUserId) => {
+const findUserInTables = async (userId) => {
   try {
-    // First, try to find user in candidates table
+    // First, check if this is already a candidate ID by trying to find it directly
     const { data: candidateData, error: candidateError } = await supabase
       .from("candidates")
       .select("id")
-      .eq("auth_user_id", authUserId)
+      .eq("id", userId)
       .single();
 
     if (candidateData && !candidateError) {
       return { id: candidateData.id, userType: 'candidate' };
     }
 
+    // If not found directly, try to find by auth_user_id (in case it's an auth ID)
+    const { data: candidateByAuthData, error: candidateByAuthError } = await supabase
+      .from("candidates")
+      .select("id")
+      .eq("auth_user_id", userId)
+      .single();
+
+    if (candidateByAuthData && !candidateByAuthError) {
+      return { id: candidateByAuthData.id, userType: 'candidate' };
+    }
+
     // If not found in candidates, try hr_users table
     const { data: hrUserData, error: hrUserError } = await supabase
       .from("hr_users")
       .select("id")
-      .eq("id", authUserId)
+      .eq("id", userId)
       .single();
 
     if (hrUserData && !hrUserError) {

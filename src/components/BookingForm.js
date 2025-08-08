@@ -4,6 +4,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { toast } from "react-hot-toast";
 import { useProfile } from "../hooks/useProfile";
+import { supabase } from "@/lib/supabase";
 
 export default function BookingForm({ user, onClose, mode, accessHub }) {
   const { profileData } = useProfile(user?.id);
@@ -242,16 +243,23 @@ ${formData.requirements || "None specified"}
 ${accessHub ? `\n🏢 Access Hub: ${accessHub.title}` : ""}
       `.trim();
 
+      // Get auth token for database operations
+      const { data: { session } } = await supabase.auth.getSession();
+      
       const response = await fetch("/api/bookings", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...(session?.access_token && { 
+            "Authorization": `Bearer ${session.access_token}` 
+          }),
         },
         body: JSON.stringify({
           subject: `Space Booking Request - ${spaceTypeLabel} (${formData.date.toLocaleDateString()})`,
           message: bookingMessage,
           email: formData.email,
           name: formData.name,
+          userId: user?.id, // Pass user ID directly
           bookingData: {
             ...formData,
             accessHub: accessHub

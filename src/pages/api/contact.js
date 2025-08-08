@@ -1,16 +1,16 @@
-import nodemailer from 'nodemailer';
+import nodemailer from "nodemailer";
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method not allowed' });
+  if (req.method !== "POST") {
+    return res.status(405).json({ message: "Method not allowed" });
   }
 
   try {
-    const { 
-      name, 
-      email, 
-      subject, 
-      message, 
+    const {
+      name,
+      email,
+      subject,
+      message,
       formType = "general",
       companyName,
       partnerAgencyName,
@@ -32,25 +32,25 @@ export default async function handler(req, res) {
       menteePreference,
       commitmentLevel,
       agencySize,
-      roundtableTopics
+      roundtableTopics,
     } = req.body;
 
     // Validation
     if (!name || !email || !message) {
-      return res.status(400).json({ message: 'Required fields are missing' });
+      return res.status(400).json({ message: "Required fields are missing" });
     }
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return res.status(400).json({ message: 'Invalid email address' });
+      return res.status(400).json({ message: "Invalid email address" });
     }
 
     // Create transporter
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
       port: process.env.EMAIL_PORT,
-      secure: process.env.EMAIL_SECURE === 'true',
+      secure: process.env.EMAIL_SECURE === "true",
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
@@ -72,86 +72,195 @@ export default async function handler(req, res) {
               <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #172840;">
                 <p style="margin: 0 0 10px 0;"><strong>Name:</strong> ${name}</p>
                 <p style="margin: 0 0 10px 0;"><strong>Email:</strong> ${email}</p>
-                <p style="margin: 0 0 10px 0;"><strong>Company:</strong> ${companyName || 'Not provided'}</p>
+                <p style="margin: 0 0 10px 0;"><strong>Company:</strong> ${
+                  companyName || "Not provided"
+                }</p>
               </div>
             </div>`;
 
-      let specificContent = '';
-      
+      let specificContent = "";
+
       switch (formType) {
-        case 'co-bidding':
+        case "co-bidding":
           specificContent = `
             <div style="margin-bottom: 20px;">
               <h2 style="color: #172840; margin: 0 0 10px 0; font-size: 18px;">Co-Bidding Details</h2>
               <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #172840;">
-                <p style="margin: 0 0 10px 0;"><strong>Partner Agency:</strong> ${partnerAgencyName || 'Not specified'}</p>
-                <p style="margin: 0 0 10px 0;"><strong>Partner Contact:</strong> ${partnerAgencyContact || 'Not specified'}</p>
-                <p style="margin: 0 0 10px 0;"><strong>Project Value:</strong> ${projectValue || 'Not specified'}</p>
+                <p style="margin: 0 0 10px 0;"><strong>Partner Agency:</strong> ${
+                  partnerAgencyName || "Not specified"
+                }</p>
+                <p style="margin: 0 0 10px 0;"><strong>Partner Contact:</strong> ${
+                  partnerAgencyContact || "Not specified"
+                }</p>
+                <p style="margin: 0 0 10px 0;"><strong>Project Value:</strong> ${
+                  projectValue || "Not specified"
+                }</p>
                 <p style="margin: 0 0 10px 0;"><strong>Services to Combine:</strong></p>
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin-top: 10px; white-space: pre-wrap;">${servicesCombined || 'Not specified'}</div>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin-top: 10px; white-space: pre-wrap;">${
+                  servicesCombined || "Not specified"
+                }</div>
               </div>
             </div>`;
           break;
-          
-        case 'outsource':
+
+        case "outsource":
           specificContent = `
             <div style="margin-bottom: 20px;">
               <h2 style="color: #172840; margin: 0 0 10px 0; font-size: 18px;">Outsourcing Details</h2>
               <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #172840;">
-                <p style="margin: 0 0 10px 0;"><strong>Scope to Outsource:</strong> ${outsourcingScope || 'Not specified'}</p>
-                <p style="margin: 0 0 10px 0;"><strong>Project Budget:</strong> ${projectValue || 'Not specified'}</p>
-                <p style="margin: 0 0 10px 0;"><strong>Delivery Timeline:</strong> ${deliveryTimeline || 'Not specified'}</p>
-                <p style="margin: 0 0 10px 0;"><strong>White-label Required:</strong> ${whiteLabelRequired ? 'Yes' : 'No'}</p>
+                <p style="margin: 0 0 10px 0;"><strong>Scope to Outsource:</strong> ${
+                  outsourcingScope || "Not specified"
+                }</p>
+                <p style="margin: 0 0 10px 0;"><strong>Project Budget:</strong> ${
+                  projectValue || "Not specified"
+                }</p>
+                <p style="margin: 0 0 10px 0;"><strong>Delivery Timeline:</strong> ${
+                  deliveryTimeline || "Not specified"
+                }</p>
+                <p style="margin: 0 0 10px 0;"><strong>White-label Required:</strong> ${
+                  whiteLabelRequired ? "Yes" : "No"
+                }</p>
               </div>
             </div>`;
           break;
-          
-        case 'webinar-speaker':
+
+        case "webinar-speaker":
           specificContent = `
             <div style="margin-bottom: 20px;">
               <h2 style="color: #172840; margin: 0 0 10px 0; font-size: 18px;">Webinar Speaker Details</h2>
               <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #172840;">
-                <p style="margin: 0 0 10px 0;"><strong>Speaking Topic:</strong> ${speakingTopic || 'Not specified'}</p>
-                <p style="margin: 0 0 10px 0;"><strong>Years of Experience:</strong> ${req.body.experienceLevel || 'Not specified'}</p>
-                <p style="margin: 0 0 10px 0;"><strong>Preferred Time Slots:</strong> ${availability || 'Not specified'}</p>
-                <p style="margin: 0 0 10px 0;"><strong>Timezone:</strong> ${timezone || 'Not specified'}</p>
+                <p style="margin: 0 0 10px 0;"><strong>Speaking Topic:</strong> ${
+                  speakingTopic || "Not specified"
+                }</p>
+                <p style="margin: 0 0 10px 0;"><strong>Years of Experience:</strong> ${
+                  req.body.experienceLevel || "Not specified"
+                }</p>
+                <p style="margin: 0 0 10px 0;"><strong>Preferred Time Slots:</strong> ${
+                  availability || "Not specified"
+                }</p>
+                <p style="margin: 0 0 10px 0;"><strong>Timezone:</strong> ${
+                  timezone || "Not specified"
+                }</p>
               </div>
             </div>`;
           break;
-          
-        case 'mentor':
+
+        case "mentor":
           specificContent = `
             <div style="margin-bottom: 20px;">
               <h2 style="color: #172840; margin: 0 0 10px 0; font-size: 18px;">Mentor Details</h2>
               <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #172840;">
-                <p style="margin: 0 0 10px 0;"><strong>Mentorship Focus Area:</strong> ${mentorshipArea || 'Not specified'}</p>
-                <p style="margin: 0 0 10px 0;"><strong>Years of Experience:</strong> ${req.body.experienceLevel || 'Not specified'}</p>
-                <p style="margin: 0 0 10px 0;"><strong>Preferred Mentee Type:</strong> ${menteePreference || 'Not specified'}</p>
-                <p style="margin: 0 0 10px 0;"><strong>Time Commitment:</strong> ${commitmentLevel || 'Not specified'}</p>
+                <p style="margin: 0 0 10px 0;"><strong>Mentorship Focus Area:</strong> ${
+                  mentorshipArea || "Not specified"
+                }</p>
+                <p style="margin: 0 0 10px 0;"><strong>Years of Experience:</strong> ${
+                  req.body.experienceLevel || "Not specified"
+                }</p>
+                <p style="margin: 0 0 10px 0;"><strong>Preferred Mentee Type:</strong> ${
+                  menteePreference || "Not specified"
+                }</p>
+                <p style="margin: 0 0 10px 0;"><strong>Time Commitment:</strong> ${
+                  commitmentLevel || "Not specified"
+                }</p>
               </div>
             </div>`;
           break;
-          
-        case 'peer-roundtable':
+
+        case "peer-roundtable":
           specificContent = `
             <div style="margin-bottom: 20px;">
               <h2 style="color: #172840; margin: 0 0 10px 0; font-size: 18px;">Peer Roundtable Details</h2>
               <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #172840;">
-                <p style="margin: 0 0 10px 0;"><strong>Agency Size:</strong> ${agencySize || 'Not specified'}</p>
-                <p style="margin: 0 0 10px 0;"><strong>Years in Business:</strong> ${req.body.experienceLevel || 'Not specified'}</p>
-                <p style="margin: 0 0 10px 0;"><strong>Topics of Interest:</strong> ${roundtableTopics || 'Not specified'}</p>
-                <p style="margin: 0 0 10px 0;"><strong>Preferred Meeting Time:</strong> ${availability || 'Not specified'}</p>
-                <p style="margin: 0 0 10px 0;"><strong>Timezone:</strong> ${timezone || 'Not specified'}</p>
+                <p style="margin: 0 0 10px 0;"><strong>Agency Size:</strong> ${
+                  agencySize || "Not specified"
+                }</p>
+                <p style="margin: 0 0 10px 0;"><strong>Years in Business:</strong> ${
+                  req.body.experienceLevel || "Not specified"
+                }</p>
+                <p style="margin: 0 0 10px 0;"><strong>Topics of Interest:</strong> ${
+                  roundtableTopics || "Not specified"
+                }</p>
+                <p style="margin: 0 0 10px 0;"><strong>Preferred Meeting Time:</strong> ${
+                  availability || "Not specified"
+                }</p>
+                <p style="margin: 0 0 10px 0;"><strong>Timezone:</strong> ${
+                  timezone || "Not specified"
+                }</p>
               </div>
             </div>`;
           break;
-          
+
+        case "space-booking":
+          const bookingData = req.body.bookingData || {};
+          specificContent = `
+            <div style="margin-bottom: 20px;">
+              <h2 style="color: #172840; margin: 0 0 10px 0; font-size: 18px;">Space Booking Details</h2>
+              <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #172840;">
+                <p style="margin: 0 0 10px 0;"><strong>Space Type:</strong> ${
+                  bookingData.spaceType || "Not specified"
+                }</p>
+                <p style="margin: 0 0 10px 0;"><strong>Date:</strong> ${
+                  bookingData.date
+                    ? new Date(bookingData.date).toLocaleDateString("en-US", {
+                        weekday: "long",
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })
+                    : "Not specified"
+                }</p>
+                <p style="margin: 0 0 10px 0;"><strong>Time:</strong> ${
+                  bookingData.startTime || "Not specified"
+                } - ${bookingData.endTime || "Not specified"} (${
+            bookingData.duration || 0
+          } hours)</p>
+                <p style="margin: 0 0 10px 0;"><strong>Number of Attendees:</strong> ${
+                  bookingData.attendees || "Not specified"
+                }</p>
+                <p style="margin: 0 0 10px 0;"><strong>Purpose:</strong> ${
+                  bookingData.purpose || "Not specified"
+                }</p>
+                <p style="margin: 0 0 10px 0;"><strong>Budget Range:</strong> ${
+                  bookingData.budget || "Not specified"
+                }</p>
+                <p style="margin: 0 0 10px 0;"><strong>Phone:</strong> ${
+                  bookingData.phone || "Not specified"
+                }</p>
+                ${
+                  bookingData.recurring
+                    ? `
+                <p style="margin: 0 0 10px 0;"><strong>Recurring:</strong> ${
+                  bookingData.recurringType
+                } ${
+                        bookingData.recurringEnd
+                          ? `until ${new Date(
+                              bookingData.recurringEnd
+                            ).toLocaleDateString()}`
+                          : ""
+                      }</p>
+                `
+                    : ""
+                }
+                ${
+                  bookingData.requirements
+                    ? `
+                <p style="margin: 0 0 10px 0;"><strong>Special Requirements:</strong></p>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin-top: 10px; white-space: pre-wrap;">${bookingData.requirements}</div>
+                `
+                    : ""
+                }
+              </div>
+            </div>`;
+          break;
+
         default:
           specificContent = `
             <div style="margin-bottom: 20px;">
               <h2 style="color: #172840; margin: 0 0 10px 0; font-size: 18px;">Message Details</h2>
               <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #172840;">
-                <p style="margin: 0 0 10px 0;"><strong>Subject:</strong> ${subject || 'Not specified'}</p>
+                <p style="margin: 0 0 10px 0;"><strong>Subject:</strong> ${
+                  subject || "Not specified"
+                }</p>
               </div>
             </div>`;
       }
@@ -180,7 +289,9 @@ export default async function handler(req, res) {
       from: `"PAAN Member Portal" <${process.env.EMAIL_USER}>`,
       to: process.env.SUPPORT_EMAIL,
       replyTo: email,
-      subject: `${formType.charAt(0).toUpperCase() + formType.slice(1)} Request - ${subject || 'New Request'}`,
+      subject: `${
+        formType.charAt(0).toUpperCase() + formType.slice(1)
+      } Request - ${subject || "New Request"}`,
       html: generateEmailContent(),
     };
 
@@ -205,44 +316,51 @@ export default async function handler(req, res) {
               Thank you for submitting your ${formType} request to PAAN. We have received your details and our team will review your requirements and get back to you within 24-48 hours.
             </p>`;
 
-      let specificMessage = '';
-      
+      let specificMessage = "";
+
       switch (formType) {
-        case 'co-bidding':
+        case "co-bidding":
           specificMessage = `
             <p style="color: #495057; line-height: 1.6; margin: 0 0 20px 0;">
               We'll help you find the perfect agency partner for your co-bidding opportunity and guide you through the partnership process.
             </p>`;
           break;
-          
-        case 'outsource':
+
+        case "outsource":
           specificMessage = `
             <p style="color: #495057; line-height: 1.6; margin: 0 0 20px 0;">
               We'll connect you with vetted PAAN agencies that can help deliver your project requirements efficiently and professionally.
             </p>`;
           break;
-          
-        case 'webinar-speaker':
+
+        case "webinar-speaker":
           specificMessage = `
             <p style="color: #495057; line-height: 1.6; margin: 0 0 20px 0;">
               We'll review your speaking proposal and connect you with our webinar team to discuss opportunities for you to share your expertise with the PAAN community.
             </p>`;
           break;
-          
-        case 'mentor':
+
+        case "mentor":
           specificMessage = `
             <p style="color: #495057; line-height: 1.6; margin: 0 0 20px 0;">
               We'll match you with agencies that can benefit from your mentorship and guide you through the mentoring process to help grow the next generation of African creative leaders.
             </p>`;
           break;
-          
-        case 'peer-roundtable':
+
+        case "peer-roundtable":
           specificMessage = `
             <p style="color: #495057; line-height: 1.6; margin: 0 0 20px 0;">
               We'll connect you with other agency leaders for collaborative roundtable discussions and help you build valuable peer relationships across the PAAN network.
             </p>`;
           break;
-          
+
+        case "space-booking":
+          specificMessage = `
+            <p style="color: #495057; line-height: 1.6; margin: 0 0 20px 0;">
+              We've received your space booking request and will confirm availability and pricing details within 24 hours. Our team will contact you to finalize the booking and provide any additional information you may need.
+            </p>`;
+          break;
+
         default:
           specificMessage = `
             <p style="color: #495057; line-height: 1.6; margin: 0 0 20px 0;">
@@ -252,13 +370,19 @@ export default async function handler(req, res) {
 
       const footerContent = `
             <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #172840; margin: 20px 0;">
-              <p style="margin: 0 0 10px 0;"><strong>Your Request Type:</strong> ${formType.charAt(0).toUpperCase() + formType.slice(1)}</p>
-              <p style="margin: 0 0 10px 0;"><strong>Company:</strong> ${companyName || 'Not provided'}</p>
+              <p style="margin: 0 0 10px 0;"><strong>Your Request Type:</strong> ${
+                formType.charAt(0).toUpperCase() + formType.slice(1)
+              }</p>
+              <p style="margin: 0 0 10px 0;"><strong>Company:</strong> ${
+                companyName || "Not provided"
+              }</p>
             </div>
             
             <p style="color: #495057; line-height: 1.6; margin: 20px 0 0 0;">
               If you have any urgent questions, please don't hesitate to reach out to us directly at 
-              <a href="mailto:${process.env.SUPPORT_EMAIL}" style="color: #172840;">${process.env.SUPPORT_EMAIL}</a>
+              <a href="mailto:${
+                process.env.SUPPORT_EMAIL
+              }" style="color: #172840;">${process.env.SUPPORT_EMAIL}</a>
             </p>
             
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6;">
@@ -282,9 +406,11 @@ export default async function handler(req, res) {
 
     await transporter.sendMail(confirmationMailOptions);
 
-    res.status(200).json({ message: 'Request submitted successfully' });
+    res.status(200).json({ message: "Request submitted successfully" });
   } catch (error) {
-    console.error('Error sending email:', error);
-    res.status(500).json({ message: 'Failed to send request. Please try again later.' });
+    console.error("Error sending email:", error);
+    res
+      .status(500)
+      .json({ message: "Failed to send request. Please try again later." });
   }
-} 
+}

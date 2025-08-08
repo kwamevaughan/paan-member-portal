@@ -17,6 +17,7 @@ import TabsSelector from "@/components/TabsSelector";
 import AccessHubCard from "@/components/AccessHubCard";
 import SimpleModal from "@/components/SimpleModal";
 import UnifiedModalContent from "@/components/UnifiedModalContent";
+import BookingForm from "@/components/BookingForm";
 
 export default function AccessHubs({ mode = "light", toggleMode }) {
   const {
@@ -36,7 +37,7 @@ export default function AccessHubs({ mode = "light", toggleMode }) {
     "Explore our exclusive access hubs tailored for your membership tier.";
 
   const [filters, setFilters] = useState({
-      spaceType: "",
+    spaceType: "",
     tier_restriction: "",
     city: "",
     country: "",
@@ -46,6 +47,33 @@ export default function AccessHubs({ mode = "light", toggleMode }) {
   const [activeTab, setActiveTab] = useState("all");
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [showRegistrationsModal, setShowRegistrationsModal] = useState(false);
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [selectedAccessHub, setSelectedAccessHub] = useState(null);
+
+  // Handle booking button click
+  const handleBookNow = (accessHub) => {
+    setSelectedAccessHub(accessHub);
+    setShowBookingModal(true);
+  };
+
+  // Handle booking form close
+  const handleBookingClose = () => {
+    setShowBookingModal(false);
+    setSelectedAccessHub(null);
+  };
+
+  // Handle successful booking submission
+  const handleBookingSuccess = () => {
+    setShowBookingModal(false);
+    setSelectedAccessHub(null);
+  };
+
+  // Handle restricted access hub clicks
+  const handleRestrictedClick = () => {
+    toast.error(
+      "This access hub is restricted. Please upgrade your membership to access this feature."
+    );
+  };
 
   // Modal state for access hub details
   const [modalData, setModalData] = useState(null);
@@ -65,7 +93,9 @@ export default function AccessHubs({ mode = "light", toggleMode }) {
   const latestAccessHubsDate =
     accessHubs.length > 0
       ? new Date(
-          Math.max(...accessHubs.map((accessHub) => new Date(accessHub.updated_at)))
+          Math.max(
+            ...accessHubs.map((accessHub) => new Date(accessHub.updated_at))
+          )
         ).toLocaleDateString("en-US", {
           month: "short",
           day: "numeric",
@@ -108,7 +138,7 @@ export default function AccessHubs({ mode = "light", toggleMode }) {
     return diffDays;
   };
 
-  // Sort access hubs by user access and tier
+  // Sort access hubs by availability, then by user access and tier
   const sortAccessHubsByAccessAndTier = (accessHubs) => {
     const tierOrder = {
       "Gold Member": 0,
@@ -118,10 +148,14 @@ export default function AccessHubs({ mode = "light", toggleMode }) {
     };
 
     return [...accessHubs].sort((a, b) => {
+      // First, sort by availability (available hubs first)
+      if (a.is_available && !b.is_available) return -1;
+      if (!a.is_available && b.is_available) return 1;
+
+      // Then sort by user access
       const aHasAccess = hasTierAccess(a.tier_restriction, user);
       const bHasAccess = hasTierAccess(b.tier_restriction, user);
 
-      // First, sort by access (accessible hubs first)
       if (aHasAccess && !bHasAccess) return -1;
       if (!aHasAccess && bHasAccess) return 1;
 
@@ -156,7 +190,7 @@ export default function AccessHubs({ mode = "light", toggleMode }) {
 
   useEffect(() => {
     const handleError = (accessHub) => {
-        console.error("[Access Hubs] Global error:", accessHub.error);
+      console.error("[Access Hubs] Global error:", accessHub.error);
     };
     window.addEventListener("error", handleError);
     return () => window.removeEventListener("error", handleError);
@@ -531,20 +565,15 @@ export default function AccessHubs({ mode = "light", toggleMode }) {
                     mode={mode}
                     onRegister={handleAccessHubRegistration}
                     isRegistered={registeredAccessHubs.some(
-                      (reg) =>
-                        reg.access_hub_id === accessHub.id &&
-                        reg.status === "registered"
+                      (hub) =>
+                        hub.access_hub_id === accessHub.id &&
+                        hub.status === "registered"
                     )}
                     isRestricted={
                       !hasTierAccess(accessHub.tier_restriction, user)
                     }
-                    onRestrictedClick={() => {
-                      toast.error(
-                        `This access hub is available to ${normalizeTier(
-                          accessHub.tier_restriction
-                        )} only. Consider upgrading your membership to register.`
-                      );
-                    }}
+                    onRestrictedClick={handleRestrictedClick}
+                    onBookNow={handleBookNow}
                     onClick={handleAccessHubClick}
                     Icon={Icon}
                   />
@@ -626,17 +655,39 @@ export default function AccessHubs({ mode = "light", toggleMode }) {
       <SimpleModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        title={modalData?.title || "Access Hub Details"}
+        title={`Book ${modalData?.title || "Access Hub Details"}`}
         mode={mode}
         width="max-w-4xl"
       >
         <UnifiedModalContent
           modalData={modalData}
           mode={mode}
+          user={user}
           registeredAccessHubs={registeredAccessHubs}
           handleAccessHubRegistration={handleAccessHubRegistration}
           onClose={handleCloseModal}
         />
+      </SimpleModal>
+
+      {/* Booking Modal */}
+      <SimpleModal
+        isOpen={showBookingModal}
+        onClose={handleBookingClose}
+        title={
+          selectedAccessHub ? `Book ${selectedAccessHub.title}` : "Book Space"
+        }
+        mode={mode}
+        width="max-w-2xl"
+      >
+        <div className="max-h-[80vh] overflow-y-auto">
+          <BookingForm
+            user={user}
+            onClose={handleBookingClose}
+            mode={mode}
+            accessHub={selectedAccessHub}
+            onSuccess={handleBookingSuccess}
+          />
+        </div>
       </SimpleModal>
     </div>
   );

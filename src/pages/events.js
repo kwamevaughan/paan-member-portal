@@ -586,6 +586,7 @@ export default function Events({ mode = "light", toggleMode }) {
         <UnifiedModalContent
           modalData={modalData}
           mode={mode}
+          user={user}
           registeredEvents={registeredEvents}
           handleEventRegistration={handleEventRegistration}
           onClose={handleCloseModal}

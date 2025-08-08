@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { TierBadge } from "./Badge";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
+import toast from "react-hot-toast";
 
 const AccessHubCard = ({
   accessHub,
@@ -18,6 +19,10 @@ const AccessHubCard = ({
   const handleClick = () => {
     if (isRestricted) {
       onRestrictedClick?.();
+      return;
+    }
+    if (!accessHub.is_available) {
+      toast.error('This access hub is currently unavailable. Please check back later.');
       return;
     }
     onClick?.(accessHub);
@@ -48,22 +53,24 @@ const AccessHubCard = ({
     <div
       className={`group relative overflow-hidden rounded-lg border backdrop-blur-lg transition-all duration-300 transform h-full flex flex-col ${
         mode === "dark"
-          ? "bg-[#172840] border-gray-700/60 hover:border-gray-600/80"
-          : "bg-[#172840] border-gray-200/70 hover:border-gray-300/80"
+          ? `bg-[#172840] border-gray-700/60 ${!accessHub.is_available ? '' : 'hover:border-gray-600/80'}`
+          : `bg-[#172840] border-gray-200/70 ${!accessHub.is_available ? '' : 'hover:border-gray-300/80'}`
       } ${
-        isRestricted
-          ? "opacity-50 cursor-not-allowed"
+        isRestricted || !accessHub.is_available
+          ? "opacity-60 cursor-not-allowed"
           : "hover:shadow-2xl cursor-pointer hover:scale-[1.02] hover:-translate-y-2"
       }`}
       onClick={handleClick}
-      onMouseEnter={() => setIsHovered(true)}
+      onMouseEnter={() => setIsHovered(!isRestricted && accessHub.is_available)}
       onMouseLeave={() => setIsHovered(false)}
-      aria-disabled={isRestricted}
+      aria-disabled={isRestricted || !accessHub.is_available}
       role="button"
-      tabIndex={isRestricted ? -1 : 0}
+      tabIndex={isRestricted || !accessHub.is_available ? -1 : 0}
       aria-label={
         isRestricted
           ? `Restricted access hub: ${accessHub.title}`
+          : !accessHub.is_available
+          ? `Unavailable access hub: ${accessHub.title}`
           : `View details for access hub: ${accessHub.title}`
       }
     >
@@ -242,30 +249,32 @@ const AccessHubCard = ({
               </span>
             </div>
           )}
-          <button
-            onClick={handleClick}
-            className={`px-4 py-2 rounded-full font-normal text-xs transition-colors ${
-              isRestricted
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400"
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={handleClick}
+              className={`px-4 py-2 rounded-full font-normal text-xs transition-colors ${
+                isRestricted || !accessHub.is_available
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400"
+                  : isRegistered
+                  ? "bg-paan-yellow hover:bg-paan-yellow/80 dark:bg-paan-yellow dark:hover:bg-paan-yellow/80"
+                  : "bg-paan-yellow hover:bg-paan-yellow/80 dark:bg-paan-yellow dark:hover:bg-paan-yellow/80"
+              }`}
+              disabled={isRestricted || !accessHub.is_available}
+              aria-label={
+                isRestricted
+                  ? `Restricted access hub: ${accessHub.title}`
+                  : !accessHub.is_available
+                  ? `Unavailable access hub: ${accessHub.title}`
+                  : `${isRegistered ? "Unregister" : "View Details"} for ${accessHub.title}`
+              }
+            >
+              {isRestricted
+                ? "Restricted"
                 : isRegistered
-                ? "bg-paan-yellow hover:bg-paan-yellow/80 dark:bg-paan-yellow dark:hover:bg-paan-yellow/80"
-                : "bg-paan-yellow hover:bg-paan-yellow/80 dark:bg-paan-yellow dark:hover:bg-paan-yellow/80"
-            }`}
-            disabled={isRestricted}
-            aria-label={
-              isRestricted
-                ? `Restricted access hub: ${accessHub.title}`
-                : `${isRegistered ? "Unregister" : "Register"} for ${
-                    accessHub.title
-                  }`
-            }
-          >
-            {isRestricted
-              ? "Restricted"
-              : isRegistered
-              ? "Registered"
-              : "View Details"}
-          </button>
+                ? "Registered"
+                : "View Details"}
+            </button>
+          </div>
         </div>
         {!isRestricted && (
           <div

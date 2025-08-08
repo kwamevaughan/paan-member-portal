@@ -599,6 +599,7 @@ export default function Resources({ mode = "light", toggleMode }) {
         <UnifiedModalContent
           modalData={modalData}
           mode={mode}
+          user={user}
           onClose={handleCloseModal}
         />
       </SimpleModal>

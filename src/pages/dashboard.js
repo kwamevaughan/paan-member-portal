@@ -530,6 +530,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
         <UnifiedModalContent
           modalData={modalData}
           mode={mode}
+          user={user}
           registeredEvents={registeredEvents}
           handleEventRegistration={handleEventRegistration}
           onClose={handleCloseModal}

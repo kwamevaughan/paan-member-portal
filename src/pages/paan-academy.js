@@ -160,13 +160,13 @@ export default function PaanAcademy({ mode = "light", toggleMode }) {
                     target="_blank"
                   >
                     <button className="mt-6 px-10 py-3 bg-paan-red hover:bg-paan-red/80 text-white rounded-full transition-all duration-300 flex items-center justify-center w-fit">
-                    Submit Your Course Idea
-                  </button>
-                </Link>
-                <Link href="https://paan.africa/academy" target="_blank">
-                  <button className="mt-6 px-10 py-3 bg-paan-yellow hover:bg-paan-yellow/80 text-black rounded-full transition-all duration-300 flex items-center justify-center w-fit">
-                    Learn more about PAAN Academy
-                  </button>
+                      Submit Your Course Idea
+                    </button>
+                  </Link>
+                  <Link href="https://paan.africa/academy" target="_blank">
+                    <button className="mt-6 px-10 py-3 bg-paan-yellow hover:bg-paan-yellow/80 text-black rounded-full transition-all duration-300 flex items-center justify-center w-fit">
+                      Learn more about PAAN Academy
+                    </button>
                   </Link>
                 </div>
               </div>
@@ -178,10 +178,6 @@ export default function PaanAcademy({ mode = "light", toggleMode }) {
                   height={200}
                   className="w-full h-full object-contain"
                 />
-
-
-                
-                
               </div>
             </div>
 
@@ -189,11 +185,15 @@ export default function PaanAcademy({ mode = "light", toggleMode }) {
 
             <div className="mt-6 p-8 md:py-8 bg-paan-blue rounded-lg flex flex-col md:flex-row items-center justify-between gap-4 transition-all duration-300">
               <span className="text-xl md:text-2xl">
-                Want to be part of Africa’s most inspiring creative movement?
+                Ready to empower your team with Africa-specific,
+                industry-relevant skills?
               </span>
-              <Link href="https://paan.africa/summit" target="_blank">
+              <Link
+                href="https://calendly.com/njue-duncan-growthpad/paan-partners-introduction"
+                target="_blank"
+              >
                 <button className="px-8 py-3 bg-paan-red hover:bg-paan-red/80 text-white rounded-full w-full md:w-auto transition-all duration-300">
-                  Join the PAAN Summit
+                  Schedule a Free Training Consultation
                 </button>
               </Link>
             </div>

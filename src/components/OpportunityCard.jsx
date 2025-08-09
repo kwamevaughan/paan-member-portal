@@ -263,38 +263,39 @@ const OpportunityCard = ({
               </h3>
 
               {/* Type and Tier Row */}
-              <div className="flex items-center gap-2 mb-2">
-                <span
-                  className={`flex items-center gap-2 px-2 py-2 text-xs font-medium rounded-full ${
-                    isTender
-                      ? mode === "dark"
-                        ? "bg-paan-red/30 text-paan-red"
-                        : "bg-paan-red/10 text-paan-red"
-                      : mode === "dark"
-                      ? "bg-paan-blue/30 text-paan-blue"
-                      : "bg-paan-blue/10 text-paan-blue"
-                  }`}
-                >
-                  {isTender ? (
-                    <>
-                      <Icon icon="mdi:file-document" className="text-lg" />
-                      Tender
-                    </>
-                  ) : (
-                    opportunity.job_type
-                  )}
-                </span>
-                {!isFreelancer && (
-                  <div className="[&>span]:!bg-white [&>span]:!text-gray-900 [&>span]:!border-gray-200 [&>span>svg]:!text-[#f25749]">
-                    <TierBadge
-                      tier={opportunity.tier_restriction || "Free Member"}
-                      mode={mode}
-                    />
-                  </div>
-                )}
-              </div>
             </div>
           </div>
+        </div>
+
+        <div className="flex justify-between items-center gap-2 mb-2">
+          <span
+            className={`flex justify-center w-full items-center gap-2 px-2 py-2 text-xs font-medium rounded-full ${
+              isTender
+                ? mode === "dark"
+                  ? "bg-paan-red/30 text-paan-red"
+                  : "bg-paan-red/10 text-paan-red"
+                : mode === "dark"
+                ? "bg-paan-blue/30 text-paan-blue"
+                : "bg-paan-blue/10 text-paan-blue"
+            }`}
+          >
+            {isTender ? (
+              <>
+                <Icon icon="mdi:file-document" className="text-lg" />
+                Tender
+              </>
+            ) : (
+              opportunity.job_type
+            )}
+          </span>
+          {!isFreelancer && (
+            <div className="flex justify-center w-full [&>span]:!bg-white [&>span]:!text-gray-900 [&>span]:!border-gray-200 [&>span>svg]:!text-[#f25749]">
+              <TierBadge
+                tier={opportunity.tier_restriction || "Free Member"}
+                mode={mode}
+              />
+            </div>
+          )}
         </div>
 
         {/* Description */}

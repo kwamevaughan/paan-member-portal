@@ -2,6 +2,15 @@ import { Icon } from "@iconify/react";
 import { useState } from "react";
 import { formatDateWithOrdinal } from "../utils/dateUtils";
 
+// Utility function to convert text to title case
+const toTitleCase = (str) => {
+  if (!str) return str;
+  return str.replace(
+    /\w\S*/g,
+    (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+  );
+};
+
 const OpportunityCard = ({
   opportunity,
   mode,
@@ -15,9 +24,9 @@ const OpportunityCard = ({
   // Function to generate description from available data
   const generateDescription = (opp, isTender, isFreelancer) => {
     const sentenceParts = [];
-    
+
     // Add organization/company name using the same logic as title
-    let organizationName = '';
+    let organizationName = "";
     if (isTender) {
       organizationName = opp.tender_organization;
     } else if (isFreelancer) {
@@ -25,48 +34,58 @@ const OpportunityCard = ({
     } else {
       organizationName = opp.tender_organization;
     }
-    
+
     if (organizationName) {
       sentenceParts.push(`${organizationName}`);
     }
-    
+
     // Add service type to the main sentence
     if (opp.project_type) {
-      sentenceParts.push(`is seeking <strong>${opp.project_type}</strong> services`);
+      sentenceParts.push(
+        `is seeking <strong>${opp.project_type}</strong> services`
+      );
     } else if (opp.service_type) {
-      sentenceParts.push(`is seeking <strong>${opp.service_type}</strong> services`);
+      sentenceParts.push(
+        `is seeking <strong>${opp.tender_category}</strong> services`
+      );
     }
-    
+
     // Add industry to the main sentence
-    if (opp.industry) {
-      sentenceParts.push(`in the ${opp.industry} industry`);
-    }
-    
+    // if (opp.industry) {
+    //   sentenceParts.push(`in the ${opp.industry} industry`);
+    // }
+
     // Add deadline information
     if (opp.deadline) {
-      sentenceParts.push(`The deadline is ${formatDateWithOrdinal(opp.deadline)}`);
+      sentenceParts.push(
+        `The deadline is ${formatDateWithOrdinal(opp.deadline)}`
+      );
     }
-    
+
     // Combine sentence parts
-    let description = '';
+    let description = "";
     if (sentenceParts.length > 0) {
-      description = sentenceParts.join(' ');
+      description = sentenceParts.join(" ");
     }
-    
+
     if (description) {
-      description += '. Apply to this opportunity';
+      description += ". Apply to this opportunity now.";
       return description;
     }
-    
+
     // Fallback description
-    return `New ${isTender ? 'tender' : isFreelancer ? 'gig' : 'opportunity'} available. Apply now`;
+    return `New ${
+      isTender ? "tender" : isFreelancer ? "gig" : "opportunity"
+    } available. Apply now`;
   };
   const [isHovered, setIsHovered] = useState(false);
 
   const handleClick = () => {
     if (isRestricted) {
       toast.error(
-        `This ${isFreelancer ? "gig" : "opportunity"} requires ${opportunity.tier_restriction} membership. Upgrade your membership to access it.`,
+        `This ${isFreelancer ? "gig" : "opportunity"} requires ${
+          opportunity.tier_restriction
+        } membership. Upgrade your membership to access it.`,
         {
           duration: 4000,
           position: "top-center",
@@ -86,7 +105,9 @@ const OpportunityCard = ({
     e.stopPropagation(); // Prevent card click
     if (isRestricted) {
       toast.error(
-        `This ${isFreelancer ? "gig" : "opportunity"} requires ${opportunity.tier_restriction} membership. Upgrade your membership to access it.`,
+        `This ${isFreelancer ? "gig" : "opportunity"} requires ${
+          opportunity.tier_restriction
+        } membership. Upgrade your membership to access it.`,
         {
           duration: 4000,
           position: "top-center",
@@ -109,17 +130,30 @@ const OpportunityCard = ({
   const isUrgent = daysUntilDeadline <= 7 && daysUntilDeadline > 0;
   const isExpired = daysUntilDeadline < 0;
   const itemLabel = isFreelancer ? "gig" : "opportunity";
-  
+
   // Check if this is a tender opportunity
-  const isTender = opportunity.is_tender || 
-    (opportunity.tender_organization && opportunity.tender_category && opportunity.tender_issued && opportunity.tender_closing);
-  
+  const isTender =
+    opportunity.is_tender ||
+    (opportunity.tender_organization &&
+      opportunity.tender_category &&
+      opportunity.tender_issued &&
+      opportunity.tender_closing);
+
   // Calculate tender deadline if it's a tender
-  const tenderDaysUntilDeadline = isTender && opportunity.tender_closing ? 
-    Math.ceil((new Date(opportunity.tender_closing) - new Date()) / (1000 * 60 * 60 * 24)) : null;
-  
-  const isTenderUrgent = tenderDaysUntilDeadline !== null && tenderDaysUntilDeadline <= 7 && tenderDaysUntilDeadline > 0;
-  const isTenderExpired = tenderDaysUntilDeadline !== null && tenderDaysUntilDeadline < 0;
+  const tenderDaysUntilDeadline =
+    isTender && opportunity.tender_closing
+      ? Math.ceil(
+          (new Date(opportunity.tender_closing) - new Date()) /
+            (1000 * 60 * 60 * 24)
+        )
+      : null;
+
+  const isTenderUrgent =
+    tenderDaysUntilDeadline !== null &&
+    tenderDaysUntilDeadline <= 7 &&
+    tenderDaysUntilDeadline > 0;
+  const isTenderExpired =
+    tenderDaysUntilDeadline !== null && tenderDaysUntilDeadline < 0;
 
   return (
     <div
@@ -130,7 +164,7 @@ const OpportunityCard = ({
       } ${
         isRestricted
           ? "opacity-50 cursor-not-allowed"
-          : (isExpired || isTenderExpired)
+          : isExpired || isTenderExpired
           ? "opacity-60 grayscale hover:shadow-lg cursor-pointer hover:scale-[1.01]"
           : "hover:shadow-2xl cursor-pointer hover:scale-[1.02] hover:-translate-y-2"
       }`}
@@ -142,17 +176,19 @@ const OpportunityCard = ({
       tabIndex={isRestricted ? -1 : 0}
       aria-label={
         isRestricted
-          ? `Restricted ${itemLabel}: ${isTender
-              ? (opportunity.tender_title || opportunity.organization_name)
-              : (opportunity.job_type === "Freelancer"
-                  ? opportunity.gig_title
-                  : opportunity.organization_name)
+          ? `Restricted ${itemLabel}: ${
+              isTender
+                ? opportunity.tender_title || opportunity.organization_name
+                : opportunity.job_type === "Freelancer"
+                ? opportunity.gig_title
+                : opportunity.organization_name
             }`
-          : `View ${itemLabel}: ${isTender
-              ? (opportunity.tender_title || opportunity.organization_name)
-              : (opportunity.job_type === "Freelancer"
-                  ? opportunity.gig_title
-                  : opportunity.organization_name)
+          : `View ${itemLabel}: ${
+              isTender
+                ? opportunity.tender_title || opportunity.organization_name
+                : opportunity.job_type === "Freelancer"
+                ? opportunity.gig_title
+                : opportunity.organization_name
             }`
       }
     >
@@ -204,19 +240,21 @@ const OpportunityCard = ({
                 } ${isRestricted ? "text-gray-500 dark:text-gray-400" : ""} ${
                   isHovered ? "text-paan-blue dark:text-paan-blue" : ""
                 }`}
-                title={isTender
-                  ? (opportunity.tender_title || opportunity.organization_name)
-                  : (opportunity.job_type === "Freelancer"
-                      ? opportunity.gig_title
-                      : opportunity.organization_name)
+                title={
+                  isTender
+                    ? opportunity.tender_title || opportunity.organization_name
+                    : opportunity.job_type === "Freelancer"
+                    ? opportunity.gig_title
+                    : opportunity.organization_name
                 }
               >
-                {isTender
-                  ? (opportunity.tender_title || opportunity.organization_name)
-                  : (opportunity.job_type === "Freelancer"
-                      ? opportunity.gig_title
-                      : opportunity.organization_name)
-                }
+                {toTitleCase(
+                  isTender
+                    ? opportunity.tender_title || opportunity.organization_name
+                    : opportunity.job_type === "Freelancer"
+                    ? opportunity.gig_title
+                    : opportunity.organization_name
+                )}
                 {isRestricted && (
                   <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
                     <Icon icon="mdi:lock" className="text-sm" />
@@ -265,8 +303,10 @@ const OpportunityCard = ({
             className={`text-sm mb-4 line-clamp-3 leading-relaxed prose prose-sm max-w-none ${
               mode === "dark" ? "text-gray-400 prose-invert" : "text-white"
             } ${isRestricted ? "text-gray-400 dark:text-gray-500" : ""}`}
-            dangerouslySetInnerHTML={{ 
-              __html: opportunity.description || generateDescription(opportunity, isTender, isFreelancer)
+            dangerouslySetInnerHTML={{
+              __html:
+                opportunity.description ||
+                generateDescription(opportunity, isTender, isFreelancer),
             }}
           />
         )}
@@ -310,7 +350,10 @@ const OpportunityCard = ({
           {/* Location */}
           {opportunity.location && (
             <div className="flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200">
-              <Icon icon="mdi:map-marker" className="text-lg text-paan-yellow" />
+              <Icon
+                icon="mdi:map-marker"
+                className="text-lg text-paan-yellow"
+              />
               <span className="truncate text-white">
                 {opportunity.location}
               </span>
@@ -500,11 +543,12 @@ const OpportunityCard = ({
                 : "bg-amber-400  hover:bg-amber-500 dark:bg-amber-400 dark:hover:bg-amber-500"
             }`}
             disabled={isRestricted}
-            aria-label={`View details for ${isTender
-              ? (opportunity.tender_title || opportunity.organization_name)
-              : (opportunity.job_type === "Freelancer"
-                  ? opportunity.gig_title
-                  : opportunity.organization_name)
+            aria-label={`View details for ${
+              isTender
+                ? opportunity.tender_title || opportunity.organization_name
+                : opportunity.job_type === "Freelancer"
+                ? opportunity.gig_title
+                : opportunity.organization_name
             }`}
           >
             View Details
@@ -520,8 +564,6 @@ const OpportunityCard = ({
           ></div>
         )}
       </div>
-
-
 
       {/* NEW Badge */}
       {opportunity.is_new && !isRestricted && (

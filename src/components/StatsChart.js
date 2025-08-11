@@ -1,6 +1,7 @@
 import Chart from "react-apexcharts";
 import { format } from "date-fns";
 import { hasTierAccess } from "@/utils/tierUtils";
+import { sidebarNav } from "@/data/nav";
 import { useState, useEffect } from "react";
 
 const StatsChart = ({
@@ -24,6 +25,37 @@ const StatsChart = ({
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  // Extract section links from navigation data
+  const getSectionLinks = () => {
+    const linkMap = {
+      "Active Opportunities": "/business-opportunities",
+      "Upcoming Events": "/events",
+      "New Resources": "/member-resources",
+      "Available Offers": "/offers",
+      "Market Intel": "/market-intel",
+      Updates: "/dashboard", // Updates don't have a dedicated page, so link to dashboard
+    };
+
+    // Try to find actual links from nav data, fallback to manual mapping
+    const navLinks = {};
+    sidebarNav.forEach((category) => {
+      category.items?.forEach((item) => {
+        if (item.href === "/business-opportunities")
+          navLinks["Active Opportunities"] = item.href;
+        if (item.href === "/events") navLinks["Upcoming Events"] = item.href;
+        if (item.href === "/member-resources")
+          navLinks["New Resources"] = item.href;
+        if (item.href === "/offers") navLinks["Available Offers"] = item.href;
+        if (item.href === "/market-intel") navLinks["Market Intel"] = item.href;
+      });
+    });
+
+    // Merge nav links with fallback mapping
+    return { ...linkMap, ...navLinks };
+  };
+
+  const sectionLinks = getSectionLinks();
 
   // Don't render chart on server side
   if (!isClient) {
@@ -91,17 +123,15 @@ const StatsChart = ({
       type: "polarArea",
       events: {
         dataPointSelection: (event, chartContext, config) => {
-          const sectionLinks = isFreelancer
-            ? ["/opportunities", "/events"]
-            : [
-                "/opportunities",
-                "/events",
-                "/resources",
-                "/offers",
-                "/market-intel",
-                "/updates",
-              ];
-          router.push(sectionLinks[config.dataPointIndex]);
+          const selectedLabel = labels[config.dataPointIndex];
+          const targetLink = sectionLinks[selectedLabel];
+
+          if (targetLink) {
+            router.push(targetLink);
+          } else {
+            // Fallback to dashboard if no specific link found
+            router.push("/dashboard");
+          }
         },
       },
     },

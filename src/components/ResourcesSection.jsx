@@ -152,7 +152,7 @@ const ResourcesSection = ({
                 : "bg-gray-100 text-gray-500"
             }`}
           >
-            <iconify-icon icon="mdi:folder-open-outline" className="text-3xl" />
+            <Icon icon="mdi:folder-open-outline" className="text-3xl" />
           </div>
           <h3
             className={`text-xl font-semibold mb-2 ${

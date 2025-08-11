@@ -5,7 +5,7 @@ export const sidebarNav = [
         href: "/dashboard",
         icon: "material-symbols:home-outline",
         label: "Dashboard",
-      }
+      },
     ],
   },
   {
@@ -70,23 +70,6 @@ export const sidebarNav = [
     ],
   },
 
-  // {
-  //   category: "Market Intelligence",
-  //   description: "Stay updated with industry reports and latest market news",
-  //   items: [
-  //     {
-  //       href: "/market-intel",
-  //       icon: "mdi:chart-bar",
-  //       label: "Industry Reports",
-  //     },
-  //     {
-  //       href: "/updates",
-  //       icon: "mdi:bullhorn",
-  //       label: "Latest News",
-  //     },
-  //   ],
-  // },
-
   {
     category: "Resources & Support",
     description: "Access member resources, exclusive offers, and support hubs",
@@ -95,6 +78,11 @@ export const sidebarNav = [
         href: "/member-resources",
         icon: "mdi:toolbox-outline",
         label: "Member Resources",
+      },
+      {
+        href: "/market-intel",
+        icon: "mdi:chart-line",
+        label: "Market Intelligence",
       },
       {
         href: "/offers",

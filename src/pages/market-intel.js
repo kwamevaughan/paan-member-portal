@@ -14,6 +14,7 @@ import TabsSelector from "@/components/TabsSelector";
 import MarketIntelItem from "@/components/MarketIntelItem";
 import SimpleModal from "@/components/SimpleModal";
 import UnifiedModalContent from "@/components/UnifiedModalContent";
+import PdfViewerModal from "@/components/PdfViewerModal";
 import { hasTierAccess } from "@/utils/tierUtils";
 
 export default function MarketIntel({ mode = "light", toggleMode }) {
@@ -38,6 +39,10 @@ export default function MarketIntel({ mode = "light", toggleMode }) {
   // Modal state for market intelligence
   const [modalData, setModalData] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // PDF modal state
+  const [pdfModalData, setPdfModalData] = useState(null);
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
 
   const memoizedFilters = useMemo(
     () => filters,
@@ -109,13 +114,30 @@ export default function MarketIntel({ mode = "light", toggleMode }) {
   };
 
   const handleViewIntelligence = (item) => {
-    setModalData({ ...item, type: 'intelligence' });
-    setIsModalOpen(true);
+    // If the item has a PDF file, open PDF modal directly
+    if (item.file_path) {
+      handleOpenPdfModal(item);
+    } else {
+      // Otherwise, use the general intelligence modal
+      setModalData({ ...item, type: 'intelligence' });
+      setIsModalOpen(true);
+    }
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setModalData(null);
+  };
+
+  // PDF modal handlers
+  const handleOpenPdfModal = (data) => {
+    setPdfModalData(data);
+    setIsPdfModalOpen(true);
+  };
+
+  const handleClosePdfModal = () => {
+    setIsPdfModalOpen(false);
+    setPdfModalData(null);
   };
 
   // Filter by active tab
@@ -396,6 +418,15 @@ export default function MarketIntel({ mode = "light", toggleMode }) {
           onClose={handleCloseModal}
         />
       </SimpleModal>
+
+      {/* PDF Viewer Modal */}
+      <PdfViewerModal
+        isOpen={isPdfModalOpen}
+        onClose={handleClosePdfModal}
+        pdfUrl={pdfModalData?.file_path}
+        title={pdfModalData?.title}
+        mode={mode}
+      />
     </div>
   );
 }

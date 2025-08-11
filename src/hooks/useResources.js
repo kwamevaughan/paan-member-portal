@@ -7,7 +7,7 @@ const useResources = (
 ) => {
   const [resources, setResources] = useState([]);
   const [filterOptions, setFilterOptions] = useState({
-    resource_types: ["PDF", "Video", "Workshop"],
+    resource_types: [],
     tier_restrictions: [
       "Free Member",
       "Associate Member",
@@ -41,8 +41,16 @@ const useResources = (
       const { data: resourcesData, error: resourcesError } = await query;
       if (resourcesError)
         throw new Error(`Failed to fetch resources: ${resourcesError.message}`);
-
       setResources(resourcesData || []);
+
+      // Update filter options based on actual data
+      if (resourcesData && resourcesData.length > 0) {
+        const uniqueTypes = [...new Set(resourcesData.map(r => r.resource_type).filter(Boolean))];
+        setFilterOptions(prev => ({
+          ...prev,
+          resource_types: uniqueTypes
+        }));
+      }
     } catch (err) {
       setError(err.message);
       toast.error("Failed to load resources");

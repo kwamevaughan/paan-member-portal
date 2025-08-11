@@ -221,12 +221,7 @@ export const useBusinessOpportunities = (
         setFetching(true);
         setLoading(true);
         const fetchStart = Date.now();
-        console.log('[useBusinessOpportunities] Fetch started. Loading set to true.');
-        console.log('[useBusinessOpportunities] Query params:', {
-          filters: currentFilters,
-          fetchMode,
-          jobTypeFilter: currentJobTypeFilter,
-        });
+        
 
         try {
           setError(null);
@@ -290,7 +285,6 @@ export const useBusinessOpportunities = (
             throw new Error(`Failed to fetch opportunities: ${error.message}`);
           }
 
-          console.log('[useBusinessOpportunities] Data received:', data);
 
           const userTierNormalized = normalizeTier(user?.selected_tier || "Free Member");
           const tierHierarchy = [
@@ -360,7 +354,6 @@ export const useBusinessOpportunities = (
 
           setOpportunities(sortedData);
           setLastFetchParams(currentParams);
-          console.log('[useBusinessOpportunities] Opportunities set:', sortedData.length);
         } catch (err) {
           console.error("[useBusinessOpportunities] Unexpected error:", err);
           setError("An unexpected error occurred: " + err.message);
@@ -368,7 +361,6 @@ export const useBusinessOpportunities = (
           setFetching(false);
           setLoading(false);
           const fetchEnd = Date.now();
-          console.log('[useBusinessOpportunities] Fetch finished. Loading set to false. Time taken:', fetchEnd - fetchStart, 'ms');
           if (isInitial) setIsInitialFetch(false);
         }
       },

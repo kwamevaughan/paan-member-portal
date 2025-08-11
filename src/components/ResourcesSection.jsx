@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { createStatsConfig } from "@/utils/statsConfig";
 import { hasTierAccess } from "@/utils/tierUtils";
 import SectionCard from "./SectionCard";
-import ResourceCard from "./ResourceCard";
+import ResourceCard from "./ResourceCard.jsx";
 import FilterDropdown from "./FilterDropdown";
 import { Icon } from "@iconify/react";
 
@@ -24,6 +24,8 @@ const ResourcesSection = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [itemsToShow, setItemsToShow] = useState(9);
+
+
 
   const statsConfig = createStatsConfig({
     items: resources,
@@ -299,7 +301,8 @@ const ResourcesSection = ({
                 user={user}
                 mode={mode}
                 onClick={onClick}
-                handleRestrictedClick={handleRestrictedClick}
+                isRestricted={!hasTierAccess(resource.tier_restriction, user)}
+                onRestrictedClick={handleRestrictedClick}
                 Icon={Icon}
               />
             </div>

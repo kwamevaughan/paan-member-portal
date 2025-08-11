@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { TierBadge } from "./Badge";
 import { Icon } from "@iconify/react";
+import Image from "next/image";
 
 const ResourceCard = ({
   resource,
@@ -12,6 +13,22 @@ const ResourceCard = ({
   Icon,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
+
+  // Function to extract YouTube video ID from URL
+  const getYouTubeVideoId = (url) => {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  };
+
+  // Function to get YouTube thumbnail URL
+  const getYouTubeThumbnail = (videoUrl) => {
+    const videoId = getYouTubeVideoId(videoUrl);
+    return videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : null;
+  };
+
+
 
   const handleClick = () => {
     if (isRestricted) {
@@ -94,6 +111,28 @@ const ResourceCard = ({
       )}
 
       <div className="relative p-6 flex-1 flex flex-col">
+        {/* YouTube Thumbnail for Video Resources */}
+        {resource.video_url && (
+          <div className="relative w-full h-[150px] mb-4 rounded-lg overflow-hidden">
+            <Image
+              src={getYouTubeThumbnail(resource.video_url)}
+              width={1000}
+              height={0}
+              alt={`Thumbnail for ${resource.title}`}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.target.style.display = 'none';
+              }}
+            />
+            {/* Video Play Overlay */}
+            <div className="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/30 transition-colors">
+              <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
+                <Icon icon="mdi:play" className="text-white text-2xl ml-1" />
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="mb-4">
           {/* First Row: Icon and Title */}

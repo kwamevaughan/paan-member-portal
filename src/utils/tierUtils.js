@@ -1,6 +1,26 @@
 const normalizeTier = (tier) => {
   if (!tier || typeof tier !== "string") return "Free Member";
   
+  const cleanTier = tier.trim().toLowerCase();
+  
+  // Check for tier patterns in the string
+  if (cleanTier.includes("gold member") || cleanTier.includes("tier 3")) {
+    return "Gold Member";
+  }
+  if (cleanTier.includes("full member") || cleanTier.includes("tier 2")) {
+    return "Full Member";
+  }
+  if (cleanTier.includes("associate member") || cleanTier.includes("associate agency") || cleanTier.includes("tier 1")) {
+    return "Associate Member";
+  }
+  if (cleanTier.includes("free member") || cleanTier.includes("tier 0")) {
+    return "Free Member";
+  }
+  if (cleanTier.includes("admin")) {
+    return "Admin";
+  }
+  
+  // Fallback to exact match for backward compatibility
   const tierMap = {
     "gold member (tier 3)": "Gold Member",
     "full member (tier 2)": "Full Member",
@@ -13,7 +33,7 @@ const normalizeTier = (tier) => {
     "free member": "Free Member",
     "admin": "Admin",
   };
-  const cleanTier = tier.trim().toLowerCase();
+  
   return tierMap[cleanTier] || "Free Member";
 };
 

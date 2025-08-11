@@ -693,10 +693,25 @@ const IntelligenceModalContent = ({ modalData, mode, onClose }) => {
     });
   }
 
-  if (modalData.downloadable) {
+  if (modalData.file_path) {
     actions.push({
-      label: "Download",
-      onClick: () => {},
+      label: "View PDF",
+      onClick: () => window.open(modalData.file_path, "_blank"),
+      color: "bg-[#f25749] hover:bg-[#e04a3d]",
+    });
+  }
+
+  if (modalData.downloadable && modalData.file_path) {
+    actions.push({
+      label: "Download PDF",
+      onClick: () => {
+        const link = document.createElement('a');
+        link.href = modalData.file_path;
+        link.download = `${modalData.title}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      },
       color: "bg-paan-blue hover:bg-paan-blue/80",
     });
   }
@@ -710,6 +725,41 @@ const IntelligenceModalContent = ({ modalData, mode, onClose }) => {
         tier={modalData.tier_restriction}
         mode={mode}
       />
+
+      {/* PDF Viewer for intelligence reports */}
+      {modalData.file_path && (
+        <div
+          className={`p-6 rounded-xl ${
+            mode === "dark" ? "bg-gray-800/30" : "bg-gray-50"
+          }`}
+        >
+          <h3
+            className={`text-xl font-semibold mb-4 ${
+              mode === "dark" ? "text-white" : "text-gray-900"
+            }`}
+          >
+            Report Preview
+          </h3>
+          <div className="relative w-full h-[600px] rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+            <iframe
+              src={`${modalData.file_path}#toolbar=1&navpanes=1&scrollbar=1`}
+              className="w-full h-full"
+              title={`PDF Preview: ${modalData.title}`}
+              style={{ border: 'none' }}
+            />
+          </div>
+          <div className="mt-4 flex justify-between items-center text-sm text-gray-600 dark:text-gray-400">
+            <span>Use the PDF controls to navigate, zoom, and interact with the document</span>
+            <button
+              onClick={() => window.open(modalData.file_path, "_blank")}
+              className="inline-flex items-center px-3 py-1 rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
+            >
+              <Icon icon="mdi:open-in-new" className="w-4 h-4 mr-1" />
+              Open in New Tab
+            </button>
+          </div>
+        </div>
+      )}
 
       <InfoGrid mode={mode}>
         {modalData.region && (
@@ -946,6 +996,24 @@ const ResourceModalContent = ({ modalData, mode, onClose }) => {
         mode={mode}
       />
 
+      {/* Video Player for video resources - moved to top */}
+      {modalData.resource_type === "Video" && modalData.video_url && (
+        <div
+          className={`p-6 rounded-xl ${
+            mode === "dark" ? "bg-gray-800/30" : "bg-gray-50"
+          }`}
+        >
+          <h3
+            className={`text-xl font-semibold mb-4 ${
+              mode === "dark" ? "text-white" : "text-gray-900"
+            }`}
+          >
+            Watch Video
+          </h3>
+          <VideoPlayer videoUrl={modalData.video_url} mode={mode} />
+        </div>
+      )}
+
       <InfoGrid mode={mode}>
         {modalData.format && (
           <InfoCard
@@ -1018,24 +1086,6 @@ const ResourceModalContent = ({ modalData, mode, onClose }) => {
         mode={mode}
       />
       <TagsSection tags={modalData.tags} mode={mode} />
-
-      {/* Video Player for video resources */}
-      {modalData.resource_type === "Video" && modalData.video_url && (
-        <div
-          className={`p-6 rounded-xl ${
-            mode === "dark" ? "bg-gray-800/30" : "bg-gray-50"
-          }`}
-        >
-          <h3
-            className={`text-xl font-semibold mb-4 ${
-              mode === "dark" ? "text-white" : "text-gray-900"
-            }`}
-          >
-            Watch Video
-          </h3>
-          <VideoPlayer videoUrl={modalData.video_url} mode={mode} />
-        </div>
-      )}
 
       {/* Add video feedback form for video resources */}
       {modalData.resource_type === "Video" && modalData.video_url && (

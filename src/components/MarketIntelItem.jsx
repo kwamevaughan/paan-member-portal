@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { TierBadge } from "./Badge";
 import { Icon } from "@iconify/react";
+import PdfThumbnail from "./PdfThumbnail";
 
 const MarketIntelItem = ({
   intel,
@@ -15,12 +16,10 @@ const MarketIntelItem = ({
   const [isHovered, setIsHovered] = useState(false);
 
   const handleClick = () => {
-    console.log('MarketIntelItem handleClick - isRestricted:', isRestricted, 'onClick prop:', !!onClick);
     if (isRestricted) {
       onRestrictedClick?.(intel);
       return;
     }
-    console.log('MarketIntelItem calling onClick with:', intel);
     onClick?.(intel); // Call onClick for accessible items
   };
 
@@ -73,6 +72,15 @@ const MarketIntelItem = ({
       )}
 
       <div className="relative p-6 flex-1 flex flex-col">
+        {/* PDF Thumbnail */}
+        {intel.file_path && (
+          <PdfThumbnail
+            pdfUrl={intel.file_path}
+            title={intel.title}
+            IconComponent={IconComponent}
+          />
+        )}
+
         {/* Header */}
         <div className="mb-4">
           {/* First Row: Icon and Title */}
@@ -103,7 +111,7 @@ const MarketIntelItem = ({
 
           {/* Second Row: Tier Badge, Type and Status Badge */}
           <div className="flex items-center justify-between">
-            <div className="[&>span]:!bg-white [&>span]:!text-gray-900 [&>span]:!border-gray-200 [&>span>svg]:!text-paan-red">
+            <div className="w-full [&>span]:!bg-white [&>span]:!text-gray-900 [&>span]:!border-gray-200 [&>span>svg]:!text-paan-red">
               <TierBadge
                 tier={intel.tier_restriction || "Free Member"}
                 mode={mode}
@@ -112,7 +120,7 @@ const MarketIntelItem = ({
 
             {intel.type && (
               <p
-                className={`text-sm font-medium flex bg-gray-100/50 text-gray-100 px-2 py-1 rounded-full w-fit ${
+                className={`w-full justify-center text-sm font-medium flex bg-gray-100/50 text-gray-100 px-2 py-1 rounded-full ${
                   isRestricted ? "text-gray-400 dark:text-gray-500" : ""
                 }`}
               >
@@ -124,7 +132,7 @@ const MarketIntelItem = ({
             <div className="flex gap-2">
               {/* Restricted Badge */}
               {isRestricted && (
-                <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
+                <div className="w-full inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
                   <IconComponent icon="mdi:lock" className="text-sm mr-1" />
                   Restricted
                 </div>
@@ -132,15 +140,8 @@ const MarketIntelItem = ({
 
               {/* NEW Badge */}
               {intel.is_new && !isRestricted && (
-                <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
+                <div className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
                   NEW
-                </div>
-              )}
-
-              {/* PREMIUM Badge */}
-              {intel.tier_restriction && intel.tier_restriction !== "Free Member" && !isRestricted && (
-                <div className="bg-paan-blue text-white text-xs font-semibold px-2 py-1 rounded-full">
-                  PREMIUM
                 </div>
               )}
             </div>
@@ -170,7 +171,10 @@ const MarketIntelItem = ({
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                 } ${isHovered ? "scale-105" : ""}`}
               >
-                <IconComponent icon="mdi:tag" className="text-paan-yellow text-sm mr-1" />
+                <IconComponent
+                  icon="mdi:tag"
+                  className="text-paan-yellow text-sm mr-1"
+                />
                 {tag}
               </span>
             ))}
@@ -197,19 +201,23 @@ const MarketIntelItem = ({
           {/* Region */}
           {intel.region && (
             <div className="flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200">
-              <IconComponent icon="mdi:map-marker" className="text-lg text-paan-yellow" />
-              <span className="truncate text-white">
-                {intel.region}
-              </span>
+              <IconComponent
+                icon="mdi:map-marker"
+                className="text-lg text-paan-yellow"
+              />
+              <span className="truncate text-white">{intel.region}</span>
             </div>
           )}
 
           {/* Created Date */}
           {intel.created_at && (
             <div className="flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200 text-white">
-              <IconComponent icon="mdi:calendar" className="text-lg text-paan-red" />
+              <IconComponent
+                icon="mdi:calendar"
+                className="text-lg text-paan-red"
+              />
               <span>
-                {new Date(intel.created_at).toLocaleDateString()}
+                Published on: {new Date(intel.created_at).toLocaleDateString()}
               </span>
             </div>
           )}
@@ -217,7 +225,10 @@ const MarketIntelItem = ({
           {/* Downloadable */}
           {intel.downloadable && (
             <div className="flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200">
-              <IconComponent icon="mdi:download" className="text-lg text-paan-yellow" />
+              <IconComponent
+                icon="mdi:download"
+                className="text-lg text-paan-yellow"
+              />
               <span className="font-semibold text-paan-yellow dark:text-paan-yellow">
                 Downloadable
               </span>
@@ -227,9 +238,12 @@ const MarketIntelItem = ({
           {/* Intel Type */}
           {intel.intel_type && (
             <div className="flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200 text-white group relative">
-              <IconComponent icon="mdi:file-chart" className="text-lg text-paan-blue flex-shrink-0" />
+              <IconComponent
+                icon="mdi:file-chart"
+                className="text-lg text-paan-blue flex-shrink-0"
+              />
               <div className="relative">
-                <span 
+                <span
                   className="truncate max-w-[80px] block"
                   title={intel.intel_type}
                 >
@@ -265,7 +279,7 @@ const MarketIntelItem = ({
             disabled={isRestricted}
             aria-label={`View details for ${intel.title}`}
           >
-            View Details
+            View Report
           </button>
         </div>
 

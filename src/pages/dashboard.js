@@ -32,6 +32,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import SimpleModal from "../components/SimpleModal";
 import UnifiedModalContent from "../components/UnifiedModalContent";
+import PdfViewerModal from "../components/PdfViewerModal";
 
 const StatsChart = dynamic(() => import("../components/StatsChart"), {
   ssr: false,
@@ -57,6 +58,10 @@ export default function Dashboard({ mode = "light", toggleMode }) {
   // Unified modal state
   const [modalData, setModalData] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // PDF modal state
+  const [pdfModalData, setPdfModalData] = useState(null);
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
 
   const isFreelancer = user?.job_type?.toLowerCase() === "freelancer";
 
@@ -258,7 +263,14 @@ export default function Dashboard({ mode = "light", toggleMode }) {
 
   const handleViewIntelligence = (item) => {
     console.log("Dashboard handleViewIntelligence called with:", item);
-    handleOpenModal(item, "intelligence");
+
+    // If the item has a PDF file, open PDF modal directly
+    if (item.file_path) {
+      handleOpenPdfModal(item);
+    } else {
+      // Otherwise, use the general intelligence modal
+      handleOpenModal(item, "intelligence");
+    }
   };
 
   const handleEventClick = (event) => {
@@ -275,6 +287,17 @@ export default function Dashboard({ mode = "light", toggleMode }) {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setModalData(null);
+  };
+
+  // PDF modal handlers
+  const handleOpenPdfModal = (data) => {
+    setPdfModalData(data);
+    setIsPdfModalOpen(true);
+  };
+
+  const handleClosePdfModal = () => {
+    setIsPdfModalOpen(false);
+    setPdfModalData(null);
   };
 
   // Memoize the main dashboard content to prevent unnecessary re-renders
@@ -536,6 +559,15 @@ export default function Dashboard({ mode = "light", toggleMode }) {
           onClose={handleCloseModal}
         />
       </SimpleModal>
+
+      {/* PDF Viewer Modal */}
+      <PdfViewerModal
+        isOpen={isPdfModalOpen}
+        onClose={handleClosePdfModal}
+        pdfUrl={pdfModalData?.file_path}
+        title={pdfModalData?.title}
+        mode={mode}
+      />
     </div>
   );
 }

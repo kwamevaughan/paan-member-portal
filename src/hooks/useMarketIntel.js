@@ -50,7 +50,7 @@ const useMarketIntel = (
       let query = supabase
         .from("market_intel")
         .select(
-          "id, title, description, tier_restriction, url, icon_url, region, type, downloadable, created_at, updated_at, chart_data"
+          "id, title, description, tier_restriction, url, icon_url, region, type, downloadable, created_at, updated_at, chart_data, file_path"
         )
         .order("updated_at", { ascending: false }); // Order by updated_at
 

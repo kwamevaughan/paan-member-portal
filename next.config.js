@@ -11,7 +11,7 @@ module.exports = {
       },
       {
         protocol: "https",
-        hostname: "creditbank.co.ke",
+        hostname: "img.youtube.com",
       },
     ],
   },

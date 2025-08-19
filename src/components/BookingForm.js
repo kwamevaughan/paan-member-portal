@@ -10,12 +10,62 @@ export default function BookingForm({ user, onClose, mode, accessHub }) {
   const { profileData } = useProfile(user?.id);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
+  
+  // Get available space types based on access hub pricing
+  const getAvailableSpaceTypes = () => {
+    const types = [];
+    
+    if (accessHub?.pricing_boardroom > 0) {
+      types.push({
+        value: "boardroom",
+        label: `Boardroom - $${accessHub.pricing_boardroom}/hr`,
+        icon: "mdi:office-building",
+        price: accessHub.pricing_boardroom,
+        unit: 'hr'
+      });
+    }
+    
+    if (accessHub?.pricing_meeting > 0) {
+      types.push({
+        value: "meeting-room",
+        label: `Meeting Room - $${accessHub.pricing_meeting}/hr`,
+        icon: "mdi:account-group",
+        price: accessHub.pricing_meeting,
+        unit: 'hr'
+      });
+    }
+    
+    if (accessHub?.pricing_coworking > 0) {
+      types.push({
+        value: "coworking",
+        label: `Co-working Space - $${accessHub.pricing_coworking}/day`,
+        icon: "mdi:laptop",
+        price: accessHub.pricing_coworking,
+        unit: 'day'
+      });
+    }
+    
+    if (accessHub?.pricing_virtual > 0) {
+      types.push({
+        value: "virtual",
+        label: `Virtual Address - $${accessHub.pricing_virtual}/year`,
+        icon: "mdi:earth",
+        price: accessHub.pricing_virtual,
+        unit: 'year'
+      });
+    }
+    
+    return types;
+  };
+  
+  const spaceTypes = getAvailableSpaceTypes();
+  
   const [formData, setFormData] = useState({
     name: user?.full_name || user?.name || "",
     email: user?.email || "",
     company: user?.agencyName || "",
     phone: "",
-    spaceType: accessHub?.space_type || "meeting-room",
+    spaceType: spaceTypes.length > 0 ? spaceTypes[0].value : "",
     date: new Date(),
     startTime: "09:00",
     endTime: "10:00",
@@ -23,8 +73,7 @@ export default function BookingForm({ user, onClose, mode, accessHub }) {
     requirements: "",
     purpose: "",
     duration: 1,
-
-    budget: "",
+    totalPrice: 0,
     recurring: false,
     recurringType: "weekly",
     recurringEnd: null,
@@ -39,20 +88,6 @@ export default function BookingForm({ user, onClose, mode, accessHub }) {
       }));
     }
   }, [profileData]);
-
-  const spaceTypes = [
-    { value: "meeting-room", label: "Meeting Room", icon: "mdi:account-group" },
-    { value: "boardroom", label: "Boardroom", icon: "mdi:office-building" },
-    { value: "coworking", label: "Co-working Space", icon: "mdi:laptop" },
-    { value: "event-space", label: "Event Space", icon: "mdi:calendar-star" },
-    { value: "private-office", label: "Private Office", icon: "mdi:door" },
-    {
-      value: "conference-room",
-      label: "Conference Room",
-      icon: "mdi:presentation",
-    },
-    { value: "workshop-space", label: "Workshop Space", icon: "mdi:tools" },
-  ];
 
   const timeSlots = [
     "07:00",
@@ -92,15 +127,6 @@ export default function BookingForm({ user, onClose, mode, accessHub }) {
     "Product Launch",
     "Conference Call",
     "Other",
-  ];
-
-  const budgetRanges = [
-    { value: "under-100", label: "Under $100" },
-    { value: "100-250", label: "$100 - $250" },
-    { value: "250-500", label: "$250 - $500" },
-    { value: "500-1000", label: "$500 - $1,000" },
-    { value: "over-1000", label: "Over $1,000" },
-    { value: "flexible", label: "Flexible" },
   ];
 
   // Validation function
@@ -197,10 +223,6 @@ export default function BookingForm({ user, onClose, mode, accessHub }) {
       const spaceTypeLabel =
         spaceTypes.find((type) => type.value === formData.spaceType)?.label ||
         formData.spaceType;
-      const budgetLabel =
-        budgetRanges.find((range) => range.value === formData.budget)?.label ||
-        "Not specified";
-
       const bookingMessage = `
 🏢 SPACE BOOKING REQUEST
 
@@ -221,8 +243,6 @@ Date: ${formData.date.toLocaleDateString("en-US", {
 Time: ${formData.startTime} - ${formData.endTime} (${formData.duration} hours)
 Number of Attendees: ${formData.attendees}
 Purpose: ${formData.purpose || "Not specified"}
-
-Budget Range: ${budgetLabel}
 
 ${
   formData.recurring
@@ -613,31 +633,6 @@ ${accessHub ? `\n🏢 Access Hub: ${accessHub.title}` : ""}
               </select>
             </div>
 
-            {/* Budget Range */}
-            <div>
-              <label
-                htmlFor="budget"
-                className="block text-sm font-medium mb-1"
-              >
-                Budget Range
-              </label>
-              <select
-                id="budget"
-                name="budget"
-                value={formData.budget}
-                onChange={handleChange}
-                className={`w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-paan-blue focus:border-transparent ${
-                  mode === "dark" ? "bg-gray-700 text-white" : "bg-white"
-                }`}
-              >
-                <option value="">Select budget range...</option>
-                {budgetRanges.map((range) => (
-                  <option key={range.value} value={range.value}>
-                    {range.label}
-                  </option>
-                ))}
-              </select>
-            </div>
 
             {/* Recurring Booking */}
             <div className="flex items-center space-x-3">

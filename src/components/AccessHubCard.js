@@ -192,45 +192,7 @@ const AccessHubCard = ({
           } ${isRestricted ? "text-gray-400 dark:text-gray-500" : ""}`}
         >
           
-          {/* Capacity */}
-          {accessHub.capacity && (
-            <div
-              className={`flex items-center space-x-1.5 ${
-                mode === "dark" ? "text-gray-400" : "text-gray-100"
-              }`}
-            >
-              <Icon
-                icon="mdi:account-group"
-                className="text-lg text-paan-yellow"
-              />
-              <span>Capacity: {accessHub.capacity}</span>
-            </div>
-          )}
-          {/* Pricing */}
-          {accessHub.pricing_per_day && (
-            <div
-              className={`flex items-center space-x-1.5 ${
-                mode === "dark" ? "text-gray-400" : "text-gray-100"
-              }`}
-            >
-              <Icon
-                icon="mdi:currency-usd"
-                className="text-lg text-paan-yellow"
-              />
-              <span>${accessHub.pricing_per_day}/day</span>
-            </div>
-          )}
-          {/* Amenities */}
-          {accessHub.amenities && accessHub.amenities.length > 0 && (
-            <div
-              className={`flex items-center space-x-1.5 ${
-                mode === "dark" ? "text-gray-400" : "text-gray-100"
-              }`}
-            >
-              <Icon icon="mdi:star" className="text-lg text-paan-yellow" />
-              <span>Amenities: {accessHub.amenities.join(", ")}</span>
-            </div>
-          )}
+          
         </div>
         {/* Footer: Location and View Details Button */}
         <div className="flex items-center justify-between pt-4 mt-auto">

@@ -68,7 +68,10 @@ const useAccessHubs = (
       let query = supabase
         .from("access_hubs")
         .select(
-          "id, title, description, is_available, images, amenities, capacity, pricing_per_day,space_type, city, country, tier_restriction, updated_at"
+          `id, title, description, is_available, images, amenities, capacity, 
+          pricing_per_day, pricing_boardroom, pricing_meeting, 
+          pricing_coworking, pricing_virtual, space_type, city, country, 
+          tier_restriction, updated_at`
         )
         .order("updated_at", { ascending: true });
 
@@ -133,7 +136,7 @@ const useAccessHubs = (
 
       const { data: allAccessHubs, error: allAccessHubsError } = await supabase
         .from("access_hubs")
-        .select("space_type, tier_restriction, city, country, pricing_per_day");
+        .select("space_type, tier_restriction, city, country, pricing_per_day, pricing_boardroom, pricing_meeting, pricing_coworking, pricing_virtual");
       if (allAccessHubsError) {
         console.error(
           "[useAccessHubs] Error fetching filter options:",

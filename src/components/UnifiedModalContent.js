@@ -1261,6 +1261,98 @@ const AccessHubModalContent = ({
     if (modalData?.id) checkRegistration();
   }, [modalData?.id, registrationAttempted]);
 
+  // Pricing Section Component
+  const PricingSection = ({ modalData, mode }) => (
+    <div className="space-y-4">
+      <h3 className={`text-xl font-semibold ${
+        mode === "dark" ? "text-white" : "text-gray-900"
+      }`}>
+        Pricing
+      </h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {modalData.pricing_boardroom > 0 && (
+          <div className={`p-4 rounded-xl border ${
+            mode === "dark" 
+              ? "bg-gray-800/50 border-gray-700" 
+              : "bg-white border-gray-200"
+          }`}>
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-medium text-gray-900 dark:text-white">Boardroom</h4>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Hourly rate</p>
+              </div>
+              <div className="text-right">
+                <p className="text-2xl font-bold text-paan-yellow">
+                  ${modalData.pricing_boardroom}<span className="text-sm font-normal text-gray-500">/hr</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {modalData.pricing_meeting > 0 && (
+          <div className={`p-4 rounded-xl border ${
+            mode === "dark" 
+              ? "bg-gray-800/50 border-gray-700" 
+              : "bg-white border-gray-200"
+          }`}>
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-medium text-gray-900 dark:text-white">Meeting Room</h4>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Hourly rate</p>
+              </div>
+              <div className="text-right">
+                <p className="text-2xl font-bold text-paan-yellow">
+                  ${modalData.pricing_meeting}<span className="text-sm font-normal text-gray-500">/hr</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {modalData.pricing_coworking > 0 && (
+          <div className={`p-4 rounded-xl border ${
+            mode === "dark" 
+              ? "bg-gray-800/50 border-gray-700" 
+              : "bg-white border-gray-200"
+          }`}>
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-medium text-gray-900 dark:text-white">Co-working Space</h4>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Daily rate</p>
+              </div>
+              <div className="text-right">
+                <p className="text-2xl font-bold text-paan-yellow">
+                  ${modalData.pricing_coworking}<span className="text-sm font-normal text-gray-500">/day</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {modalData.pricing_virtual > 0 && (
+          <div className={`p-4 rounded-xl border ${
+            mode === "dark" 
+              ? "bg-gray-800/50 border-gray-700" 
+              : "bg-white border-gray-200"
+          }`}>
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-medium text-gray-900 dark:text-white">Virtual Office</h4>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Annual subscription</p>
+              </div>
+              <div className="text-right">
+                <p className="text-2xl font-bold text-paan-yellow">
+                  ${modalData.pricing_virtual}<span className="text-sm font-normal text-gray-500">/year</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   // Amenity icons mapping
   const amenityIcons = {
     WiFi: "mdi:wifi",
@@ -1344,7 +1436,7 @@ const AccessHubModalContent = ({
         {modalData.capacity && (
           <InfoCard
             icon="mdi:account-group"
-            label="Capacity"
+            label="Max Capacity"
             value={`${modalData.capacity} people`}
             iconColor="text-green-500"
             iconBgColor={mode === "dark" ? "bg-green-900/30" : "bg-green-50"}
@@ -1352,17 +1444,20 @@ const AccessHubModalContent = ({
           />
         )}
 
-        {modalData.pricing_per_day && (
+        {modalData.space_type && (
           <InfoCard
-            icon="mdi:currency-usd"
-            label="Daily Rate"
-            value={`$${modalData.pricing_per_day}`}
-            iconColor="text-paan-yellow"
-            iconBgColor={mode === "dark" ? "bg-yellow-900/30" : "bg-yellow-50"}
+            icon="mdi:office-building"
+            label="Space Type"
+            value={modalData.space_type}
+            iconColor="text-blue-500"
+            iconBgColor={mode === "dark" ? "bg-blue-900/30" : "bg-blue-50"}
             mode={mode}
           />
         )}
       </InfoGrid>
+
+      {/* Pricing Section */}
+      <PricingSection modalData={modalData} mode={mode} />
 
       <DescriptionSection
         title="About This Space"

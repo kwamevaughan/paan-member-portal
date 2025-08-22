@@ -151,6 +151,42 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
         toast.error("User not authenticated. Please log in.");
         return;
       }
+
+      // Ensure a candidates row exists for this user (admins may not have one)
+      const ensureCandidateExists = async () => {
+        const { data: existingCandidate } = await supabase
+          .from("candidates")
+          .select("id")
+          .eq("id", authUser.id)
+          .single();
+
+        if (existingCandidate) return true;
+
+        const name = authUser.user_metadata?.full_name || authUser.user_metadata?.name || "Admin User";
+        const email = authUser.email || authUser.user_metadata?.email || "";
+
+        const { error: insertCandidateError } = await supabase
+          .from("candidates")
+          .insert({
+            id: authUser.id,
+            auth_user_id: authUser.id,
+            primaryContactName: name,
+            primaryContactEmail: email,
+            job_type: "agency",
+            selected_tier: "Admin",
+          });
+        if (insertCandidateError) {
+          console.error("Failed to create candidate for user:", insertCandidateError);
+          return false;
+        }
+        return true;
+      };
+
+      const ensured = await ensureCandidateExists();
+      if (!ensured) {
+        toast.error("Failed to express interest. Please try again.");
+        return;
+      }
   
       // Insert interest directly without checking candidate profile first
       const { error: insertError } = await supabase

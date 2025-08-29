@@ -114,7 +114,7 @@ const AccessHubCard = ({
                 icon={accessHub.is_available ? "mdi:check-circle" : "mdi:close-circle"} 
                 className="text-sm mr-1" 
               />
-              {accessHub.is_available ? "Available" : "Unavailable"}
+              {accessHub.is_available ? "Available" : "Coming Soon"}
             </div>
           </div>
         )}

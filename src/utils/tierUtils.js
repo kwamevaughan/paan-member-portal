@@ -22,11 +22,11 @@ const normalizeTier = (tier) => {
   
   // Fallback to exact match for backward compatibility
   const tierMap = {
-    "gold member (tier 3)": "Gold Member",
-    "full member (tier 2)": "Full Member",
-    "associate member (tier 1)": "Associate Member",
-    "free member (tier 0)": "Free Member",
-    "associate agency (tier 1)": "Associate Member",
+    "gold member (tier 4)": "Gold Member",
+    "full member (tier 3)": "Full Member",
+    "associate member (tier 2)": "Associate Member",
+    "free member (tier 1)": "Free Member",
+    "associate agency (tier 2)": "Associate Member",
     "gold member": "Gold Member",
     "full member": "Full Member",
     "associate member": "Associate Member",

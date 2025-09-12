@@ -122,7 +122,7 @@ export default function PaanSummit({ mode = "light", toggleMode }) {
                 </h3>
                 <p className="text-gray-600 mt-6">
                   <span className="font-bold">EVENT:</span> PAAN Summit Nairobi
-                  2025
+                  2026
                 </p>
                 <p className="text-gray-600 mt-2">
                   <span className="font-bold">THEME:</span> “Ideas Without
@@ -131,7 +131,7 @@ export default function PaanSummit({ mode = "light", toggleMode }) {
                 <p className="flex items-center gap-2 text-gray-600 mt-6">
                   <Icon icon="fe:calendar" className="w-12 h-12" />
                   <span className="font-semibold text-2xl">
-                    Oct 17–19, 2025
+                    Oct 17–19, 2026
                   </span>
                 </p>
 

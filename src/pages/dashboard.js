@@ -33,6 +33,10 @@ import Link from "next/link";
 import SimpleModal from "../components/SimpleModal";
 import UnifiedModalContent from "../components/UnifiedModalContent";
 import PdfViewerModal from "../components/PdfViewerModal";
+import AccessCoverageCard from "../components/AccessCoverageCard";
+
+// Coverage map for tiers
+// Removed inline helpers; now handled inside AccessCoverageCard component
 
 const StatsChart = dynamic(() => import("../components/StatsChart"), {
   ssr: false,
@@ -322,99 +326,147 @@ export default function Dashboard({ mode = "light", toggleMode }) {
           user={memoizedUser}
         >
           {activeTab === "opportunities" && (
-            <OpportunitiesSection
-              opportunities={opportunities}
-              opportunitiesLoading={opportunitiesLoading}
-              opportunitiesError={opportunitiesError}
-              opportunityFilters={filters.opportunities}
-              handleOpportunityFilterChange={handleOpportunityFilterChange}
-              opportunityFilterOptions={opportunityFilterOptions}
-              handleResetFilters={handleResetOpportunityFilters}
-              user={memoizedUser}
-              handleRestrictedClick={handleRestrictedClick}
-              mode={mode}
-              Icon={Icon}
-              toast={toast}
-            />
+            <>
+              <AccessCoverageCard
+                mode={mode}
+                userTier={memoizedUser?.selected_tier}
+                sectionLabel={"opportunities"}
+                onUpgrade={() => window.open("https://paan.africa/#membership", "_blank", "noopener,noreferrer")}
+              />
+              <OpportunitiesSection
+                opportunities={opportunities}
+                opportunitiesLoading={opportunitiesLoading}
+                opportunitiesError={opportunitiesError}
+                opportunityFilters={filters.opportunities}
+                handleOpportunityFilterChange={handleOpportunityFilterChange}
+                opportunityFilterOptions={opportunityFilterOptions}
+                handleResetFilters={handleResetOpportunityFilters}
+                user={memoizedUser}
+                handleRestrictedClick={handleRestrictedClick}
+                mode={mode}
+                Icon={Icon}
+                toast={toast}
+              />
+            </>
           )}
           {activeTab === "events" && (
-            <EventsSection
-              events={events}
-              registeredEvents={registeredEvents}
-              eventsLoading={eventsLoading}
-              eventsError={eventsError}
-              eventFilters={filters.events}
-              handleEventFilterChange={handleEventFilterChange}
-              eventFilterOptions={eventFilterOptions}
-              user={memoizedUser}
-              handleEventRegistration={handleEventRegistration}
-              handleRestrictedClick={handleRestrictedClick}
-              mode={mode}
-              Icon={Icon}
-              onClick={handleEventClick}
-            />
+            <>
+              <AccessCoverageCard
+                mode={mode}
+                userTier={memoizedUser?.selected_tier}
+                sectionLabel={"events & workshops"}
+                onUpgrade={() => window.open("https://paan.africa/#membership", "_blank", "noopener,noreferrer")}
+              />
+              <EventsSection
+                events={events}
+                registeredEvents={registeredEvents}
+                eventsLoading={eventsLoading}
+                eventsError={eventsError}
+                eventFilters={filters.events}
+                handleEventFilterChange={handleEventFilterChange}
+                eventFilterOptions={eventFilterOptions}
+                user={memoizedUser}
+                handleEventRegistration={handleEventRegistration}
+                handleRestrictedClick={handleRestrictedClick}
+                mode={mode}
+                Icon={Icon}
+                onClick={handleEventClick}
+              />
+            </>
           )}
           {activeTab === "resources" && (
-            <ResourcesSection
-              resources={resources}
-              resourcesLoading={resourcesLoading}
-              resourcesError={resourcesError}
-              resourceFilters={filters.resources}
-              handleResourceFilterChange={handleResourceFilterChange}
-              resourceFilterOptions={resourceFilterOptions}
-              user={memoizedUser}
-              handleRestrictedClick={handleRestrictedClick}
-              mode={mode}
-              Icon={Icon}
-              onClick={(resource) => handleOpenModal(resource, "resource")}
-            />
+            <>
+              <AccessCoverageCard
+                mode={mode}
+                userTier={memoizedUser?.selected_tier}
+                sectionLabel={"resources"}
+                onUpgrade={() => window.open("https://paan.africa/#membership", "_blank", "noopener,noreferrer")}
+              />
+              <ResourcesSection
+                resources={resources}
+                resourcesLoading={resourcesLoading}
+                resourcesError={resourcesError}
+                resourceFilters={filters.resources}
+                handleResourceFilterChange={handleResourceFilterChange}
+                resourceFilterOptions={resourceFilterOptions}
+                user={memoizedUser}
+                handleRestrictedClick={handleRestrictedClick}
+                mode={mode}
+                Icon={Icon}
+                onClick={(resource) => handleOpenModal(resource, "resource")}
+              />
+            </>
           )}
           {activeTab === "marketIntel" && (
-            <MarketIntelSection
-              marketIntel={marketIntel}
-              marketIntelLoading={marketIntelLoading}
-              marketIntelError={marketIntelError}
-              marketIntelFilters={filters.marketIntel}
-              handleMarketIntelFilterChange={handleMarketIntelFilterChange}
-              marketIntelFilterOptions={marketIntelFilterOptions}
-              user={memoizedUser}
-              handleRestrictedClick={handleRestrictedClick}
-              mode={mode}
-              Icon={Icon}
-              toast={toast}
-              onClick={handleViewIntelligence}
-            />
+            <>
+              <AccessCoverageCard
+                mode={mode}
+                userTier={memoizedUser?.selected_tier}
+                sectionLabel={"market intelligence"}
+                onUpgrade={() => window.open("https://paan.africa/#membership", "_blank", "noopener,noreferrer")}
+              />
+              <MarketIntelSection
+                marketIntel={marketIntel}
+                marketIntelLoading={marketIntelLoading}
+                marketIntelError={marketIntelError}
+                marketIntelFilters={filters.marketIntel}
+                handleMarketIntelFilterChange={handleMarketIntelFilterChange}
+                marketIntelFilterOptions={marketIntelFilterOptions}
+                user={memoizedUser}
+                handleRestrictedClick={handleRestrictedClick}
+                mode={mode}
+                Icon={Icon}
+                toast={toast}
+                onClick={handleViewIntelligence}
+              />
+            </>
           )}
           {activeTab === "offers" && (
-            <OffersSection
-              offers={offers}
-              offersLoading={offersLoading}
-              offersError={offersError}
-              offerFilters={filters.offers}
-              handleOfferFilter={handleOfferFilter}
-              offersFilterOptions={offerFilterOptions}
-              user={memoizedUser}
-              handleRestrictedClick={handleRestrictedClick}
-              mode={mode}
-              Icon={Icon}
-              toast={toast}
-              onClick={(offer) => handleOpenModal(offer, "offer")}
-            />
+            <>
+              <AccessCoverageCard
+                mode={mode}
+                userTier={memoizedUser?.selected_tier}
+                sectionLabel={"offers"}
+                onUpgrade={() => window.open("https://paan.africa/#membership", "_blank", "noopener,noreferrer")}
+              />
+              <OffersSection
+                offers={offers}
+                offersLoading={offersLoading}
+                offersError={offersError}
+                offerFilters={filters.offers}
+                handleOfferFilter={handleOfferFilter}
+                offersFilterOptions={offerFilterOptions}
+                user={memoizedUser}
+                handleRestrictedClick={handleRestrictedClick}
+                mode={mode}
+                Icon={Icon}
+                toast={toast}
+                onClick={(offer) => handleOpenModal(offer, "offer")}
+              />
+            </>
           )}
           {activeTab === "updates" && (
-            <UpdatesSection
-              updates={updates}
-              updatesLoading={updatesLoading}
-              updatesError={updatesError}
-              updateFilters={filters.updates}
-              handleUpdateFilterChange={handleUpdateFilterChange}
-              updateFilterOptions={updateFilterOptions}
-              user={memoizedUser}
-              handleRestrictedClick={handleRestrictedClick}
-              mode={mode}
-              Icon={Icon}
-              onClick={(update) => handleOpenModal(update, "update")}
-            />
+            <>
+              <AccessCoverageCard
+                mode={mode}
+                userTier={memoizedUser?.selected_tier}
+                sectionLabel={"updates"}
+                onUpgrade={() => window.open("https://paan.africa/#membership", "_blank", "noopener,noreferrer")}
+              />
+              <UpdatesSection
+                updates={updates}
+                updatesLoading={updatesLoading}
+                updatesError={updatesError}
+                updateFilters={filters.updates}
+                handleUpdateFilterChange={handleUpdateFilterChange}
+                updateFilterOptions={updateFilterOptions}
+                user={memoizedUser}
+                handleRestrictedClick={handleRestrictedClick}
+                mode={mode}
+                Icon={Icon}
+                onClick={(update) => handleOpenModal(update, "update")}
+              />
+            </>
           )}
         </TabContentTransition>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">

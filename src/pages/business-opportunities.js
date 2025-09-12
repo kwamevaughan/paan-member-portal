@@ -16,6 +16,7 @@ import { TierBadge, JobTypeBadge } from "@/components/Badge";
 import TabsSelector from "@/components/TabsSelector";
 import OpportunitiesSection from "@/components/OpportunitiesSection";
 import { supabase } from "@/lib/supabase";
+import AccessCoverageCard from "@/components/AccessCoverageCard";
 
 export default function BusinessOpportunities({ mode = "light", toggleMode }) {
   const { isSidebarOpen, toggleSidebar, updateDragOffset, isMobile } =
@@ -288,6 +289,8 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
               lastUpdated={latestOpportunityDate}
             />
 
+            
+
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <TabsSelector
                 tabs={mainTabs}
@@ -296,6 +299,7 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
                 mode={mode}
                 icon="mdi:view-grid"
               />
+              
               <button
                 onClick={() => setShowFilterPanel(!showFilterPanel)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-full transition ${
@@ -561,6 +565,13 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
               </div>
             </div>
 
+            <AccessCoverageCard
+              mode={mode}
+              userTier={user?.selected_tier}
+              sectionLabel={isFreelancer ? "gigs" : "opportunities"}
+              onUpgrade={() => window.open("https://paan.africa/#membership", "_blank", "noopener,noreferrer")}
+            />
+            
             <OpportunitiesSection
               opportunities={filteredByTab}
               opportunitiesLoading={loading}

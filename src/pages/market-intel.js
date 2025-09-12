@@ -16,6 +16,7 @@ import SimpleModal from "@/components/SimpleModal";
 import UnifiedModalContent from "@/components/UnifiedModalContent";
 import PdfViewerModal from "@/components/PdfViewerModal";
 import { hasTierAccess } from "@/utils/tierUtils";
+import AccessCoverageCard from "@/components/AccessCoverageCard";
 
 export default function MarketIntel({ mode = "light", toggleMode }) {
   const {
@@ -348,6 +349,13 @@ export default function MarketIntel({ mode = "light", toggleMode }) {
                 {filteredByTab.length}
               </div>
             </div>
+
+            <AccessCoverageCard
+              mode={mode}
+              userTier={user?.selected_tier}
+              sectionLabel={"market intelligence"}
+              onUpgrade={() => window.open("https://paan.africa/#membership", "_blank", "noopener,noreferrer")}
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {marketIntelLoading && (

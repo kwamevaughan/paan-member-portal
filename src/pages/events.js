@@ -17,6 +17,7 @@ import TabsSelector from "@/components/TabsSelector";
 import EventCard from "@/components/EventCard";
 import SimpleModal from "@/components/SimpleModal";
 import UnifiedModalContent from "@/components/UnifiedModalContent";
+import AccessCoverageCard from "@/components/AccessCoverageCard";
 
 export default function Events({ mode = "light", toggleMode }) {
   const {
@@ -291,6 +292,8 @@ export default function Events({ mode = "light", toggleMode }) {
               lastUpdated={latestEventsDate}
             />
 
+            
+
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <TabsSelector
                 tabs={tabs}
@@ -412,6 +415,13 @@ export default function Events({ mode = "light", toggleMode }) {
                 {filteredByTab.length}
               </div>
             </div>
+
+            <AccessCoverageCard
+              mode={mode}
+              userTier={user?.selected_tier}
+              sectionLabel={"events & workshops"}
+              onUpgrade={() => window.open("https://paan.africa/#membership", "_blank", "noopener,noreferrer")}
+            />
 
             <SimpleModal
               isOpen={showRegistrationsModal}

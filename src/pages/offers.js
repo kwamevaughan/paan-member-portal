@@ -23,6 +23,7 @@ import TabsSelector from "@/components/TabsSelector";
 import OfferCard from "@/components/OfferCard";
 import UnifiedModalContent from "@/components/UnifiedModalContent";
 import SimpleModal from "@/components/SimpleModal";
+import AccessCoverageCard from "@/components/AccessCoverageCard";
 
 export default function Offers({ mode = "light", toggleMode }) {
   const {
@@ -322,6 +323,13 @@ export default function Offers({ mode = "light", toggleMode }) {
                 {filteredOffers.length}
               </div>
             </div>
+
+            <AccessCoverageCard
+              mode={mode}
+              userTier={user?.selected_tier}
+              sectionLabel={"offers"}
+              onUpgrade={() => window.open("https://paan.africa/#membership", "_blank", "noopener,noreferrer")}
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {offersLoading && (

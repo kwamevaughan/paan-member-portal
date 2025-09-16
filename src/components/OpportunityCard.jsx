@@ -267,9 +267,9 @@ const OpportunityCard = ({
           </div>
         </div>
 
-        <div className="flex justify-between items-center gap-2 mb-2">
+        <div className="flex flex-wrap justify-between items-center gap-2 mb-2">
           <span
-            className={`flex justify-center w-full items-center gap-2 px-2 py-2 text-xs font-medium rounded-full ${
+            className={`flex items-center gap-2 px-2 py-2 text-xs font-medium rounded-full ${
               isTender
                 ? mode === "dark"
                   ? "bg-paan-red/30 text-paan-red"
@@ -288,8 +288,20 @@ const OpportunityCard = ({
               opportunity.job_type
             )}
           </span>
+          {opportunity.location && (
+            <span
+              className={`flex items-center gap-1 px-2 py-2 text-xs font-medium rounded-full ${
+                mode === "dark"
+                  ? "bg-green-900/30 text-green-300"
+                  : "bg-green-100/80 text-green-700"
+              }`}
+            >
+              <Icon icon="mdi:map-marker" className="text-sm" />
+              {opportunity.location}
+            </span>
+          )}
           {!isFreelancer && (
-            <div className="flex justify-center w-full [&>span]:!bg-white [&>span]:!text-gray-900 [&>span]:!border-gray-200 [&>span>svg]:!text-[#f25749]">
+            <div className="[&>span]:!bg-white [&>span]:!text-gray-900 [&>span]:!border-gray-200 [&>span>svg]:!text-[#f25749]">
               <TierBadge
                 tier={opportunity.tier_restriction || "Free Member"}
                 mode={mode}

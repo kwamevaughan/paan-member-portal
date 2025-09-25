@@ -100,15 +100,14 @@ export default function PaanSummit({ mode = "light", toggleMode }) {
               {/* Content */}
               <div className="relative flex flex-col gap-4 items-center justify-center h-full">
                 <h2 className="text-4xl font-semibold">
-                  Where Africa’s Creative Future Gathers
+                  Africa Borderless Creative Economy Summit 2026
                 </h2>
                 <p className="text-gray-300">
-                  The PAAN Summit brings together bold minds, visionary
-                  campaigns, and the best of African innovation.
+                  Create. Connect. Commercialize.
                 </p>
                 <Link href="https://paan.africa/summit" target="_blank">
                   <button className="mt-4 px-6 py-3 bg-paan-red hover:bg-paan-red/80 text-white rounded-full w-full md:w-auto transition-all duration-300">
-                    Join the 2025 PAAN Summit
+                    Join the 2026 PAAN Summit
                   </button>
                 </Link>
               </div>
@@ -121,22 +120,23 @@ export default function PaanSummit({ mode = "light", toggleMode }) {
                   Upcoming Summit
                 </h3>
                 <p className="text-gray-600 mt-6">
-                  <span className="font-bold">EVENT:</span> PAAN Summit Nairobi
-                  2026
+                  <span className="font-bold">EVENT:</span> Africa Borderless Creative Economy Summit 2026
                 </p>
                 <p className="text-gray-600 mt-2">
-                  <span className="font-bold">THEME:</span> “Ideas Without
-                  Borders”
+                  <span className="font-bold">LOCATION:</span> Sarit Center, Nairobi, Kenya
+                </p>
+                <p className="text-gray-600 mt-2">
+                  <span className="font-bold">THEME:</span> "Create. Connect. Commercialize."
                 </p>
                 <p className="flex items-center gap-2 text-gray-600 mt-6">
                   <Icon icon="fe:calendar" className="w-12 h-12" />
                   <span className="font-semibold text-2xl">
-                    Oct 17–19, 2026
+                    Feb 23–24, 2026
                   </span>
                 </p>
 
                 <Link href="https://paan.africa/summit#tickets" target="_blank">
-                  <button className="mt-6 px-10 py-3 bg-paan-red hover:bg-paan-red/80 text-white rounded-full transition-all duration-300 flex items-center justify-center w-fit">
+                  <button className="mt-6 px-10 py-3 bg-paan-red hover:bg-paan-red/80 text-white rounded-full transition-all duration-300 flex items-center justify-center w-full">
                     Register Now
                   </button>
                 </Link>
@@ -147,12 +147,11 @@ export default function PaanSummit({ mode = "light", toggleMode }) {
                   className="w-12 h-12 text-paan-yellow"
                 />
                 <h3 className="text-3xl font-semibold text-gray-800 my-4">
-                  PAAN African Awards 2025
+                  Pan-African Creative Awards 2026
                 </h3>
 
                 <p className="text-gray-600 mt-6">
-                  Celebrating the best agencies, freelancers, and campaigns
-                  shaping Africa’s creative future.
+                  Celebrating groundbreaking agencies, creators, and cross-border collaborations shaping Africa's creative economy.
                 </p>
                 <div className="flex gap-4 mt-6">
                   <button 
@@ -189,7 +188,7 @@ export default function PaanSummit({ mode = "light", toggleMode }) {
 
             <div className="mt-6 p-8 md:py-8 bg-paan-blue rounded-lg flex flex-col md:flex-row items-center justify-between gap-4 transition-all duration-300">
               <span className="text-xl md:text-2xl">
-                Want to be part of Africa’s most inspiring creative movement?
+                Be part of Africa's most action-focused creative gathering.
               </span>
               <Link href="https://paan.africa/summit" target="_blank">
                 <button className="px-8 py-3 bg-paan-red hover:bg-paan-red/80 text-white rounded-full w-full md:w-auto transition-all duration-300">

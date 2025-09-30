@@ -14,7 +14,7 @@ const OnboardingKitModal = ({ isOpen, onClose, mode }) => {
       <div className="space-y-8">
         <div className="relative w-full h-[600px] bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden">
           <iframe
-            src="https://ik.imagekit.io/2crwrt8s6/General/PAAN%20Onboarding%20KIT%202025.pdf?updatedAt=1753975546701"
+            src="https://ik.imagekit.io/2crwrt8s6/MemberResources/PAAN%20Onboarding%20KIT%202025.pdf?updatedAt=1754467033910"
             className="w-full h-full border-0"
             title="PAAN Onboarding Kit 2025"
           />
@@ -28,7 +28,7 @@ const OnboardingKitModal = ({ isOpen, onClose, mode }) => {
             Close
           </button>
           <a
-            href="https://ik.imagekit.io/2crwrt8s6/General/PAAN%20Onboarding%20KIT%202025.pdf?updatedAt=1753975546701"
+            href="https://ik.imagekit.io/2crwrt8s6/MemberResources/PAAN%20Onboarding%20KIT%202025.pdf?updatedAt=1754467033910"
             target="_blank"
             rel="noopener noreferrer"
             className="flex-1 px-6 py-3 bg-paan-red hover:bg-paan-red/80 text-white rounded-lg font-medium transition-colors text-center"

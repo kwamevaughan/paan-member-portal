@@ -288,16 +288,16 @@ const OpportunityCard = ({
               opportunity.job_type
             )}
           </span>
-          {/* {opportunity.location && (
+          {/* {opportunity.locations && opportunity.locations.length > 0 && (
             <span
-              className={`flex items-center gap-1 px-2 py-2 p-0 text-xs font-medium rounded-full ${
+              className={`flex items-center gap-1 px-2 py-2 text-xs font-medium rounded-full ${
                 mode === "dark"
                   ? "bg-green-900/30 text-green-300"
                   : "bg-green-100/80 text-green-700"
               }`}
             >
               <Icon icon="mdi:map-marker" className="text-sm" />
-              {opportunity.location}
+              {opportunity.locations.map(loc => loc.replace(/["\[\]]/g, '')).join(', ')}
             </span>
           )} */}
           {!isFreelancer && (
@@ -360,15 +360,15 @@ const OpportunityCard = ({
             mode === "dark" ? "text-gray-400" : "text-gray-600"
           } ${isRestricted ? "text-gray-400 dark:text-gray-500" : ""}`}
         >
-          {/* Location */}
-          {opportunity.location && (
-            <div className="flex items-center space-x-1.5 hover:scale-105 transition-transform duration-200">
+          {/* Locations */}
+          {opportunity.locations && opportunity.locations.length > 0 && (
+            <div className="flex items-start space-x-1.5 hover:scale-105 transition-transform duration-200">
               <Icon
                 icon="mdi:map-marker"
-                className="text-lg text-paan-yellow"
+                className="text-lg text-paan-yellow mt-0.5 flex-shrink-0"
               />
-              <span className="truncate text-white">
-                {opportunity.location}
+              <span className="text-white line-clamp-2">
+                {opportunity.locations.map(loc => loc.replace(/[\"\[\]]/g, '')).join(', ')}
               </span>
             </div>
           )}

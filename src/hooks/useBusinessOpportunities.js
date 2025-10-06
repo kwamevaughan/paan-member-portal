@@ -66,7 +66,7 @@ export const useBusinessOpportunities = (
         let query = supabase
           .from("business_opportunities")
           .select(
-            "location, service_type, industry, project_type, tier_restriction, job_type, skills_required, budget_range, remote_work, estimated_duration, is_tender, tender_category, tender_organization"
+            "locations, service_type, industry, project_type, tier_restriction, job_type, skills_required, budget_range, remote_work, estimated_duration, is_tender, tender_category, tender_organization"
           )
           .ilike("job_type", `%${jobTypeFilter}%`);
 
@@ -83,8 +83,10 @@ export const useBusinessOpportunities = (
           countries: [
             ...new Set(
               data
-                ?.map((item) =>
-                  typeof item.location === "string" ? item.location.trim() : null
+                ?.flatMap(item => 
+                  Array.isArray(item.locations) 
+                    ? item.locations.filter(loc => typeof loc === 'string' && loc.trim() !== '')
+                    : []
                 )
                 .filter(Boolean)
             ),
@@ -229,7 +231,7 @@ export const useBusinessOpportunities = (
           let query = supabase
             .from("business_opportunities")
             .select(
-              "id, organization_name, gig_title, tender_title, description, tier_restriction, location, application_link, deadline, created_at, updated_at, service_type, industry, project_type, job_type, skills_required, estimated_duration, budget_range, remote_work, is_tender, tender_organization, tender_category, tender_issued, tender_closing, tender_access_link"
+              "id, organization_name, gig_title, tender_title, description, tier_restriction, locations, application_link, deadline, created_at, updated_at, service_type, industry, project_type, job_type, skills_required, estimated_duration, budget_range, remote_work, is_tender, tender_organization, tender_category, tender_issued, tender_closing, tender_access_link"
             );
           const today = new Date().toISOString().split("T")[0];
           if (fetchMode === "expired") {
@@ -241,7 +243,8 @@ export const useBusinessOpportunities = (
 
           // Apply filters
           if (currentFilters.country) {
-            query = query.eq("location", currentFilters.country);
+            // Use contains operator to check if the country is in the locations array
+            query = query.contains("locations", [currentFilters.country]);
           }
           if (currentFilters.serviceType) {
             query = query.eq("service_type", currentFilters.serviceType);

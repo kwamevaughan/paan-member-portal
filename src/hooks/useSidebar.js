@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 
 const useSidebar = () => {
-  const [isSidebarOpen, setSidebarOpen] = useState(null); // Initial state is null
+  const [isSidebarOpen, setSidebarOpen] = useState(false); // Default to false to prevent hydration mismatch
   const [isLoading, setIsLoading] = useState(true); // Loading state
-  const [windowWidth, setWindowWidth] = useState(null);
+  const [windowWidth, setWindowWidth] = useState(1024); // Default to desktop width
 
   const [sidebarState, setSidebarState] = useState({
     hidden: false,

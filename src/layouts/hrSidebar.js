@@ -13,7 +13,8 @@ const HrSidebar = ({
   isOpen,
   toggleSidebar,
 }) => {
-  const [windowWidth, setWindowWidth] = useState(null);
+  const [windowWidth, setWindowWidth] = useState(1024); // Default to desktop width
+  const [isClient, setIsClient] = useState(false);
   const router = useRouter();
   const sidebarRef = useRef(null);
   const [showLogout, setShowLogout] = useState(false);
@@ -122,6 +123,7 @@ const HrSidebar = ({
   }, []);
 
   useEffect(() => {
+    setIsClient(true);
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -180,9 +182,8 @@ const HrSidebar = ({
     }
   };
 
-  if (windowWidth === null) return null;
-
-  const isMobile = windowWidth < 640;
+  // Use isClient to ensure we're on the client side for mobile detection
+  const isMobile = isClient && windowWidth < 640;
 
   return (
     <div className="relative z-[20]">

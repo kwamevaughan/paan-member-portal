@@ -244,7 +244,7 @@ const HrSidebar = ({
                     <div
                       className={`transition-all duration-300 overflow-hidden ${
                         expandedCategories[navItem.category]
-                          ? "max-h-96 opacity-100"
+                          ? "max-h-none opacity-100"
                           : "max-h-0 opacity-0"
                       }`}
                     >
@@ -333,7 +333,7 @@ const HrSidebar = ({
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-medium text-black">
-                  {user.name}
+                  {user?.name || 'User'}
                 </span>
                 <div className="w-3 h-3 bg-green-400 rounded-full border border-green-400 flex items-center justify-center aspect-square"></div>
               </div>

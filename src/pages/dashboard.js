@@ -421,7 +421,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
               />
             </>
           )}
-          {activeTab === "offers" && (
+          {/* {activeTab === "offers" && (
             <>
               <AccessCoverageCard
                 mode={mode}
@@ -444,7 +444,7 @@ export default function Dashboard({ mode = "light", toggleMode }) {
                 onClick={(offer) => handleOpenModal(offer, "offer")}
               />
             </>
-          )}
+          )} */}
           {activeTab === "updates" && (
             <>
               <AccessCoverageCard

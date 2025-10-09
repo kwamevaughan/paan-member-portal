@@ -85,11 +85,6 @@ export const sidebarNav = [
         label: "Market Intelligence",
       },
       {
-        href: "/offers",
-        icon: "mdi:tag",
-        label: "Offers",
-      },
-      {
         href: "/access-hubs",
         icon: "mdi:office-building",
         label: "Access Hubs",

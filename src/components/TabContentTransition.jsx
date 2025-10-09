@@ -40,7 +40,7 @@ const TabContentTransition = ({
             label: "Market Intelligence",
             icon: "mdi:chart-bar",
           },
-          { id: "offers", label: "Offers", icon: "mdi:bullseye" },
+          // { id: "offers", label: "Offers", icon: "mdi:bullseye" },
           { id: "updates", label: "Updates", icon: "mdi:bell" },
         ];
 

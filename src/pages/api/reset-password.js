@@ -86,6 +86,7 @@ export default async function handler(req, res) {
       throw new Error(error.message);
     }
 
+    console.log(`API: Successfully sent password reset email to ${email}`);
     return res.status(200).json({ message: "Password reset email sent" });
   } catch (error) {
     console.error("API: Password reset error:", error);

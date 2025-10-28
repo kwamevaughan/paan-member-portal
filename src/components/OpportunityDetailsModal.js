@@ -228,6 +228,12 @@ const OpportunityDetailsModal = ({
               : opportunity.organization_name)
         }!`);
         setHasExpressedInterest(true);
+        // Auto-download after successful expression of interest if a tender/application link exists
+        const tenderUrl = opportunity.tender_access_link || opportunity.application_link;
+        const downloadUrl = getDirectDownloadUrl(tenderUrl);
+        if (downloadUrl) {
+          triggerDownload(downloadUrl);
+        }
       }
     } catch (err) {
       console.error("Error saving interest:", err);
@@ -256,6 +262,52 @@ const OpportunityDetailsModal = ({
     }
     // Fallback: use Google viewer to embed arbitrary docs
     return `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`;
+  }
+
+  // Helpers to create a direct download link and trigger download
+  function getDriveFileId(url) {
+    try {
+      const u = new URL(url);
+      // Case 1: query param ?id=FILE_ID
+      const qpId = u.searchParams.get("id");
+      if (qpId) return qpId;
+      // Case 2: /file/d/FILE_ID/
+      const parts = u.pathname.split("/");
+      const fileIdIndex = parts.indexOf("d");
+      if (fileIdIndex !== -1 && parts[fileIdIndex + 1]) return parts[fileIdIndex + 1];
+      // Case 3: open?id=FILE_ID
+      const openId = u.searchParams.get("open?id");
+      if (openId) return openId;
+    } catch (_) {}
+    return null;
+  }
+
+  function getDirectDownloadUrl(url) {
+    if (!url) return null;
+    // Google Drive file link => convert to direct download via usercontent domain
+    if (url.includes("drive.google.com") || url.includes("docs.google.com")) {
+      const id = getDriveFileId(url);
+      if (id) return `https://drive.usercontent.google.com/u/0/uc?id=${id}&export=download`;
+    }
+    // Google Docs/Sheets/etc often don't allow direct download cross-origin; fallback to original URL
+    return url;
+  }
+
+  function triggerDownload(url) {
+    if (!url) return;
+    try {
+      const a = document.createElement("a");
+      a.href = url;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      // Using download attribute where possible; many cross-origin providers ignore it but it's harmless
+      a.setAttribute("download", "");
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch (_) {
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
   }
 
   // Helper to format date as '20th July, 2025'
@@ -600,17 +652,16 @@ const OpportunityDetailsModal = ({
 
           {/* Action Buttons */}
           <div className="flex justify-end gap-4 pt-4 border-t border-gray-200/50 dark:border-gray-700/50">
-            <button
-              onClick={onClose}
-              className={`px-4 py-2 rounded-full font-normal ${
-                mode === "dark"
-                  ? "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-              }`}
-              aria-label={`Close ${itemLabel} details`}
-            >
-              Close
-            </button>
+            
+            {hasExpressedInterest && (opportunity.tender_access_link || opportunity.application_link) && (
+              <button
+                onClick={() => triggerDownload(getDirectDownloadUrl(opportunity.tender_access_link || opportunity.application_link))}
+                className={`px-4 py-2 rounded-full font-normal transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600`}
+                aria-label={`Download ${itemLabel} document`}
+              >
+                Download {itemLabel}
+              </button>
+            )}
             <button
               onClick={handleExpressInterestClick}
               className={`px-4 py-2 rounded-full font-normal transition-colors ${

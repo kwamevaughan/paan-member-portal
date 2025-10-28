@@ -725,6 +725,20 @@ const OpportunityDetailsModal = ({
         } | Expires on: ${formatDateWithOrdinal(opportunity?.tender_closing)}`}
         mode={mode}
         width="max-w-7xl"
+        rightElement={docUrl ? (
+          <button
+            onClick={() => triggerDownload(getDirectDownloadUrl(docUrl))}
+            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
+              mode === "dark"
+                ? "bg-white/20 text-white hover:bg-white/30"
+                : "bg-white/30 text-white hover:bg-white/40"
+            }`}
+            aria-label={`Download ${itemLabel} document`}
+          >
+            <Icon icon="mdi:download" className="text-base" />
+            <span>Download</span>
+          </button>
+        ) : null}
       >
         <div className="w-full h-[70vh] flex flex-col">
           <iframe

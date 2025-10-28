@@ -158,7 +158,7 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
         const { data: existingCandidate } = await supabase
           .from("candidates")
           .select("id")
-          .eq("id", authUser.id)
+          .eq("auth_user_id", authUser.id)
           .single();
 
         if (existingCandidate) return true;
@@ -169,7 +169,6 @@ export default function BusinessOpportunities({ mode = "light", toggleMode }) {
         const { error: insertCandidateError } = await supabase
           .from("candidates")
           .insert({
-            id: authUser.id,
             auth_user_id: authUser.id,
             primaryContactName: name,
             primaryContactEmail: email,

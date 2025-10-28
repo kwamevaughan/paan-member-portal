@@ -11,7 +11,9 @@ function isEmbeddableDoc(url) {
     lower.endsWith(".pdf") ||
     lower.endsWith(".doc") ||
     lower.endsWith(".docx") ||
-    lower.includes("docs.google.com")
+    lower.includes("docs.google.com") ||
+    lower.includes("drive.google.com") ||
+    lower.includes("googleusercontent.com")
   );
 }
 
@@ -173,7 +175,7 @@ const OpportunityDetailsModal = ({
         const { data: existingCandidate } = await supabase
           .from("candidates")
           .select("id")
-          .eq("id", authUser.id)
+          .eq("auth_user_id", authUser.id)
           .single();
 
         if (existingCandidate) return true;
@@ -184,7 +186,6 @@ const OpportunityDetailsModal = ({
         const { error: insertCandidateError } = await supabase
           .from("candidates")
           .insert({
-            id: authUser.id,
             auth_user_id: authUser.id,
             primaryContactName: name,
             primaryContactEmail: email,
@@ -241,7 +242,19 @@ const OpportunityDetailsModal = ({
   // Helper to get Google Docs Viewer URL
   function getGoogleViewerUrl(url) {
     if (!url) return null;
+    // If it's a direct Google Docs/Sheets/etc URL, use as-is
     if (url.includes("docs.google.com")) return url;
+    // If it's a Google Drive file link, convert to preview URL for embedding
+    // Example: https://drive.google.com/file/d/<FILE_ID>/view => https://drive.google.com/file/d/<FILE_ID>/preview
+    if (url.includes("drive.google.com")) {
+      try {
+        const driveUrl = new URL(url);
+        if (driveUrl.pathname.startsWith("/file/d/")) {
+          return url.replace(/\/view(?:\?.*)?$/, "/preview");
+        }
+      } catch (_) {}
+    }
+    // Fallback: use Google viewer to embed arbitrary docs
     return `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`;
   }
 
